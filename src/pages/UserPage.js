@@ -22,6 +22,12 @@ import {
   TableContainer,
   TablePagination,
 } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import { Link } from 'react-router-dom';
+
 // components
 import Label from '../components/label';
 import Iconify from '../components/iconify';
@@ -34,11 +40,11 @@ import USERLIST from '../_mock/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
+  { id: 'name', label: 'Nom', alignRight: false },
+  { id: 'email', label: 'Email', alignRight: false },
+  { id: 'phone', label: 'Numéro de téléphone', alignRight: false },
   { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  { id: 'status', label: 'Statut', alignRight: false },
   { id: '' },
 ];
 
@@ -145,6 +151,21 @@ export default function UserPage() {
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleDeleteClick = () => {
+    setIsDialogOpen(true);
+  };
+
+  const handleCancelClick = () => {
+    setIsDialogOpen(false);
+  };
+
+  const handleConfirmClick = () => {
+    // Mettez ici la logique pour effectuer la suppression
+    // Une fois la suppression effectuée, fermez la boîte de dialogue
+    setIsDialogOpen(false);
+  };
 
   return (
     <>
@@ -155,11 +176,13 @@ export default function UserPage() {
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+            Secrétaire
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button>
+          <Link to="/dashboard/addUser">
+            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+              Nouveau secrétaire
+            </Button>
+          </Link>
         </Stack>
 
         <Card>
@@ -179,7 +202,7 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                    const { id, name, email, phone, role, status, avatarUrl } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -196,12 +219,9 @@ export default function UserPage() {
                             </Typography>
                           </Stack>
                         </TableCell>
-
-                        <TableCell align="left">{company}</TableCell>
-
+                        <TableCell align="left">{email}</TableCell>
+                        <TableCell align="left">{phone}</TableCell>
                         <TableCell align="left">{role}</TableCell>
-
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
 
                         <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
@@ -236,9 +256,9 @@ export default function UserPage() {
                           </Typography>
 
                           <Typography variant="body2">
-                            No results found for &nbsp;
+                            aucun résultat trouvé ! &nbsp;
                             <strong>&quot;{filterName}&quot;</strong>.
-                            <br /> Try checking for typos or using complete words.
+                            <br /> Réssayez.
                           </Typography>
                         </Paper>
                       </TableCell>
@@ -281,14 +301,27 @@ export default function UserPage() {
       >
         <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
+          Modifier
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem sx={{ color: 'error.main' }} onClick={handleDeleteClick}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
+          Supprimer
         </MenuItem>
       </Popover>
+      <Dialog open={isDialogOpen} onClose={handleCancelClick}>
+        <DialogContent>
+          <DialogContentText>Êtes-vous sûr de vouloir supprimer cet élément ?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelClick} color="primary">
+            Annuler
+          </Button>
+          <Button onClick={handleConfirmClick} color="error">
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
