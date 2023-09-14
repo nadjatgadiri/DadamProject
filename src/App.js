@@ -7,7 +7,7 @@ import ThemeProvider from './theme';
 // components
 import { StyledChart } from './components/chart';
 import ScrollToTop from './components/scroll-to-top';
-import UserPage from './pages/UserPage';
+import UserPage from './pages/Users/UsersList';
 // import Home from './site-web/home';
 
 // ----------------------------------------------------------------------
