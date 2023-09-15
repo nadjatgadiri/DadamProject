@@ -13,6 +13,21 @@ export const getAllUsers = async () => {
     }
 
 };
+export const addNewUser = async (data) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/user/addUser', {
+            "data": data
+        });
+        const res = response.data;
+        console.log(res);
+        return res;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
+};
 export const SearchUsers = async (key) => {
     try {
         setReqHeader();
