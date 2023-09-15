@@ -10,7 +10,6 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import AddUser from './pages/Users/AddUser';
-import ModifierUser from './pages/Users/ModiferUser';
 import Home from './site-web/home';
 
 // ----------------------------------------------------------------------
@@ -26,9 +25,8 @@ export default function Router() {
         { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
-        /*utilisateur*/
+
         { path: 'addUser', element: <AddUser /> },
-        { path: 'path', element: <ModifierUser /> },
 
 
       ],
