@@ -47,7 +47,18 @@ function AddUser() {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    setImage(URL.createObjectURL(file));
+    // Create a FileReader object to read the file
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      // Read the image file and update the state with the data URL
+      setImage(e.target.result)
+      // Send the image file to the backend
+
+    };
+
+    // Read the file as a data URL
+    reader.readAsDataURL(file);
   };
   const validatePhoneNumber = (value) => {
     const phoneNumberError = /^(0|\+213)[567]\d{8}$/.test(value)
@@ -60,6 +71,15 @@ function AddUser() {
     e.preventDefault(); // Prevents the default form submission behavior
     validatePhoneNumber(phoneNumber);
     if (phoneNumberError === '') {
+      // const formData = new FormData();
+      // formData.append("firstName", firstName);
+      // formData.append("lastName", lastName);
+      // formData.append("phoneNumber", phoneNumber);
+      // formData.append("dateOfBirth", dateOfBirth);
+      // formData.append("mail", mail);
+      // formData.append("role", role);
+      // formData.append("image", image);
+      // console.log(formData);
       const data = {
         "firstName": firstName,
         "lastName": lastName,
@@ -86,10 +106,11 @@ function AddUser() {
         </Stack>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
           <Card style={{ padding: '20px' }}>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} encType="multipart/form-data">
 
               <Grid container spacing={3}>
                 <Grid item xs={5.5} container justifyContent="center" alignItems="center" >
+                  <input type="file" name="image" id="image-upload" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
                   <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
                     Upload file
                     <VisuallyHiddenInput
