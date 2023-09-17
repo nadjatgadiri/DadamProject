@@ -56,3 +56,12 @@ export const updateStudentData = async (studentId, updatedData) => {
         throw error;
     }
 };
+export const deleteStudent = async (studentId) => {
+    try {
+      const response = await axios.delete(`/students/remove/${studentId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to delete student:", error);
+      return { code: 500, message: "Internal Server Error" };
+    }
+  };

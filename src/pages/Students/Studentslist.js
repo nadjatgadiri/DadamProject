@@ -21,7 +21,7 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user'; // 
 
 // to load data 
-import { getAllStudents, updateStudentData} from '../../RequestManagement/studentManagement'; //
+import { getAllStudents, updateStudentData, deleteStudent} from '../../RequestManagement/studentManagement'; //
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nom', alignRight: false },
@@ -151,18 +151,19 @@ export default function StudentPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = data.map((n) => n.name);
+      const newSelecteds = data.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
-  };
+};
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+
+  const handleClick = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
     let newSelected = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -194,19 +195,50 @@ export default function StudentPage() {
   const isNotFound = !filteredUsers.length && !!filterName;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (student) => {
+    setMenuTargetRow(student);
     setIsDialogOpen(true);
+};
+
+  const handleDeleteStudent = async (studentId) => {
+    try {
+      const response = await deleteStudent(studentId);
+      
+      if (response.code === 200) {
+        // Delete was successful, now remove the student from your local state
+        const updatedStudents = data.filter(student => student.id !== studentId);
+        setData(updatedStudents);
+      } else {
+        console.error("Error deleting student:", response.message);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
   };
 
   const handleCancelClick = () => {
     setIsDialogOpen(false);
   };
 
-  const handleConfirmClick = () => {
-    // Mettez ici la logique pour effectuer la suppression
-    // Une fois la suppression effectuée, fermez la boîte de dialogue
-    setIsDialogOpen(false);
-  };
+const handleDeleteMultiple = async () => {
+    // Using Promise.all to make simultaneous delete requests for each selected student
+    await Promise.all(selected.map(id => handleDeleteStudent(id)));
+    
+    // After all delete requests have been made, filter out the deleted students from local data
+    const remainingStudents = data.filter(student => !selected.includes(student.id));
+    
+    setData(remainingStudents);
+    setSelected([]);  // Clear the selection after deleting
+};
+
+const handleConfirmClick = () => {
+  if (menuTargetRow && menuTargetRow.id) {
+      handleDeleteStudent(menuTargetRow.id);
+  }
+  setIsDialogOpen(false); // close the dialog after deleting
+  setMenuTargetRow(null); // reset the target row
+};
+  
 
   return (
     <>
@@ -242,7 +274,8 @@ export default function StudentPage() {
                   numSelected={selected.length}
                   filterName={filterName}
                   onFilterName={handleFilterByName}
-                />
+                  onDeleteSelected={handleDeleteMultiple}
+                  />
                 <Scrollbar>
                 <TableContainer sx={{ minWidth: 800 }}>
   <Table>
@@ -264,8 +297,8 @@ export default function StudentPage() {
       <TableRow hover key={id}>
         <TableCell padding="checkbox">
           <Checkbox
-            checked={selected.indexOf(name) !== -1}
-            onChange={(event) => handleClick(event, name)}
+            checked={selected.indexOf(id) !== -1}
+            onChange={(event) => handleClick(event, id)}
           />
         </TableCell>
         <TableCell>
@@ -324,7 +357,7 @@ export default function StudentPage() {
         {isEditing ? (
    <Select
        fullWidth
-       value={status}
+       value={editedStudent.status}        
        onChange={(e) => setEditedStudent({ 
            ...editedStudent, 
            status: e.target.value // Stored value
@@ -431,10 +464,13 @@ export default function StudentPage() {
     Modifier
 </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }} onClick={handleDeleteClick}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Supprimer
-        </MenuItem>
+<MenuItem sx={{ color: 'error.main' }} onClick={() => {
+    handleDeleteClick(menuTargetRow);
+    handleCloseMenu();
+}}>
+    <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+    Supprimer
+</MenuItem>
       </Popover>
       <Dialog open={isDialogOpen} onClose={handleCancelClick}>
         <DialogContent>
@@ -445,8 +481,9 @@ export default function StudentPage() {
             Annuler
           </Button>
           <Button onClick={handleConfirmClick} color="error">
-            Confirmer
-          </Button>
+    Confirmer
+</Button>
+
         </DialogActions>
       </Dialog>
     </>
