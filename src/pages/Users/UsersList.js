@@ -252,7 +252,7 @@ export default function UserPage() {
                                 <TableCell align="left">{role}</TableCell>
 
                                 <TableCell align="left">
-                                  <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+                                <Label color={status === 'Inactive' ? 'error' : 'success'}>{status}</Label>
                                 </TableCell>
 
                                 <TableCell align="right">

@@ -2,15 +2,11 @@ import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { Link, Grid, Stack, Card, Container, Typography } from '@mui/material';
+import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { addNewUser } from '../../RequestManagement/userManagement';
+import { addNewStudent } from '../../RequestManagement/studentManagement';
 
 const VisuallyHiddenInput = styled('input')({
   border: 0,
@@ -23,7 +19,8 @@ const VisuallyHiddenInput = styled('input')({
   whiteSpace: 'nowrap',
   width: 1,
 });
-function AddUser() {
+
+function AddStudent() {
   const navigate = useNavigate();
   const [mail, setMail] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -31,25 +28,16 @@ function AddUser() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [image, setImage] = useState('');
-  const [role, setRole] = useState('');
   const [phoneNumberError, setPhoneNumberError] = useState('');
   const [feedback, setFeedback] = useState('');  // For displaying feedback to the user after a submit
-  const StyledContent = styled('div')(({ theme }) => ({
-    maxWidth: 480,
-    margin: 'auto',
-    minHeight: '10vh',
-    display: 'flex',
-    justifyContent: 'center',
-    flexDirection: 'column',
-  }));
-  const handleInputChange = (e) => {
-    setRole(e.target.value);
-  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     setImage(URL.createObjectURL(file));
   };
+  const handleGoBack = () => {
+    navigate("/dashboard/student");
+}
   const validatePhoneNumber = (value) => {
     const phoneNumberError = /^(0|\+213)[567]\d{8}$/.test(value)
       ? ''
@@ -58,56 +46,51 @@ function AddUser() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevents the default form submission behavior
+    e.preventDefault();
     validatePhoneNumber(phoneNumber);
     if (phoneNumberError === '') {
-      const data = {
+        const data = {
         "firstName": firstName,
         "lastName": lastName,
         "phoneNumber": phoneNumber,
         "dateOfBirth": dateOfBirth,
         "mail": mail,
-        "role": role,
         "image": image
-      };
-      try {
-        console.log(data);
-        const response = await addNewUser(data);
-        if (response && response.code === 200) {
-            setFeedback('User ajouté avec succès!');
-            // Optionally reset form fields here
-        } else if (response && response.code === 409) {
-            setFeedback('Erreur: L\'email est déjà utilisé.');
-        } else {
-            setFeedback(response.message || 'Erreur lors de l\'ajout d\' utilistateur.');
+        };
+        
+        try {
+            console.log(data);
+            const response = await addNewStudent(data);
+            if (response && response.code === 200) {
+                setFeedback('Étudiant ajouté avec succès!');
+                // Optionally reset form fields here
+            } else if (response && response.code === 409) {
+                setFeedback('Erreur: L\'email est déjà utilisé.');
+            } else {
+                setFeedback(response.message || 'Erreur lors de l\'ajout de l\'étudiant.');
+            }
+        } catch (error) {
+            setFeedback('Une erreur s\'est produite. Veuillez réessayer.');
         }
-    } catch (error) {
-        setFeedback('Une erreur s\'est produite. Veuillez réessayer.');
+    } else {
+        setFeedback('Veuillez corriger les erreurs.');
     }
-} else {
-    setFeedback('Veuillez corriger les erreurs.');
-}
 };
-    
-    // Vous pouvez traiter les données du formulaire ici, par exemple :
-    // console.log('Données soumises :', formData);
 
-  return (
-    <>
-      <Container>
+return (
+    <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-          <Typography variant="h4" gutterBottom>
-            Nouveau Utilisateur
-          </Typography>
+            <Typography variant="h4" gutterBottom>
+                Nouveau Étudiant
+            </Typography>
         </Stack>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
-          <Card style={{ padding: '20px' }}>
-            <form onSubmit={handleSubmit}>
-
-              <Grid container spacing={3}>
+            <Card style={{ padding: '20px' }}>
+                <form onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
                 <Grid item xs={5.5} container justifyContent="center" alignItems="center" >
                   <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-                    Upload file
+                    Télécharger l'image
                     <VisuallyHiddenInput
                       id="image-upload"
                       type="file"
@@ -176,37 +159,33 @@ function AddUser() {
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={6}>
-                  <FormControl fullWidth>
-                    <InputLabel htmlFor="role">Role</InputLabel>
-                    <Select
-                      name="role"
-                      label="Role"
-                      value={role}
-                      onChange={handleInputChange}
-                      inputProps={{
-                        id: 'role',
-                      }}
-                      required
-                    >
-                      <MenuItem value="Admin">Admin</MenuItem>
-                      <MenuItem value="Secretaire">Secrétaire</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <Button type="submit" variant="contained">Ajouter</Button>
-                </Grid>
-                <Grid item xs={12}>
+              </Grid>
+              <Grid item xs={12}>
+    <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+        <Button 
+            variant="contained" 
+            style={{ backgroundColor: 'yellow', color: 'black' }} 
+            onClick={handleGoBack}>
+            Back to Students List
+        </Button>
+
+        <Button 
+            type="submit" 
+            variant="contained" 
+            style={{ backgroundColor: 'blue', color: 'white' }}>
+            Ajouter
+        </Button>
+    </Box>
+</Grid>
+                    
+                    <Grid item xs={12}>
                         <Typography variant="body2" color="textSecondary">{feedback}</Typography>
                     </Grid>
-              </Grid>
-            </form>
-          </Card>
+                </form>
+            </Card>
         </div>
-      </Container >
-    </>
-  );
+    </Container>
+);
 }
 
-export default AddUser;
+export default AddStudent;

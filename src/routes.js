@@ -12,10 +12,9 @@ import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import AddUser from './pages/Users/AddUser';
 import Home from './site-web/home';
-import AddStudent from './pages/Students/AddStudent';
+import AddStudent from './pages/Students/addStudent';
 
 // ----------------------------------------------------------------------
-
 export default function Router() {
   const routes = useRoutes([
     {

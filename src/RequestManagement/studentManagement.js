@@ -26,10 +26,12 @@ export const SearchStudents = async (key) => {
         throw error;
     }
 };
-export const addStudent = async (studentData) => {
+export const addNewStudent = async (studentData) => {
     try {
         setReqHeader();
-        const response = await axios.post('/students', studentData); // Assuming '/students' is the endpoint to add a new student
+        const response = await axios.post('/students/addStudent', {
+            "data": studentData
+        });
         const data = response.data;
         return data;
     } catch (error) {
