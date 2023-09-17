@@ -26,6 +26,7 @@ export const SearchStudents = async (key) => {
         throw error;
     }
 };
+
 export const addNewStudent = async (studentData) => {
     try {
         setReqHeader();
@@ -33,6 +34,22 @@ export const addNewStudent = async (studentData) => {
             "data": studentData
         });
         const data = response.data;
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const updateStudentData = async (studentId, updatedData) => {
+    try {
+        setReqHeader();
+        console.log(studentId);
+        const response = await axios.put(`/students/modify/${studentId}`, {
+            "data": updatedData  // Sending the updated data
+        });
+        const data = response.data;
+        console.log(data);
         return data;
     } catch (error) {
         console.error(error);
