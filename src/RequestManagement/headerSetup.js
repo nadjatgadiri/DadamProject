@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 const setReqHeader = () => {
 
     const token = sessionStorage.getItem('token');
@@ -7,9 +8,9 @@ const setReqHeader = () => {
         'Content-Type': 'application/json'
     };
 
-    if (isActive && apiKey) {
+    if (isActive) {
         headers['is-active'] = isActive;
-        headers['authorization'] = token;
+        headers.authorization = token;
     }
     axios.defaults.headers.common = headers;
 };

@@ -6,11 +6,12 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { Link, Grid, Stack, Card, Container, Typography } from '@mui/material';
+import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { addNewUser } from '../../RequestManagement/userManagement';
+import Iconify from '../../components/iconify';
 
 const VisuallyHiddenInput = styled('input')({
   border: 0,
@@ -33,6 +34,7 @@ function AddUser() {
   const [image, setImage] = useState('');
   const [role, setRole] = useState('');
   const [phoneNumberError, setPhoneNumberError] = useState('');
+  const [feedback, setFeedback] = useState('');  // For displaying feedback to the user after a submit
   const StyledContent = styled('div')(({ theme }) => ({
     maxWidth: 480,
     margin: 'auto',
@@ -49,14 +51,11 @@ function AddUser() {
     const file = e.target.files[0];
     // Create a FileReader object to read the file
     const reader = new FileReader();
-
     reader.onload = (e) => {
       // Read the image file and update the state with the data URL
       setImage(e.target.result)
       // Send the image file to the backend
-
     };
-
     // Read the file as a data URL
     reader.readAsDataURL(file);
   };
@@ -71,15 +70,6 @@ function AddUser() {
     e.preventDefault(); // Prevents the default form submission behavior
     validatePhoneNumber(phoneNumber);
     if (phoneNumberError === '') {
-      // const formData = new FormData();
-      // formData.append("firstName", firstName);
-      // formData.append("lastName", lastName);
-      // formData.append("phoneNumber", phoneNumber);
-      // formData.append("dateOfBirth", dateOfBirth);
-      // formData.append("mail", mail);
-      // formData.append("role", role);
-      // formData.append("image", image);
-      // console.log(formData);
       const data = {
         "firstName": firstName,
         "lastName": lastName,
@@ -89,12 +79,26 @@ function AddUser() {
         "role": role,
         "image": image
       };
-      console.log(data);
-      await addNewUser(data);
+      try {
+        const response = await addNewUser(data);
+        if (response && response.code === 200) {
+          setFeedback('User ajouté avec succès!');
+          // Optionally reset form fields here
+        } else if (response && response.code === 409) {
+          setFeedback('Erreur: L\'email est déjà utilisé.');
+        } else {
+          setFeedback(response.message || 'Erreur lors de l\'ajout d\' utilistateur.');
+        }
+      } catch (error) {
+        setFeedback('Une erreur s\'est produite. Veuillez réessayer.');
+      }
+    } else {
+      setFeedback('Veuillez corriger les erreurs.');
     }
-    // Vous pouvez traiter les données du formulaire ici, par exemple :
-    // console.log('Données soumises :', formData);
   };
+
+  // Vous pouvez traiter les données du formulaire ici, par exemple :
+  // console.log('Données soumises :', formData);
 
   return (
     <>
@@ -103,16 +107,29 @@ function AddUser() {
           <Typography variant="h4" gutterBottom>
             Nouveau Utilisateur
           </Typography>
+          <Link to="/dashboard/user">
+            <Button variant="contained" startIcon={<Iconify icon="ri:arrow-go-back-fill" />}>Return</Button>
+          </Link>
         </Stack>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
           <Card style={{ padding: '20px' }}>
             <form onSubmit={handleSubmit} encType="multipart/form-data">
 
               <Grid container spacing={3}>
-                <Grid item xs={5.5} container justifyContent="center" alignItems="center" >
+                <Grid item xs={12} container justifyContent="center" alignItems="center">
+                  {image && <Avatar src={image} alt="Uploaded"
+                    style={{
+                      maxWidth: '300px',
+                      marginTop: '20px',
+                      border: '5px solid #BFBFBF', // Add this line to set border properties
+                      borderRadius: '50%' // Add this line to make it a circle
+                    }}
+                    sx={{ width: 100, height: 100 }} />}
+                </Grid>
+                <Grid item xs={12} container justifyContent="center" alignItems="center" >
                   <input type="file" name="image" id="image-upload" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
                   <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-                    Upload file
+                    Upload image
                     <VisuallyHiddenInput
                       id="image-upload"
                       type="file"
@@ -121,9 +138,7 @@ function AddUser() {
                     />
                   </Button>
                 </Grid>
-                <Grid item xs={6} container justifyContent="left" alignItems="left">
-                  {image && <Avatar src={image} alt="Uploaded" style={{ maxWidth: '100px', marginTop: '10px' }} sx={{ width: 80, height: 80 }} />}
-                </Grid>
+
                 <Grid item xs={6}>
                   <TextField
                     name="lastname"
@@ -158,7 +173,7 @@ function AddUser() {
                 <Grid item xs={6}>
                   <TextField
                     name="phone"
-                    label="numéro de téléphone"
+                    label="Numéro de téléphone"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     required
@@ -199,9 +214,23 @@ function AddUser() {
                     </Select>
                   </FormControl>
                 </Grid>
+                {feedback !== '' ?
+                  <Grid item xs={12}>
+                    <Typography variant="body2" color="error">{feedback}</Typography>
+                  </Grid>
+                  : <></>
+                }
                 <Grid item xs={12}>
-                  <Button type="submit" variant="contained">Ajouter</Button>
+                  <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      style={{ backgroundColor: 'blue', color: 'white' }}>
+                      Ajouter
+                    </Button>
+                  </Box>
                 </Grid>
+
               </Grid>
             </form>
           </Card>

@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
 // @mui
 import {
@@ -11,15 +10,15 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { Link } from 'react-router-dom';
-
 // components
+import { Buffer } from "buffer";
 import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // to load data 
-import { getAllUsers, SearchUsers } from '../../RequestManagement/userManagement'
+import { getAllUsers } from '../../RequestManagement/userManagement'
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -93,7 +92,12 @@ export default function UserPage() {
           email: user.personProfile.mail,
           status: user.isConnected !== "true" ? 'Inactive' : 'Active',
           role: user.role,
+          image: user.personProfile.imagePath !== null || user.personProfile.imagePath !== '' ?
+            `data:image/jpeg;base64,${Buffer.from(
+              user.personProfile.imagePath.data).toString("base64")}` : ''
         }));
+
+        console.log(users);
         setError('');
         if (users) {
           setData(users);
@@ -230,7 +234,8 @@ export default function UserPage() {
                         />
                         <TableBody>
                           {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                            const { id, name, email, phone, role, status, avatarUrl } = row;
+                            const { id, name, email, phone, role, status, image } = row;
+
                             const selectedUser = selected.indexOf(name) !== -1;
 
                             return (
@@ -241,7 +246,7 @@ export default function UserPage() {
 
                                 <TableCell component="th" scope="row" padding="none">
                                   <Stack direction="row" alignItems="center" spacing={2}>
-                                    <Avatar alt={name} src={avatarUrl} />
+                                    <Avatar alt={name} src={image} />
                                     <Typography variant="subtitle2" noWrap>
                                       {name}
                                     </Typography>
@@ -252,7 +257,7 @@ export default function UserPage() {
                                 <TableCell align="left">{role}</TableCell>
 
                                 <TableCell align="left">
-                                  <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+                                  <Label color={status === 'Inactive' ? 'error' : 'success'}>{status}</Label>
                                 </TableCell>
 
                                 <TableCell align="right">
