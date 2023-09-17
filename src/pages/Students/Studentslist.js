@@ -4,8 +4,8 @@ import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
 // @mui
 import {
-  Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
-} from '@mui/material';
+  Select, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
+TextField } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -21,12 +21,13 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user'; // 
 
 // to load data 
-import { getAllStudents } from '../../RequestManagement/studentManagement'; //
+import { getAllStudents, updateStudentData, deleteStudent} from '../../RequestManagement/studentManagement'; //
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nom', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Numéro de téléphone', alignRight: false },
+  {id: 'dateOfBirth', label: 'Date de naissance', alignRight: false },
   { id: 'status', label: 'Statut', alignRight: false },
   // Add additional columns as needed
   { id: '' },
@@ -72,7 +73,10 @@ export default function StudentPage() {
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [error, setError] = useState('');
-  
+  const [editedStudent, setEditedStudent] = useState(null);
+  const [menuTargetRow, setMenuTargetRow] = useState(null);
+
+
   /* start load data */
   const [data, setData] = useState([]);
 
@@ -85,9 +89,12 @@ export default function StudentPage() {
           name: `${student.personProfile2.firstName} ${student.personProfile2.lastName}`,
           phone: student.personProfile2.phoneNumber,
           email: student.personProfile2.mail,
+          dateOfBirth:student.personProfile2.dateOfBirth,
           status: student.isActive ? 'Active' : 'Inactive',
+          
         }));
         setData(students);
+       
       } else {
         setError(result.message);
       }
@@ -99,6 +106,38 @@ export default function StudentPage() {
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
+
+  const handleUpdateClick = async (studentId) => {
+    try {
+        // Call the function to update the student's information
+        console.log(studentId);
+        const updatedData = {
+          firstName: editedStudent.name.split(' ')[0], // assuming the name format is "FirstName LastName"
+          lastName: editedStudent.name.split(' ')[1],
+          mail: editedStudent.email,
+          phoneNumber: editedStudent.phone,
+          dateOfBirth: editedStudent.dateOfBirth, // Assuming this exists in studentToEdit
+          status:editedStudent.status
+      };
+        const response = await updateStudentData(studentId, updatedData);
+
+        if (response.code === 200) {
+            // Refresh the data or manipulate the local state to reflect the changes
+            // For example, if you just want to update the local state:
+            const updatedStudents = data.map(student => 
+                student.id === studentId 
+                ? { ...student, ...editedStudent } 
+                : student
+            );
+            setData(updatedStudents);
+            setEditedStudent(null); // Resetting the edited student state
+        } else {
+            console.error("Error updating student:", response.message);
+        }
+    } catch (error) {
+        console.error("Error:", error.message);
+    }
+};
 
   const handleCloseMenu = () => {
     setOpen(null);
@@ -112,18 +151,19 @@ export default function StudentPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = data.map((n) => n.name);
+      const newSelecteds = data.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
-  };
+};
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+
+  const handleClick = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
     let newSelected = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -155,19 +195,50 @@ export default function StudentPage() {
   const isNotFound = !filteredUsers.length && !!filterName;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (student) => {
+    setMenuTargetRow(student);
     setIsDialogOpen(true);
+};
+
+  const handleDeleteStudent = async (studentId) => {
+    try {
+      const response = await deleteStudent(studentId);
+      
+      if (response.code === 200) {
+        // Delete was successful, now remove the student from your local state
+        const updatedStudents = data.filter(student => student.id !== studentId);
+        setData(updatedStudents);
+      } else {
+        console.error("Error deleting student:", response.message);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
   };
 
   const handleCancelClick = () => {
     setIsDialogOpen(false);
   };
 
-  const handleConfirmClick = () => {
-    // Mettez ici la logique pour effectuer la suppression
-    // Une fois la suppression effectuée, fermez la boîte de dialogue
-    setIsDialogOpen(false);
-  };
+const handleDeleteMultiple = async () => {
+    // Using Promise.all to make simultaneous delete requests for each selected student
+    await Promise.all(selected.map(id => handleDeleteStudent(id)));
+    
+    // After all delete requests have been made, filter out the deleted students from local data
+    const remainingStudents = data.filter(student => !selected.includes(student.id));
+    
+    setData(remainingStudents);
+    setSelected([]);  // Clear the selection after deleting
+};
+
+const handleConfirmClick = () => {
+  if (menuTargetRow && menuTargetRow.id) {
+      handleDeleteStudent(menuTargetRow.id);
+  }
+  setIsDialogOpen(false); // close the dialog after deleting
+  setMenuTargetRow(null); // reset the target row
+};
+  
 
   return (
     <>
@@ -203,84 +274,151 @@ export default function StudentPage() {
                   numSelected={selected.length}
                   filterName={filterName}
                   onFilterName={handleFilterByName}
-                />
+                  onDeleteSelected={handleDeleteMultiple}
+                  />
                 <Scrollbar>
-                  <TableContainer sx={{ minWidth: 800 }}>
-                    <Table>
-                      <UserListHead
-                        order={order}
-                        orderBy={orderBy}
-                        headLabel={TABLE_HEAD}
-                        rowCount={data.length}
-                        numSelected={selected.length}
-                        onRequestSort={handleRequestSort}
-                        onSelectAllClick={handleSelectAllClick}
-                      />
-                     <TableBody>
-    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-        const { id, name, email, phone, status } = row;
-        const selectedStudent = selected.indexOf(name) !== -1;
+                <TableContainer sx={{ minWidth: 800 }}>
+  <Table>
+    <UserListHead
+      order={order}
+      orderBy={orderBy}
+      headLabel={TABLE_HEAD}
+      rowCount={data.length}
+      numSelected={selected.length}
+      onRequestSort={handleRequestSort}
+      onSelectAllClick={handleSelectAllClick}
+    />
+   <TableBody>
+   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+    const { id, name, email, phone, status, dateOfBirth } = row;
+    const isEditing = editedStudent && editedStudent.id === row.id;
 
-        return (
-            <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedStudent}>
-                <TableCell padding="checkbox">
-                    <Checkbox checked={selectedStudent} onChange={(event) => handleClick(event, name)} />
-                </TableCell>
+    return (
+      <TableRow hover key={id}>
+        <TableCell padding="checkbox">
+          <Checkbox
+            checked={selected.indexOf(id) !== -1}
+            onChange={(event) => handleClick(event, id)}
+          />
+        </TableCell>
+        <TableCell>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Avatar alt={name} src={row.avatarUrl} />
+            {isEditing ? (
+              <TextField
+                size="small"
+                defaultValue={name}
+                onChange={(e) => setEditedStudent({ ...editedStudent, name: e.target.value })}
+              />
+            ) : (
+              <Typography variant="subtitle2" noWrap>
+                {name}
+              </Typography>
+            )}
+          </Stack>
+        </TableCell>
+        <TableCell>
+          {isEditing ? (
+            <TextField
+              size="small"
+              defaultValue={email}
+              onChange={(e) => setEditedStudent({ ...editedStudent, email: e.target.value })}
+            />
+          ) : (
+            email
+          )}
+        </TableCell>
+        <TableCell>
+          {isEditing ? (
+            <TextField
+              size="small"
+              defaultValue={phone}
+              onChange={(e) => setEditedStudent({ ...editedStudent, phone: e.target.value })}
+            />
+          ) : (
+            phone
+          )}
+        </TableCell>
+        <TableCell>
+          {isEditing ? (
+            <TextField
+              size="small"
+              type="date"
+              defaultValue={new Date(dateOfBirth).toLocaleDateString()
+              }
+              onChange={(e) => setEditedStudent({ ...editedStudent, dateOfBirth: e.target.value })}
+            />
+          ) : (
+            new Date(dateOfBirth).toLocaleDateString()
+// Displaying date in a readable format
+          )}
+        </TableCell>
+        <TableCell>
+        {isEditing ? (
+   <Select
+       fullWidth
+       value={editedStudent.status}        
+       onChange={(e) => setEditedStudent({ 
+           ...editedStudent, 
+           status: e.target.value // Stored value
+       })}
+   >
+       <MenuItem value="Active">Active</MenuItem>
+       <MenuItem value="Inactive">Inactive</MenuItem>
+   </Select>
+) : (
+  
+   <Label color={status === 'Inactive' ? 'error' : 'success'}>
+    {status} 
+    </Label>
+)}
 
-                <TableCell component="th" scope="row" padding="none">
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                        <Avatar alt={name} src={row.avatarUrl} /> {/* Adjust if students have avatar */}
-                        <Typography variant="subtitle2" noWrap>
-                            {name}
-                        </Typography>
-                    </Stack>
-                </TableCell>
-                <TableCell align="left">{email}</TableCell>
-                <TableCell align="left">{phone}</TableCell>
-                <TableCell align="left">
-                    <Label color={status === 'Inactive' ? 'error' : 'success'}>{status}</Label>
-                </TableCell>
 
-                <TableCell align="right">
-                    <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
-                        <Iconify icon={'eva:more-vertical-fill'} />
-                    </IconButton>
-                </TableCell>
-            </TableRow>
-        );
-    })}
-
-    {emptyRows > 0 && (
-        <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={6} />
-        </TableRow>
-    )}
-
-    {isNotFound && (
-        <TableRow>
-            <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                <Paper
-                    sx={{
-                        textAlign: 'center',
-                    }}
-                >
-                    <Typography variant="h6" paragraph>
-                        Résultat non trouvé
-                    </Typography>
-
-                    <Typography variant="body2">
-                        aucun résultat trouvé pour &nbsp;
-                        <strong>&quot;{filterName}&quot;</strong>.
-                        <br /> Réssayez.
-                    </Typography>
-                </Paper>
-            </TableCell>
-        </TableRow>
-    )}
+        </TableCell>
+        <TableCell>
+          {isEditing ? (
+            <>
+              <Button variant="contained" color="primary" onClick={() => handleUpdateClick(row.id)}>Save</Button>
+              <Button variant="outlined" color="secondary" onClick={() => setEditedStudent(null)}>Cancel</Button>
+            </>
+          ) : (
+            <IconButton size="small" onClick={(e) => {
+              handleOpenMenu(e);
+              setMenuTargetRow(row);
+          }}>
+              <Iconify icon={'eva:more-vertical-fill'} />
+          </IconButton>
+          
+          )}
+        </TableCell>
+      </TableRow>
+    );
+  })}
+  {emptyRows > 0 && (
+    <TableRow style={{ height: 53 * emptyRows }}>
+      <TableCell colSpan={6} />
+    </TableRow>
+  )}
+  {isNotFound && (
+    <TableRow>
+      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+        <Paper sx={{ textAlign: 'center' }}>
+          <Typography variant="h6" paragraph>
+            Résultat non trouvé
+          </Typography>
+          <Typography variant="body2">
+            aucun résultat trouvé pour &nbsp;
+            <strong>&quot;{filterName}&quot;</strong>.
+            <br /> Réssayez.
+          </Typography>
+        </Paper>
+      </TableCell>
+    </TableRow>
+  )}
 </TableBody>
 
-                    </Table>
-                  </TableContainer>
+  </Table>
+</TableContainer>
                 </Scrollbar>
 
                 <TablePagination
@@ -316,15 +454,23 @@ export default function StudentPage() {
           },
         }}
       >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Modifier
-        </MenuItem>
+      
+      <MenuItem onClick={() => {
+    console.log("Editing for row:", menuTargetRow); // Debugging log
+    setEditedStudent(menuTargetRow);
+    handleCloseMenu();
+}}>
+    <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+    Modifier
+</MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }} onClick={handleDeleteClick}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Supprimer
-        </MenuItem>
+<MenuItem sx={{ color: 'error.main' }} onClick={() => {
+    handleDeleteClick(menuTargetRow);
+    handleCloseMenu();
+}}>
+    <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+    Supprimer
+</MenuItem>
       </Popover>
       <Dialog open={isDialogOpen} onClose={handleCancelClick}>
         <DialogContent>
@@ -335,8 +481,9 @@ export default function StudentPage() {
             Annuler
           </Button>
           <Button onClick={handleConfirmClick} color="error">
-            Confirmer
-          </Button>
+    Confirmer
+</Button>
+
         </DialogActions>
       </Dialog>
     </>

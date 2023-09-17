@@ -26,6 +26,7 @@ export const SearchStudents = async (key) => {
         throw error;
     }
 };
+
 export const addNewStudent = async (studentData) => {
     try {
         setReqHeader();
@@ -39,3 +40,28 @@ export const addNewStudent = async (studentData) => {
         throw error;
     }
 };
+
+export const updateStudentData = async (studentId, updatedData) => {
+    try {
+        setReqHeader();
+        console.log(studentId);
+        const response = await axios.put(`/students/modify/${studentId}`, {
+            "data": updatedData  // Sending the updated data
+        });
+        const data = response.data;
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+export const deleteStudent = async (studentId) => {
+    try {
+      const response = await axios.delete(`/students/remove/${studentId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to delete student:", error);
+      return { code: 500, message: "Internal Server Error" };
+    }
+  };
