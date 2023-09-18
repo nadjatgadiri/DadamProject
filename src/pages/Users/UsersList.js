@@ -3,7 +3,7 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 // @mui
 import {
-  Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
+  Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination, TextField, Select,
 } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -18,13 +18,14 @@ import Scrollbar from '../../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // to load data 
-import { getAllUsers } from '../../RequestManagement/userManagement'
+import { getAllUsers, updateUserData, deleteUser } from '../../RequestManagement/userManagement'
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nom', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Numéro de téléphone', alignRight: false },
+  { id: 'dateOfBirth', label: 'date de naissance', alignRight: false },
   { id: 'role', label: 'Position', alignRight: false },
   { id: 'status', label: 'Statut', alignRight: false },
   { id: '' },
@@ -63,28 +64,23 @@ function applySortFilter(array, comparator, query) {
 
 export default function UserPage() {
   const [open, setOpen] = useState(null);
-
   const [page, setPage] = useState(0);
-
   const [order, setOrder] = useState('asc');
-
   const [selected, setSelected] = useState([]);
-
   const [orderBy, setOrderBy] = useState('name');
-
   const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
   const [error, setError] = useState('');
   /* start load data */
   const [data, setData] = useState([]);
+  /** update and delete */
+  const [editedUser, setEditedUser] = useState(null);
+  const [menuTargetRow, setMenuTargetRow] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       const result = await getAllUsers();
       if (result.code === 200) {
-
         const users = await result.allUsers.map(user => ({
           id: user.ID_ROWID,
           name: `${user.personProfile.firstName} ${user.personProfile.lastName}`, // Concatenating first name and last name
@@ -92,12 +88,11 @@ export default function UserPage() {
           email: user.personProfile.mail,
           status: user.isConnected !== "true" ? 'Inactive' : 'Active',
           role: user.role,
-          image: user.personProfile.imagePath !== null || user.personProfile.imagePath !== '' ?
+          dateOfBirth: user.personProfile.dateOfBirth,
+          image: user.personProfile.imagePath !== null && user.personProfile.imagePath !== '' ?
             `data:image/jpeg;base64,${Buffer.from(
               user.personProfile.imagePath.data).toString("base64")}` : ''
         }));
-
-        console.log(users);
         setError('');
         if (users) {
           setData(users);
@@ -165,28 +160,102 @@ export default function UserPage() {
     setPage(0);
     setFilterName(event.target.value);
   };
+  /** start update  */
+  const handleUpdateClick = async (userId) => {
+    try {
+      // Call the function to update the user's information
+      const updatedData = {
+        userID: userId,
+        firstName: editedUser.name.split(' ')[0], // assuming the name format is "FirstName LastName"
+        lastName: editedUser.name.split(' ')[1],
+        mail: editedUser.email,
+        phoneNumber: editedUser.phone,
+        dateOfBirth: editedUser.dateOfBirth, // Assuming this exists in userToEdit
+        role: editedUser.role
+      };
+      const response = await updateUserData(updatedData);
 
+      if (response.code === 200) {
+        // Refresh the data or manipulate the local state to reflect the changes
+        // For example, if you just want to update the local state:
+        const updatedUsers = data.map(user =>
+          user.id === userId
+            ? { ...user, ...editedUser }
+            : user
+        );
+        setData(updatedUsers);
+        setEditedUser(null); // Resetting the edited user state
+      } else {
+        console.error("Error updating user:", response.message);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  };
+  /** end update  */
+  /** start delete */
+  const handleDeleteClick = (user) => {
+    console.log(user);
+    setMenuTargetRow(user);
+    setIsDialogOpen(true);
+  };
+  const handleDeleteClick2 = () => {
+    setIsDialogOpen2(true);
+  };
+  const handleDeleteUser = async (userId) => {
+    try {
+      const response = await deleteUser(userId);
+
+      if (response.code === 200) {
+        // Delete was successful, now remove the User from your local state
+        const updatedUser = data.filter(user => user.id !== userId);
+        setData(updatedUser);
+      } else {
+        console.error("Error deleting the user:", response.message);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  };
+
+  const handleDeleteMultiple = async () => {
+    // Using Promise.all to make simultaneous delete requests for each selected User
+    await Promise.all(selected.map(id => handleDeleteUser(id)));
+
+    // After all delete requests have been made, filter out the deleted Users from local data
+    const remainingUsers = data.filter(user => !selected.includes(user.id));
+
+    setData(remainingUsers);
+    setSelected([]);  // Clear the selection after deleting
+  };
+  /** end delete */
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
   const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const handleDeleteClick = () => {
-    setIsDialogOpen(true);
-  };
+  const [isDialogOpen2, setIsDialogOpen2] = useState(false);
 
   const handleCancelClick = () => {
     setIsDialogOpen(false);
   };
-
+  const handleCancelClick2 = () => {
+    setIsDialogOpen2(false);
+  };
   const handleConfirmClick = () => {
     // Mettez ici la logique pour effectuer la suppression
     // Une fois la suppression effectuée, fermez la boîte de dialogue
+    if (menuTargetRow && menuTargetRow.id) {
+      handleDeleteUser(menuTargetRow.id);
+    }
+    setMenuTargetRow(null);
     setIsDialogOpen(false);
   };
-
+  const handleConfirmClick2 = () => {
+    handleDeleteMultiple();
+    setIsDialogOpen2(false); // close the dialog after deleting
+  };
   return (
     <>
       <Helmet>
@@ -214,11 +283,17 @@ export default function UserPage() {
             (
               data.length === 0 ?
                 <Typography style={{ padding: '20px' }} variant="h6" paragraph>
-                  Résultat non trouvé
+                  Aucun résultat n'a été trouvé.
                 </Typography>
                 :
                 <>
-                  <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+                  <UserListToolbar
+                    numSelected={selected.length}
+                    filterName={filterName}
+                    onFilterName={handleFilterByName}
+                    // onDeleteSelected={handleDeleteMultiple}
+                    onDeleteSelected={() => { handleDeleteClick2() }}
+                  />
                   <Scrollbar>
 
                     <TableContainer sx={{ minWidth: 800 }}>
@@ -234,37 +309,120 @@ export default function UserPage() {
                         />
                         <TableBody>
                           {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                            const { id, name, email, phone, role, status, image } = row;
+                            const { id, name, email, phone, role, status, image, dateOfBirth } = row;
+                            const isEditing = editedUser && editedUser.id === row.id;
 
                             const selectedUser = selected.indexOf(name) !== -1;
 
                             return (
                               <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
                                 <TableCell padding="checkbox">
-                                  <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
+                                  <Checkbox
+                                    checked={selected.indexOf(id) !== -1}
+                                    onChange={(event) => handleClick(event, id)} />
                                 </TableCell>
 
                                 <TableCell component="th" scope="row" padding="none">
                                   <Stack direction="row" alignItems="center" spacing={2}>
                                     <Avatar alt={name} src={image} />
-                                    <Typography variant="subtitle2" noWrap>
-                                      {name}
-                                    </Typography>
+                                    {isEditing ? (
+                                      <TextField
+                                        size="small"
+                                        defaultValue={name}
+                                        onChange={(e) => setEditedUser({ ...editedUser, name: e.target.value })}
+                                      />
+                                    ) : (
+                                      <Typography variant="subtitle2" noWrap>
+                                        {name}
+                                      </Typography>
+                                    )}
                                   </Stack>
                                 </TableCell>
-                                <TableCell align="left">{email}</TableCell>
-                                <TableCell align="left">{phone}</TableCell>
-                                <TableCell align="left">{role}</TableCell>
-
-                                <TableCell align="left">
-                                  <Label color={status === 'Inactive' ? 'error' : 'success'}>{status}</Label>
+                                <TableCell>
+                                  {isEditing ? (
+                                    <TextField
+                                      size="small"
+                                      defaultValue={email}
+                                      onChange={(e) => setEditedUser({ ...editedUser, email: e.target.value })}
+                                    />
+                                  ) : (
+                                    email
+                                  )}
                                 </TableCell>
+                                <TableCell>
+                                  {isEditing ? (
+                                    <TextField
+                                      size="small"
+                                      defaultValue={phone}
+                                      onChange={(e) => setEditedUser({ ...editedUser, phone: e.target.value })}
+                                    />
+                                  ) : (
+                                    phone
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {isEditing ? (
+                                    <TextField
+                                      size="small"
+                                      type="date"
+                                      defaultValue={dateOfBirth}
+                                      onChange={(e) => setEditedUser({ ...editedUser, dateOfBirth: e.target.value })}
+                                    />
+                                  ) : (
+                                    new Date(dateOfBirth).toLocaleDateString()
+                                    // Displaying date in a readable format
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {isEditing ? (
+                                    <Select
+                                      fullWidth
+                                      size="small"
+                                      value={editedUser.role}
+                                      onChange={(e) => setEditedUser({
+                                        ...editedUser,
+                                        role: e.target.value // Stored value
+                                      })}
+                                    >
+                                      <MenuItem value="Admin">Admin</MenuItem>
+                                      <MenuItem value="Secretaire">Secrétaire</MenuItem>
+                                    </Select>
+                                  ) : (
+                                    <TableCell align="left">{role === "Admin" ? "Admin" : "Secrétaire"}</TableCell>
 
-                                <TableCell align="right">
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Label color={status === 'Inactive' ? 'error' : 'success'}>
+                                    {status}
+                                  </Label>
+                                </TableCell>
+                                <TableCell>
+                                  {isEditing ? (
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                      <IconButton size="small" onClick={() => handleUpdateClick(row.id)} >
+                                        <Iconify icon="icon-park-solid:correct" style={{ color: 'blue', margin: '2px' }} />
+                                      </IconButton>
+                                      <IconButton size="small" onClick={() => setEditedUser(null)} >
+                                        <Iconify icon="foundation:x" style={{ color: 'red', margin: '2px' }} />
+                                      </IconButton>
+                                    </div>
+
+                                  ) : (
+                                    <IconButton size="small" onClick={(e) => {
+                                      handleOpenMenu(e);
+                                      setMenuTargetRow(row);
+                                    }}>
+                                      <Iconify icon={'eva:more-vertical-fill'} />
+                                    </IconButton>
+
+                                  )}
+                                </TableCell>
+                                {/* <TableCell align="right">
                                   <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
                                     <Iconify icon={'eva:more-vertical-fill'} />
                                   </IconButton>
-                                </TableCell>
+                                </TableCell> */}
                               </TableRow>
                             );
                           })}
@@ -337,16 +495,24 @@ export default function UserPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem onClick={() => {
+          console.log("Editing for row:", menuTargetRow); // Debugging log
+          setEditedUser(menuTargetRow);
+          handleCloseMenu();
+        }}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Modifier
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }} onClick={handleDeleteClick}>
+        <MenuItem sx={{ color: 'error.main' }} onClick={() => {
+          handleDeleteClick(menuTargetRow);
+          handleCloseMenu();
+        }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Supprimer
         </MenuItem>
       </Popover>
+      {/* dialog for deleting one item */}
       <Dialog open={isDialogOpen} onClose={handleCancelClick}>
         <DialogContent>
           <DialogContentText>Êtes-vous sûr de vouloir supprimer cet élément ?</DialogContentText>
@@ -360,6 +526,22 @@ export default function UserPage() {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* end */}
+      {/* dialog for deleting many items */}
+      <Dialog open={isDialogOpen2} onClose={handleCancelClick2}>
+        <DialogContent>
+          <DialogContentText>Êtes-vous sûr de vouloir supprimer ces éléments ?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelClick2} color="primary">
+            Annuler
+          </Button>
+          <Button onClick={handleConfirmClick2} color="error">
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* end */}
     </>
   );
 }

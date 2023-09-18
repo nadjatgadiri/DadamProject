@@ -40,3 +40,27 @@ export const SearchUsers = async (key) => {
     }
 
 };
+export const updateUserData = async (updatedData) => {
+    try {
+        setReqHeader();
+        const response = await axios.put(`/user/updateGeneralUserData`, {
+            "data": updatedData  // Sending the updated data
+        });
+        const data = response.data;
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const deleteUser = async (userId) => {
+    try {
+        const response = await axios.delete(`/user/removeUser/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to delete user:", error);
+        return { code: 500, message: "Internal Server Error" };
+    }
+};

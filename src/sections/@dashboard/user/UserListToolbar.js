@@ -39,7 +39,7 @@ UserListToolbar.propTypes = {
   onDeleteSelected: PropTypes.func
 };
 
-export default function UserListToolbar({ numSelected, filterName, onFilterName ,onDeleteSelected}) {
+export default function UserListToolbar({ numSelected, filterName, onFilterName, onDeleteSelected }) {
   return (
     <StyledRoot
       sx={{
@@ -57,7 +57,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName 
         <StyledSearch
           value={filterName}
           onChange={onFilterName}
-          placeholder="Search user..."
+          placeholder="Chercher ..."
           startAdornment={
             <InputAdornment position="start">
               <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
@@ -67,11 +67,11 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName 
       )}
 
       {numSelected > 0 ? (
-       <Tooltip title="Delete">
-       <IconButton onClick={onDeleteSelected}>
-           <Iconify icon="eva:trash-2-fill" />
-       </IconButton>
-   </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton onClick={onDeleteSelected}>
+            <Iconify icon="eva:trash-2-fill" />
+          </IconButton>
+        </Tooltip>
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
