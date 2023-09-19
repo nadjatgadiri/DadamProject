@@ -68,7 +68,6 @@ export default function LoginPage() {
             <Typography variant="h4" gutterBottom>
               Se connecter
             </Typography>
-
             <LoginForm />
           </StyledContent>
         </Container>
