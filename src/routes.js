@@ -11,6 +11,7 @@ import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import AddUser from './pages/Users/AddUser';
 import Home from './site-web/home';
+import SchoolProfilePage from './pages/profileEcole/profile';
 
 // ----------------------------------------------------------------------
 
@@ -39,6 +40,10 @@ export default function Router() {
     {
       path: '404',
       element: <Page404 />,
+    },
+    {
+      path: 'profileEcole',
+      element: <SchoolProfilePage />,
     },
     { path: '*', element: <Navigate to="/404" /> },
     {
