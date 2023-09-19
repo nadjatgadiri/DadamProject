@@ -57,6 +57,7 @@ function AddStudent() {
   };
 
   const handleSubmit = async (e) => {
+    setFeedback('');
     e.preventDefault();
     validatePhoneNumber(phoneNumber);
     if (phoneNumberError === '') {
@@ -81,7 +82,7 @@ function AddStudent() {
           setFeedback(response.message || 'Erreur lors de l\'ajout de l\'étudiant.');
         }
       } catch (error) {
-        setFeedback('Une erreur s\'est produite. Veuillez réessayer.');
+        setFeedback(error.message || 'Une erreur s\'est produite. Veuillez réessayer.');
       }
     } else {
       setFeedback('Veuillez corriger les erreurs.');
@@ -184,7 +185,7 @@ function AddStudent() {
               </Grid>
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="body2" color="textSecondary">{feedback}</Typography>
+              <Typography variant="body2" color="error">{feedback}</Typography>
             </Grid>
             <Grid item xs={12}>
               <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
