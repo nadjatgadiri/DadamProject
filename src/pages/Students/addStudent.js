@@ -1,3 +1,5 @@
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Avatar from '@mui/material/Avatar';
@@ -69,7 +71,9 @@ function AddStudent() {
       try {
         const response = await addNewStudent(data);
         if (response && response.code === 200) {
-          setFeedback('Étudiant ajouté avec succès!');
+          toast.success(`L'étudiant est ajouté avec succès!`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
           // Optionally reset form fields here
         } else if (response && response.code === 409) {
           setFeedback('Erreur: L\'email est déjà utilisé.');
@@ -86,6 +90,7 @@ function AddStudent() {
 
   return (
     <Container>
+      <ToastContainer />
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" gutterBottom>
           Nouveau Étudiant

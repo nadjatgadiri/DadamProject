@@ -1,15 +1,20 @@
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 // @mui
 import {
-  Select, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
+  Badge, Select, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
   TextField
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
 
 // components
@@ -25,6 +30,7 @@ import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user'; 
 import { getAllStudents, updateStudentData, deleteStudent } from '../../RequestManagement/studentManagement'; //
 
 const TABLE_HEAD = [
+  { id: '' },
   { id: 'name', label: 'Nom', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Numéro de téléphone', alignRight: false },
@@ -66,6 +72,42 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function StudentPage() {
+  const SmallAvatar = styled(Avatar)(({ theme }) => ({
+    width: 23,
+    height: 23,
+    backgroundColor: theme.palette.background.paper,
+    border: `2px solid ${theme.palette.background.paper}`,
+
+  }));
+  const StyledBadge = styled(Badge)(({ theme }) => ({
+    '& .MuiBadge-badge': {
+      backgroundColor: '#44b700',
+      color: '#44b700',
+      boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+      '&::after': {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        animation: 'ripple 1.2s infinite ease-in-out',
+        border: '1px solid currentColor',
+        content: '""',
+      },
+    },
+    '@keyframes ripple': {
+      '0%': {
+        transform: 'scale(.8)',
+        opacity: 1,
+      },
+      '100%': {
+        transform: 'scale(2.4)',
+        opacity: 0,
+      },
+    },
+  }));
+
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -99,6 +141,9 @@ export default function StudentPage() {
         setData(students);
       } else {
         setError(result.message);
+        toast.error(`Error! + ${result.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
       }
     };
     fetchData();
@@ -119,13 +164,17 @@ export default function StudentPage() {
         mail: editedStudent.email,
         phoneNumber: editedStudent.phone,
         dateOfBirth: editedStudent.dateOfBirth, // Assuming this exists in studentToEdit
-        status: editedStudent.status
+        status: editedStudent.status,
+        image: editedStudent.image
       };
       const response = await updateStudentData(studentId, updatedData);
 
       if (response.code === 200) {
         // Refresh the data or manipulate the local state to reflect the changes
         // For example, if you just want to update the local state:
+        toast.success(`Les données d'étudiant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         const updatedStudents = data.map(student =>
           student.id === studentId
             ? { ...student, ...editedStudent }
@@ -134,6 +183,9 @@ export default function StudentPage() {
         setData(updatedStudents);
         setEditedStudent(null); // Resetting the edited student state
       } else {
+        toast.error(`Error! + ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         console.error("Error updating student:", response.message);
       }
     } catch (error) {
@@ -159,7 +211,16 @@ export default function StudentPage() {
     }
     setSelected([]);
   };
-
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setEditedStudent({ ...editedStudent, image: reader.result })
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleClick = (event, id) => {
     const selectedIndex = selected.indexOf(id);
@@ -211,9 +272,15 @@ export default function StudentPage() {
 
       if (response.code === 200) {
         // Delete was successful, now remove the student from your local state
+        toast.success(`L'étudiant est bien supprimer.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         const updatedStudents = data.filter(student => student.id !== studentId);
         setData(updatedStudents);
       } else {
+        toast.error(`Error! + ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         console.error("Error deleting student:", response.message);
       }
     } catch (error) {
@@ -252,11 +319,13 @@ export default function StudentPage() {
   };
   return (
     <>
+
       <Helmet>
         <title> Étudiants | Minimal UI </title>
       </Helmet>
 
       <Container>
+        <ToastContainer />
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
             Étudiants
@@ -312,9 +381,53 @@ export default function StudentPage() {
                                   onChange={(event) => handleClick(event, id)}
                                 />
                               </TableCell>
+                              <TableCell component="th" scope="row" padding="1">
+                                <Stack direction="row" alignItems="center" spacing={2}>
+                                  <>
+                                    {isEditing ? (
+                                      <Badge
+                                        overlap="circular"
+                                        badgeContent={
+                                          <>
+                                            <div style={{ position: 'absolute', top: 40, right: -3 }}>
+                                              <SmallAvatar>
+                                                <Button component="label" variant="text" >
+                                                  <EditIcon
+                                                    style={{ color: 'blue', width: '17px', height: '17px' }}
+                                                  />
+                                                  <input
+                                                    type="file"
+                                                    id="image-upload"
+                                                    accept="image/*"
+                                                    style={{ display: 'none' }}
+                                                    onChange={handleImageChange}
+                                                  />
+                                                </Button>
+                                              </SmallAvatar>
+                                            </div>
+                                            <div style={{ position: 'absolute', bottom: 0, right: -3 }}>
+                                              <SmallAvatar>
+                                                <DeleteIcon
+                                                  onClick={() => setEditedStudent({ ...editedStudent, image: null })}
+                                                  style={{ color: 'red', width: '17px', height: '17px' }}
+                                                />
+                                              </SmallAvatar>
+                                            </div>
+                                          </>
+                                        }
+                                      >
+                                        <Avatar alt={name} src={editedStudent.image} style={{ width: '60px', height: '60px' }} />
+                                      </Badge>
+                                    ) : (
+
+                                      <Avatar alt={name} src={image} style={{ width: '60px', height: '60px' }} />
+
+                                    )}
+                                  </>
+                                </Stack>
+                              </TableCell>
                               <TableCell>
                                 <Stack direction="row" alignItems="center" spacing={2}>
-                                  <Avatar alt={name} src={image} />
                                   {isEditing ? (
                                     <TextField
                                       size="small"

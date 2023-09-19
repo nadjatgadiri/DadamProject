@@ -1,3 +1,5 @@
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Avatar from '@mui/material/Avatar';
@@ -12,6 +14,7 @@ import { styled } from '@mui/material/styles';
 import { useNavigate, Link } from 'react-router-dom';
 import { addNewUser } from '../../RequestManagement/userManagement';
 import Iconify from '../../components/iconify';
+
 
 const VisuallyHiddenInput = styled('input')({
   border: 0,
@@ -82,7 +85,9 @@ function AddUser() {
       try {
         const response = await addNewUser(data);
         if (response && response.code === 200) {
-          setFeedback('User ajouté avec succès!');
+          toast.success(`L'utilisateur est ajouté avec succès!`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
           // Optionally reset form fields here
         } else if (response && response.code === 409) {
           setFeedback('Erreur: L\'email est déjà utilisé.');
@@ -103,6 +108,7 @@ function AddUser() {
   return (
     <>
       <Container>
+        <ToastContainer />
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
             Nouveau Utilisateur

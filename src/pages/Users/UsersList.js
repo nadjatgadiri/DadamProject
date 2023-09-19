@@ -1,33 +1,40 @@
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 // @mui
 import {
-  Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination, TextField, Select,
+  Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
+  TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
+  TextField, Select,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { Link } from 'react-router-dom';
 // components
 import { Buffer } from "buffer";
-import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // to load data 
 import { getAllUsers, updateUserData, deleteUser } from '../../RequestManagement/userManagement'
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
+  { id: '' },
   { id: 'name', label: 'Nom', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Numéro de téléphone', alignRight: false },
   { id: 'dateOfBirth', label: 'date de naissance', alignRight: false },
   { id: 'role', label: 'Position', alignRight: false },
-  { id: 'status', label: 'Statut', alignRight: false },
   { id: '' },
 ];
 
@@ -63,6 +70,42 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function UserPage() {
+  const SmallAvatar = styled(Avatar)(({ theme }) => ({
+    width: 23,
+    height: 23,
+    backgroundColor: theme.palette.background.paper,
+    border: `2px solid ${theme.palette.background.paper}`,
+
+  }));
+  const StyledBadge = styled(Badge)(({ theme }) => ({
+    '& .MuiBadge-badge': {
+      backgroundColor: '#44b700',
+      color: '#44b700',
+      boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+      '&::after': {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        animation: 'ripple 1.2s infinite ease-in-out',
+        border: '1px solid currentColor',
+        content: '""',
+      },
+    },
+    '@keyframes ripple': {
+      '0%': {
+        transform: 'scale(.8)',
+        opacity: 1,
+      },
+      '100%': {
+        transform: 'scale(2.4)',
+        opacity: 0,
+      },
+    },
+  }));
+
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -86,7 +129,7 @@ export default function UserPage() {
           name: `${user.personProfile.firstName} ${user.personProfile.lastName}`, // Concatenating first name and last name
           phone: user.personProfile.phoneNumber,
           email: user.personProfile.mail,
-          status: user.isConnected !== "true" ? 'Inactive' : 'Active',
+          status: user.isConnected,
           role: user.role,
           dateOfBirth: user.personProfile.dateOfBirth,
           image: user.personProfile.imagePath !== null && user.personProfile.imagePath !== '' ?
@@ -101,6 +144,9 @@ export default function UserPage() {
       else {
         // when we got an error 
         setError(result.message);
+        toast.error(`Error! + ${result.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
       }
 
     };
@@ -171,11 +217,15 @@ export default function UserPage() {
         mail: editedUser.email,
         phoneNumber: editedUser.phone,
         dateOfBirth: editedUser.dateOfBirth, // Assuming this exists in userToEdit
-        role: editedUser.role
+        role: editedUser.role,
+        image: editedUser.image
       };
       const response = await updateUserData(updatedData);
 
       if (response.code === 200) {
+        toast.success(`Les données d'utilisateur ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         // Refresh the data or manipulate the local state to reflect the changes
         // For example, if you just want to update the local state:
         const updatedUsers = data.map(user =>
@@ -186,16 +236,29 @@ export default function UserPage() {
         setData(updatedUsers);
         setEditedUser(null); // Resetting the edited user state
       } else {
+        toast.error(`Error! + ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         console.error("Error updating user:", response.message);
       }
     } catch (error) {
       console.error("Error:", error.message);
     }
   };
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setEditedUser({ ...editedUser, image: reader.result })
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   /** end update  */
   /** start delete */
   const handleDeleteClick = (user) => {
-    console.log(user);
+
     setMenuTargetRow(user);
     setIsDialogOpen(true);
   };
@@ -208,9 +271,15 @@ export default function UserPage() {
 
       if (response.code === 200) {
         // Delete was successful, now remove the User from your local state
+        toast.success(`L'utilisateur est bien supprimer.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         const updatedUser = data.filter(user => user.id !== userId);
         setData(updatedUser);
       } else {
+        toast.error(`Error! + ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         console.error("Error deleting the user:", response.message);
       }
     } catch (error) {
@@ -258,11 +327,13 @@ export default function UserPage() {
   };
   return (
     <>
+
       <Helmet>
         <title> Utilisateurs | Minimal UI </title>
       </Helmet>
 
       <Container>
+        <ToastContainer />
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
             Utilisateurs
@@ -321,10 +392,61 @@ export default function UserPage() {
                                     checked={selected.indexOf(id) !== -1}
                                     onChange={(event) => handleClick(event, id)} />
                                 </TableCell>
+                                <TableCell component="th" scope="row" padding="1">
+                                  <Stack direction="row" alignItems="center" spacing={2}>
+                                    <>
+                                      {isEditing ? (
+                                        <Badge
+                                          overlap="circular"
+                                          badgeContent={
+                                            <>
+                                              <div style={{ position: 'absolute', top: 40, right: -3 }}>
+                                                <SmallAvatar>
+                                                  <Button component="label" variant="text" >
+                                                    <EditIcon
+                                                      style={{ color: 'blue', width: '17px', height: '17px' }}
+                                                    />
+                                                    <input
+                                                      type="file"
+                                                      id="image-upload"
+                                                      accept="image/*"
+                                                      style={{ display: 'none' }}
+                                                      onChange={handleImageChange}
+                                                    />
+                                                  </Button>
+                                                </SmallAvatar>
+                                              </div>
+                                              <div style={{ position: 'absolute', bottom: 0, right: -3 }}>
+                                                <SmallAvatar>
+                                                  <DeleteIcon
+                                                    onClick={() => setEditedUser({ ...editedUser, image: null })}
+                                                    style={{ color: 'red', width: '17px', height: '17px' }}
+                                                  />
+                                                </SmallAvatar>
+                                              </div>
+                                            </>
+                                          }
+                                        >
+                                          <Avatar alt={name} src={editedUser.image} style={{ width: '60px', height: '60px' }} />
+                                        </Badge>
+                                      ) : (
+                                        status ?
+                                          (<StyledBadge
+                                            overlap="circular"
+                                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                            variant="dot"
+                                          >
+                                            <Avatar alt={name} src={image} style={{ width: '60px', height: '60px' }} />
+                                          </StyledBadge>) :
+                                          <Avatar alt={name} src={image} style={{ width: '60px', height: '60px' }} />
+
+                                      )}
+                                    </>
+                                  </Stack>
+                                </TableCell>
 
                                 <TableCell component="th" scope="row" padding="none">
                                   <Stack direction="row" alignItems="center" spacing={2}>
-                                    <Avatar alt={name} src={image} />
                                     {isEditing ? (
                                       <TextField
                                         size="small"
@@ -388,15 +510,12 @@ export default function UserPage() {
                                       <MenuItem value="Secretaire">Secrétaire</MenuItem>
                                     </Select>
                                   ) : (
-                                    <TableCell align="left">{role === "Admin" ? "Admin" : "Secrétaire"}</TableCell>
+                                    <TableCell align="left">
+                                      {role === "Admin" ? "Admin" : "Secrétaire"}</TableCell>
 
                                   )}
                                 </TableCell>
-                                <TableCell>
-                                  <Label color={status === 'Inactive' ? 'error' : 'success'}>
-                                    {status}
-                                  </Label>
-                                </TableCell>
+
                                 <TableCell>
                                   {isEditing ? (
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -542,6 +661,7 @@ export default function UserPage() {
         </DialogActions>
       </Dialog>
       {/* end */}
+
     </>
   );
 }
