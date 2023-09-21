@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
+import { ToastContainer, toast } from "react-toastify";
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
@@ -58,6 +59,7 @@ function AddTeacher() {
   };
 
   const handleSubmit = async (e) => {
+    setFeedback('');
     e.preventDefault();
     validatePhoneNumber(phoneNumber);
     if (phoneNumberError === '') {
@@ -73,11 +75,14 @@ function AddTeacher() {
       try {
         const response = await addNewTeacher(data);
         if (response && response.code === 200) {
-          setFeedback('Professeur ajouté avec succès!');
+          toast.success(`L'étudiant est ajouté avec succès!`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+          // Optionally reset form fields here
         } else if (response && response.code === 409) {
           setFeedback('Erreur: L\'email est déjà utilisé.');
         } else {
-          setFeedback(response.message || 'Erreur lors de l\'ajout du professeur.');
+          setFeedback(response.message || 'Erreur lors de l\'ajout de l\'étudiant.');
         }
       } catch (error) {
         setFeedback('Une erreur s\'est produite. Veuillez réessayer.');
@@ -89,6 +94,7 @@ function AddTeacher() {
 
   return (
     <Container>
+            <ToastContainer />
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" gutterBottom>
           Nouveau Enseignant
@@ -192,18 +198,18 @@ function AddTeacher() {
               </Grid>
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="body2" color="textSecondary">{feedback}</Typography>
+              <Typography variant="body2" color="error">{feedback}</Typography>
             </Grid>
             <Grid item xs={12}>
-              <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  style={{ backgroundColor: 'blue', color: 'white' }}>
-                  Ajouter
-                </Button>
-              </Box>
-            </Grid>
+                  <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2} marginTop={2}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      style={{ backgroundColor: 'blue', color: 'white' }}>
+                      Ajouter
+                    </Button>
+                  </Box>
+                </Grid>
           </form>
         </Card>
       </div>
