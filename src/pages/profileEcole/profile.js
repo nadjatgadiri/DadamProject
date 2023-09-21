@@ -1,35 +1,32 @@
-import React from 'react';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import { Box, Container, Stack, Typography, Unstable_Grid2 as Grid } from '@mui/material';
+import { AccountProfile } from '../profile/account-profile';
+import { AccountProfileDetails } from '../profile/account-profile-details';
 
 function SchoolProfilePage() {
-  // Supposons que vous ayez un objet "schoolInfo" avec les informations de l'école
-  const schoolInfo = {
-    schoolName: "Nom de l'école",
-    address: "Adresse de l'école",
-    phoneNumber: "Numéro de téléphone de l'école",
-    website: "Site Web de l'école",
-    // Ajoutez d'autres informations de l'école ici
-  };
-
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        Profil de l'école
-      </Typography>
-      <Typography variant="body1">
-        <strong>Nom de l'école :</strong> {schoolInfo.schoolName}
-      </Typography>
-      <Typography variant="body1">
-        <strong>Adresse :</strong> {schoolInfo.address}
-      </Typography>
-      <Typography variant="body1">
-        <strong>Numéro de téléphone :</strong> {schoolInfo.phoneNumber}
-      </Typography>
-      <Typography variant="body1">
-        <strong>Site Web :</strong> {schoolInfo.website}
-      </Typography>
-      {/* Affichez d'autres informations de l'école de la même manière */}
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Stack spacing={2}>
+          <div>
+            <Typography variant="h4">Informations générales de l'école</Typography>
+          </div>
+          <div>
+            <Grid container spacing={3}>
+              <Grid xs={12} md={6} lg={5}>
+                <AccountProfile />
+              </Grid>
+              <Grid xs={12} md={6} lg={7}>
+                <AccountProfileDetails />
+              </Grid>
+            </Grid>
+          </div>
+        </Stack>
+      </Container>
     </Box>
   );
 }

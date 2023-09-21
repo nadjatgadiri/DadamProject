@@ -34,6 +34,10 @@ export default function Router() {
         { path: 'addUser', element: <AddUser /> },
         { path: 'addStudent', element: <AddStudent /> },
         { path: 'addTeacher', element: <AddTeacher /> },
+        {
+          path: 'profileEcole',
+          element: <SchoolProfilePage />,
+        },
       ],
     },
     {
@@ -48,10 +52,10 @@ export default function Router() {
       path: '404',
       element: <Page404 />,
     },
-    {
-      path: 'profileEcole',
-      element: <SchoolProfilePage />,
-    },
+    // {
+    //   path: 'profileEcole',
+    //   element: <SchoolProfilePage />,
+    // },
     { path: '*', element: <Navigate to="/404" /> },
     {
       element: <SimpleLayout />,
