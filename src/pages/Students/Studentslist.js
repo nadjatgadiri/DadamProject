@@ -272,7 +272,7 @@ export default function StudentPage() {
 
       if (response.code === 200) {
         // Delete was successful, now remove the student from your local state
-        toast.success(`L'étudiant est bien supprimer.`, {
+        toast.success(`L'étudiant a été bien supprimer.`, {
           position: toast.POSITION.TOP_RIGHT,
         });
         const updatedStudents = data.filter(student => student.id !== studentId);

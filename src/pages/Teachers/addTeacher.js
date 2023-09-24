@@ -45,7 +45,7 @@ function AddTeacher() {
       setImage(e.target.result)
       // Send the image file to the backend
     };
-    // Read the file as a data URl
+    // Read the file as a data URL
     reader.readAsDataURL(file);
   };
   const handleGoBack = () => {
@@ -75,14 +75,14 @@ function AddTeacher() {
       try {
         const response = await addNewTeacher(data);
         if (response && response.code === 200) {
-          toast.success(`L'étudiant est ajouté avec succès!`, {
+          toast.success(`L'enseignant est ajouté avec succès!`, {
             position: toast.POSITION.TOP_RIGHT,
           });
           // Optionally reset form fields here
         } else if (response && response.code === 409) {
           setFeedback('Erreur: L\'email est déjà utilisé.');
         } else {
-          setFeedback(response.message || 'Erreur lors de l\'ajout de l\'étudiant.');
+          setFeedback(response.message || 'Erreur lors de l\'ajout de l\'ensegnant.');
         }
       } catch (error) {
         setFeedback('Une erreur s\'est produite. Veuillez réessayer.');
