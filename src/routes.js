@@ -15,7 +15,10 @@ import AddUser from './pages/Users/AddUser';
 import Home from './site-web/home';
 import AddStudent from './pages/Students/addStudent';
 import AddTeacher from './pages/Teachers/addTeacher';
-
+// categorie 
+import CategoriePage from './pages/Categorie/CategoriesList';
+// class
+import ClassPage from './pages/Salles/SallesList';
 // ----------------------------------------------------------------------
 export default function Router() {
   const routes = useRoutes([
@@ -32,7 +35,9 @@ export default function Router() {
         { path: 'blog', element: <BlogPage /> },
         { path: 'addUser', element: <AddUser /> },
         { path: 'addStudent', element: <AddStudent /> },
-        { path: 'addTeacher', element: <AddTeacher /> }
+        { path: 'addTeacher', element: <AddTeacher /> },
+        { path: 'Categorie', element: <CategoriePage /> },
+        { path: 'Class', element: <ClassPage /> }
       ],
     },
     {
