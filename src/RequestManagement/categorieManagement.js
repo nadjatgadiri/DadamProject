@@ -13,6 +13,17 @@ export const getAllCategories = async () => {
     }
 };
 
+export const selectedListCategories = async () => {
+    try {
+        setReqHeader();
+        const response = await axios.get('/categorie/selectedListCategories');
+        const data = response.data;
+        return data
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
 export const addNewCategory = async (catData) => {
     try {
         setReqHeader();

@@ -19,6 +19,9 @@ import AddTeacher from './pages/Teachers/addTeacher';
 import CategoriePage from './pages/Categorie/CategoriesList';
 // class
 import ClassPage from './pages/Salles/SallesList';
+// Programme
+import AddProgramme from './pages/Programme/addProgramme';
+
 // ----------------------------------------------------------------------
 export default function Router() {
   const routes = useRoutes([
@@ -37,7 +40,8 @@ export default function Router() {
         { path: 'addStudent', element: <AddStudent /> },
         { path: 'addTeacher', element: <AddTeacher /> },
         { path: 'Categorie', element: <CategoriePage /> },
-        { path: 'Class', element: <ClassPage /> }
+        { path: 'Class', element: <ClassPage /> },
+        { path: 'addProgramme', element: <AddProgramme /> },
       ],
     },
     {
