@@ -16,6 +16,12 @@ import Home from './site-web/home';
 import SchoolProfilePage from './pages/profileEcole/profile';
 import AddStudent from './pages/Students/addStudent';
 import AddTeacher from './pages/Teachers/addTeacher';
+// categorie 
+import CategoriePage from './pages/Categorie/CategoriesList';
+// class
+import ClassPage from './pages/Salles/SallesList';
+// Programme
+import AddProgramme from './pages/Programme/addProgramme';
 
 // ----------------------------------------------------------------------
 export default function Router() {
@@ -33,11 +39,7 @@ export default function Router() {
         { path: 'blog', element: <BlogPage /> },
         { path: 'addUser', element: <AddUser /> },
         { path: 'addStudent', element: <AddStudent /> },
-        { path: 'addTeacher', element: <AddTeacher /> },
-        {
-          path: 'profileEcole',
-          element: <SchoolProfilePage />,
-        },
+        { path: 'addTeacher', element: <AddTeacher /> }
       ],
     },
     {
