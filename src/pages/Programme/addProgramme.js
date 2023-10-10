@@ -395,7 +395,7 @@ export default function AddProgramme() {
                 <ToastContainer />
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
                     <Typography variant="h4" gutterBottom>
-                        Nouveau Utilisateur
+                        Nouveau Programme
                     </Typography>
                     <Link to="/dashboard/user">
                         <Button variant="contained" startIcon={<Iconify icon="ri:arrow-go-back-fill" />}>Return</Button>
@@ -480,7 +480,7 @@ export default function AddProgramme() {
                                                 name="supperCat"
                                                 options={data}
                                                 renderInput={(params) => <TextField error={errors.cat}
-                                                    {...params} label="Catécorie" />}
+                                                    {...params} label="Catégorie" />}
                                                 value={selectedCategory} // Set the value prop
                                                 onChange={handleAutocompleteChange} // Handle change event
 

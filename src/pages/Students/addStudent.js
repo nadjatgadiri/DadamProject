@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link ,useLocation} from 'react-router-dom';
 import { addNewStudent } from '../../RequestManagement/studentManagement';
 import Iconify from '../../components/iconify';
 
@@ -33,7 +33,8 @@ function AddStudent() {
   const [image, setImage] = useState('');
   const [phoneNumberError, setPhoneNumberError] = useState('');
   const [feedback, setFeedback] = useState('');  // For displaying feedback to the user after a submit
-
+  const location = useLocation();
+  const [newStudentId, setNewStudentId] = useState('');
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     // Create a FileReader object to read the file
@@ -47,8 +48,23 @@ function AddStudent() {
     reader.readAsDataURL(file);
   };
   const handleGoBack = () => {
-    navigate("/dashboard/student");
-  }
+    console.log("location in AddStudent:", location);
+    const query = new URLSearchParams(location.search);
+    const referrer = query.get("referrer");
+    if (referrer === "addRegistration") {
+      if (newStudentId) {
+        navigate("/dashboard/addRegistration", {
+          state: { newStudentId}
+        });
+      } else {
+        navigate("/dashboard/addRegistration"
+        );
+      }
+    } else {
+        navigate("/dashboard/student");
+    }
+};
+
   const validatePhoneNumber = (value) => {
     const phoneNumberError = /^(0|\+213)[567]\d{8}$/.test(value)
       ? ''
@@ -75,6 +91,7 @@ function AddStudent() {
           toast.success(`L'étudiant est ajouté avec succès!`, {
             position: toast.POSITION.TOP_RIGHT,
           });
+          setNewStudentId(response.studentId); 
           // Optionally reset form fields here
         } else if (response && response.code === 409) {
           setFeedback('Erreur: L\'email est déjà utilisé.');
@@ -96,9 +113,13 @@ function AddStudent() {
         <Typography variant="h4" gutterBottom>
           Nouveau Étudiant
         </Typography>
-        <Link to="/dashboard/student">
-          <Button variant="contained" startIcon={<Iconify icon="ri:arrow-go-back-fill" />}>Return</Button>
-        </Link>
+        <Button 
+    variant="contained" 
+    startIcon={<Iconify icon="ri:arrow-go-back-fill" />} 
+    onClick={handleGoBack}
+>
+    Return
+</Button>
       </Stack>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
         <Card style={{ padding: '20px' }}>
