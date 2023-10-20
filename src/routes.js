@@ -21,6 +21,9 @@ import CategoriePage from './pages/Categorie/CategoriesList';
 import ClassPage from './pages/Salles/SallesList';
 // Programme
 import AddProgramme from './pages/Programme/addProgramme';
+import ProgrammePage from './pages/Programme/ProgrammeList';
+import UpdateProgramme from './pages/Programme/updateProgramme';
+import ProgrameProfile from './pages/Programme/programeProfile';
 
 // ----------------------------------------------------------------------
 export default function Router() {
@@ -42,6 +45,10 @@ export default function Router() {
         { path: 'Categorie', element: <CategoriePage /> },
         { path: 'Class', element: <ClassPage /> },
         { path: 'addProgramme', element: <AddProgramme /> },
+        { path: 'Programme', element: <ProgrammePage /> },
+        { path: 'updateProgramme/:id', element: <UpdateProgramme /> },
+        { path: 'ProgrameProfile/:id', element: <ProgrameProfile /> },
+
       ],
     },
     {

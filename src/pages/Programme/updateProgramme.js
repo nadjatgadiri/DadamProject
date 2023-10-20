@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -18,7 +18,7 @@ import {
 } from '@mui/base/Unstable_NumberInput';
 import Iconify from '../../components/iconify';
 import { selectedListCategories } from "../../RequestManagement/categorieManagement"
-import { addNewPrograme } from "../../RequestManagement/programManagement"
+import { updatePrograme, getProgramme } from "../../RequestManagement/programManagement"
 import './style.css'; // Import the CSS file
 
 const steps = ['Informations Générales', 'Configuration De Temps', 'Confirmation'];
@@ -145,7 +145,10 @@ const StyledButton = styled('button')(
     }
   `,
 );
-export default function AddProgramme() {
+const UpdateProgramme = () => {
+    // programe id
+    const { id } = useParams();
+    //
     const [activeStep, setActiveStep] = useState(0);
     const [skipped, setSkipped] = useState(new Set());
     const [editorState, setEditorState] = useState(null);
@@ -182,7 +185,6 @@ export default function AddProgramme() {
     const [finSubDate2, setFinSubDate2] = useState(null);
     // skip
     const [isSkip, setIsSkip] = useState(false);
-    const [total, setTotal] = useState(false);
     const handleAutocompleteChange = (event, newValue) => {
         console.log(newValue);
         setSelectedCategory(newValue);
@@ -321,9 +323,9 @@ export default function AddProgramme() {
     };
     // api
     const fetchData = async () => {
+        console.log(id);
         const result = await selectedListCategories();
         if (result.code === 200) {
-
             const categories = await Promise.all(result.categories.map(async cat => ({
                 id: cat.ID_ROWID,
                 label: cat.title,
@@ -339,7 +341,44 @@ export default function AddProgramme() {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
+        const dataResult = await getProgramme(id);
+        if (dataResult.code === 200) {
+            const programeData = dataResult.program;
+            const secondStepData = dataResult.data;
+            if (programeData) {
 
+                setTitle(programeData.title);
+                setLib(programeData.discription);
+                setType(programeData.type);
+                setSelectedCategory({
+                    id: programeData.categorie.ID_ROWID,
+                    label: programeData.categorie.title,
+                });
+                setIsPublished(programeData.isPublished);
+                setIsSkip(programeData.isSkiped);
+                if (!isSkip && secondStepData) {
+                    if (programeData.type === "formation") {
+                        setStartDate(secondStepData.startDate);
+                        setEndDate(secondStepData.endDate);
+                        setFinSubDate1(programeData.EndInsciptionDate);
+                        setIsChecked(secondStepData.isLimited);
+                        setNMBParticipant(secondStepData.nbrStudent);
+                    }
+                    else if (programeData.type === "cour") {
+                        setNMBSession(secondStepData.sessionsNumber);
+                        setDuree(secondStepData.sessionTiming);
+                        setFinSubDate2(programeData.EndInsciptionDate);
+                    }
+                }
+            }
+        }
+        else {
+            // when we got an error 
+            console.log(result);
+            toast.error(`Error! + ${result.message}`, {
+                position: toast.POSITION.TOP_RIGHT,
+            });
+        }
     };
     const handleSubmit = async () => {
 
@@ -370,7 +409,7 @@ export default function AddProgramme() {
         }
         try {
 
-            const response = await addNewPrograme(dataProgram, dataType);
+            const response = await updatePrograme(id, dataProgram, dataType);
             if (response && response.code === 200) {
                 toast.success(`L'utilisateur est ajouté avec succès!`, {
                     position: toast.POSITION.TOP_RIGHT,
@@ -396,7 +435,7 @@ export default function AddProgramme() {
                 <ToastContainer />
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
                     <Typography variant="h4" gutterBottom>
-                        Nouveau Programme
+                        Modifier Programme
                     </Typography>
                     <Link to="/dashboard/Programme">
                         <Button variant="contained" startIcon={<Iconify icon="ri:arrow-go-back-fill" />}>Return</Button>
@@ -752,3 +791,4 @@ export default function AddProgramme() {
         </>
     );
 }
+export default UpdateProgramme;
