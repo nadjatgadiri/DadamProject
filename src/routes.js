@@ -6,7 +6,9 @@ import SimpleLayout from './layouts/simple';
 import BlogPage from './pages/BlogPage';
 import UserPage from './pages/Users/UsersList';
 import StudentPage from './pages/Students/Studentslist';
+import RegistrationList from './pages/registration/RegistrationList';
 import TeacherPage from './pages/Teachers/Teacherslist';
+import RegistrationPage from './pages/registration/addRegistration';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
@@ -42,12 +44,16 @@ export default function Router() {
         { path: 'addUser', element: <AddUser /> },
         { path: 'addStudent', element: <AddStudent /> },
         { path: 'addTeacher', element: <AddTeacher /> },
-        { path: 'Categorie', element: <CategoriePage /> },
         { path: 'Class', element: <ClassPage /> },
         { path: 'addProgramme', element: <AddProgramme /> },
         { path: 'Programme', element: <ProgrammePage /> },
         { path: 'updateProgramme/:id', element: <UpdateProgramme /> },
         { path: 'ProgrameProfile/:id', element: <ProgrameProfile /> },
+        { path: 'addRegistration', element: <RegistrationPage /> },
+        { path: 'Categorie', element: <CategoriePage /> },
+        { path: 'Class', element: <ClassPage /> },
+        { path: 'registration', element: <RegistrationList /> },
+
 
       ],
     },
@@ -63,6 +69,10 @@ export default function Router() {
       path: '404',
       element: <Page404 />,
     },
+    // {
+    //   path: 'profileEcole',
+    //   element: <SchoolProfilePage />,
+    // },
     { path: '*', element: <Navigate to="/404" /> },
     {
       element: <SimpleLayout />,
@@ -76,6 +86,7 @@ export default function Router() {
       path: '*',
       element: <Navigate to="/404" replace />,
     },
+
   ]);
 
   return routes;

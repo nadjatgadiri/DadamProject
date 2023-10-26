@@ -43,8 +43,9 @@ import { getProgRegistrations } from '../../../RequestManagement/registrationMan
 
 const TABLE_HEAD = [
     { id: 'name', label: 'Nom', alignRight: false },
-    { id: 'subDate', label: "Date D'Inscription", alignRight: false },
-    { id: 'group', label: 'Group', alignRight: false },
+    { id: 'createdDate', label: "Date De Creation", alignRight: false },
+    { id: 'nbrPaces', label: 'Nombre De Places', alignRight: false },
+    { id: 'teachers', label: 'Enseignantes', alignRight: false },
     { id: '' },
 ];
 
@@ -106,7 +107,7 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
     },
 }));
 /** end */
-const SubscribersComponnent = (props) => {
+const GroupesComponnent = (props) => {
     const { idProg, groups } = props; // Accessing id from props
 
     const [open, setOpen] = useState(null);
@@ -130,7 +131,7 @@ const SubscribersComponnent = (props) => {
 
     const isNotFound = !filtered.length && !!filterName;
     /** ------------------------ */
-    const [groupPie1, setGroupPie1] = useState(null);
+    const [pieGroupData, setPieGroupData] = useState(null);
     /* -------------------------- */
     /** dialogs */
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -139,55 +140,25 @@ const SubscribersComponnent = (props) => {
 
     /** api */
     const fetchData = async () => {
-        const result = await getProgRegistrations(idProg);
-        console.log(result);
-        if (result.code === 200) {
+        setData(groups);
+        console.log(data);
+        /** start Groups Pie */
 
-            const subscribe = result.registrations.map(registraion => ({
-                id: registraion.ID_ROWID,
-                name: `${registraion.students.personProfile2.firstName} ${registraion.students.personProfile2.lastName}`,
-                image: registraion.students.personProfile2.imagePath !== null && registraion.students.personProfile2.imagePath !== '' ?
-                    `data:image/jpeg;base64,${Buffer.from(
-                        registraion.students?.personProfile2.imagePath.data).toString("base64")}` : '',
-                group: registraion.students.groupes[0] ? registraion.students.groupes[0].GroupeName : null,
-                subDate: registraion.createdAt
-
-            }));
-            /** Subscribre with groups vs Subscribre withOut groups */
-            const groupCounts = await subscribe.reduce((acc, current) => {
-                const { group } = current;
-                if (group) {
-                    acc["with Group"] = (acc["with Group"] || 0) + 1;
-                }
-                else {
-                    acc["without Group"] = (acc["without Group"] || 0) + 1;
-                }
-                return acc;
-            }, {});
-            console.log(groupCounts)
-            // Convert groupCounts into an array of objects
-            const groupData1 = Object.entries(groupCounts).map(([groupName, count]) => ({
-                name: groupName,
-                label: groupName === "with Group" ? "avec Groupe" : "sans groupe",
-                value: count,
-            }));
-            setGroupPie1(groupData1);
-
-            setData(subscribe);
-
-        } else {
-            // when we got an error
-            console.log(result);
-            toast.error(`Error! + ${result.message}`, {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-        }
+        // Convert groupCounts into an array of objects
+        const groupData = groups.map((group) => ({
+            label: `Group ${group.name}`,
+            value: group.nbrStudents,
+        }));
+        /** end Groups Pie */
+        setPieGroupData(groupData);
 
     };
     useEffect(() => {
-        fetchData();
-    }, []); // Empty dependency array means this effect runs once when component mounts
-
+        // Check if groups have been received from props
+        if (groups && groups.length > 0) {
+            fetchData(); // Execute fetchData when groups are received
+        }
+    }, [groups]);
     /** end api */
     /** dialog handdel */
 
@@ -311,15 +282,15 @@ const SubscribersComponnent = (props) => {
                             {/* <!-- card body --> */}
 
                             <UserListToolbarP
-                                title="Liste des abonnés"
+                                title="Liste des groupes"
                                 numSelected={selected.length}
                                 filterName={filterName}
                                 onFilterName={handleFilterByName}
                                 onDeleteSelected={() => {
                                     handleDeleteClick2();
                                 }}
-                                isFilterd={1}
                                 selectList={groups}
+                                isFilterd={false}
                                 onGroupSelected={(value) => {
                                     handleSortClick(value);
                                 }}
@@ -342,7 +313,7 @@ const SubscribersComponnent = (props) => {
                                             />
                                             <TableBody>
                                                 {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                    const { id, name, image, group, subDate } = row;
+                                                    const { id, name, teachers, createdAt, nbrPlaces } = row;
 
                                                     return (
                                                         <TableRow hover key={id}>
@@ -354,8 +325,6 @@ const SubscribersComponnent = (props) => {
                                                             </TableCell>
                                                             <TableCell >
                                                                 <Stack direction="row" alignItems="center" >
-                                                                    <Avatar alt={name} src={image} style={{ width: '40px', height: '40px', marginRight: '5px' }} />
-
                                                                     <Typography variant="subtitle2" noWrap>
                                                                         {name}
                                                                     </Typography>
@@ -363,14 +332,17 @@ const SubscribersComponnent = (props) => {
                                                                 </Stack>
                                                             </TableCell>
                                                             <TableCell  >
-                                                                {formatDate(subDate)}
+                                                                {formatDate(createdAt)}
                                                             </TableCell>
-                                                            <TableCell >
-                                                                {group !== null ? group :
-                                                                    <>
-                                                                        <Label color='success'>{"Non Spécifié"}</Label>
-                                                                    </>}
+                                                            <TableCell  >
+                                                                {nbrPlaces}
                                                             </TableCell>
+                                                            <TableCell>
+                                                                {teachers?.map((teacher, index) => (
+                                                                    <span key={index}>{`${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}${index !== teachers.length - 1 ? ', ' : ''}`}</span>
+                                                                ))}
+                                                            </TableCell>
+
 
 
                                                             <TableCell >
@@ -440,20 +412,20 @@ const SubscribersComponnent = (props) => {
                     {/* <!-- Card header --> */}
                     <div className="card-header d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 className="mb-0">Répartition des Abonnés par Groupe
+                            <h4 className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
                             </h4>
                         </div>
                     </div>
                     {/* <!-- Card body --> */}
                     <div className="card-body">
-                        {(groupPie1 !== null) ?
+                        {(pieGroupData !== null) ?
                             <PieChart
                                 series={[
                                     {
                                         paddingAngle: 5,
                                         innerRadius: 50,
                                         outerRadius: 100,
-                                        data: groupPie1,
+                                        data: pieGroupData,
                                     },
                                 ]}
                                 width={350}
@@ -534,4 +506,4 @@ const SubscribersComponnent = (props) => {
         </>
     );
 }
-export default SubscribersComponnent;
+export default GroupesComponnent;

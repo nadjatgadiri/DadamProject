@@ -70,6 +70,7 @@ function AddUser() {
   };
 
   const handleSubmit = async (e) => {
+    setFeedback('');
     e.preventDefault(); // Prevents the default form submission behavior
     validatePhoneNumber(phoneNumber);
     if (phoneNumberError === '') {

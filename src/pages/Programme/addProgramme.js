@@ -481,7 +481,7 @@ export default function AddProgramme() {
                                                 name="supperCat"
                                                 options={data}
                                                 renderInput={(params) => <TextField error={errors.cat}
-                                                    {...params} label="Catécorie" />}
+                                                    {...params} label="Catégorie" />}
                                                 value={selectedCategory} // Set the value prop
                                                 onChange={handleAutocompleteChange} // Handle change event
 

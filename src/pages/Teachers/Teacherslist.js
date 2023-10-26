@@ -1,15 +1,19 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
+import { ToastContainer, toast } from "react-toastify";
 // @mui
 import {
-  Select, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
+  Badge, Select, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
   TextField
 } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
+import { styled } from '@mui/material/styles';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
 
 // components
@@ -26,6 +30,7 @@ import { getAllTeachers, updateTeacherData, deleteTeacher } from '../../RequestM
 
 
 const TABLE_HEAD = [
+  { id: '' },
   { id: 'name', label: 'Nom', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Numéro de téléphone', alignRight: false },
@@ -66,6 +71,13 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function TeacherPage() {
+  const SmallAvatar = styled(Avatar)(({ theme }) => ({
+    width: 23,
+    height: 23,
+    backgroundColor: theme.palette.background.paper,
+    border: `2px solid ${theme.palette.background.paper}`,
+
+  }));
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -99,6 +111,9 @@ export default function TeacherPage() {
         console.log(teachers);
       } else {
         setError(result.message);
+        toast.error(`Error! + ${result.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
       }
     };
     fetchData();
@@ -118,12 +133,16 @@ export default function TeacherPage() {
         mail: editedTeacher.email,
         phoneNumber: editedTeacher.phone,
         dateOfBirth: editedTeacher.dateOfBirth,
-        subject: editedTeacher.subject // assuming teachers also have status like students
+        subject: editedTeacher.subject, // assuming teachers also have status like students
+        image: editedTeacher.image
       };
-      
+       console.log(updatedData);
       const response = await updateTeacherData(teacherId, updatedData);
 
       if (response.code === 200) {
+        toast.success(`Les données d'enseignant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         const updatedTeachers = data.map(teacher =>
           teacher.id === teacherId
             ? { ...teacher, ...editedTeacher }
@@ -132,6 +151,9 @@ export default function TeacherPage() {
         setData(updatedTeachers);
         setEditedTeacher(null);
       } else {
+        toast.error(`Error! + ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         console.error("Error updating teacher:", response.message);
       }
     } catch (error) {
@@ -196,7 +218,16 @@ export default function TeacherPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogOpen2, setIsDialogOpen2] = useState(false);
 
-
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setEditedTeacher({ ...editedTeacher, image: reader.result })
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
@@ -204,9 +235,15 @@ export default function TeacherPage() {
       const response = await deleteTeacher(teacherId);
 
       if (response.code === 200) {
+        toast.success(`L'enseignat a été bien supprimer.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         const updatedTeachers = data.filter(teacher => teacher.id !== teacherId);
         setData(updatedTeachers);
       } else {
+        toast.error(`Error! + ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
         console.error("Error deleting teacher:", response.message);
       }
     } catch (error) {
@@ -256,6 +293,7 @@ export default function TeacherPage() {
     </Helmet>
 
     <Container>
+    <ToastContainer />
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" gutterBottom>
         Enseignants
@@ -304,15 +342,59 @@ export default function TeacherPage() {
   
                             return (
                               <TableRow hover key={id}>
-                                <TableCell padding="checkbox">
-                                  <Checkbox
-                                    checked={selected.indexOf(id) !== -1}
-                                    onChange={(event) => handleClick(event, id)}
-                                  />
-                                </TableCell>
+                                  <TableCell padding="checkbox">
+                                <Checkbox
+                                  checked={selected.indexOf(id) !== -1}
+                                  onChange={(event) => handleClick(event, id)}
+                                />
+                              </TableCell>
+                                <TableCell component="th" scope="row" padding="1">
+                                <Stack direction="row" alignItems="center" spacing={2}>
+                                  <>
+                                    {isEditing ? (
+                                      <Badge
+                                        overlap="circular"
+                                        badgeContent={
+                                          <>
+                                            <div style={{ position: 'absolute', top: 40, right: -3 }}>
+                                              <SmallAvatar>
+                                                <Button component="label" variant="text" >
+                                                  <EditIcon
+                                                    style={{ color: 'blue', width: '17px', height: '17px' }}
+                                                  />
+                                                  <input
+                                                    type="file"
+                                                    id="image-upload"
+                                                    accept="image/*"
+                                                    style={{ display: 'none' }}
+                                                    onChange={handleImageChange}
+                                                  />
+                                                </Button>
+                                              </SmallAvatar>
+                                            </div>
+                                            <div style={{ position: 'absolute', bottom: 0, right: -3 }}>
+                                              <SmallAvatar>
+                                                <DeleteIcon
+                                                  onClick={() => setEditedTeacher({ ...editedTeacher, image: null })}
+                                                  style={{ color: 'red', width: '17px', height: '17px' }}
+                                                />
+                                              </SmallAvatar>
+                                            </div>
+                                          </>
+                                        }
+                                      >
+                                        <Avatar alt={name} src={editedTeacher.image} style={{ width: '60px', height: '60px' }} />
+                                      </Badge>
+                                    ) : (
+
+                                      <Avatar alt={name} src={image} style={{ width: '60px', height: '60px' }} />
+
+                                    )}
+                                  </>
+                                </Stack>
+                              </TableCell>
                                 <TableCell>
                                   <Stack direction="row" alignItems="center" spacing={2}>
-                                    <Avatar alt={name} src={image} />
                                     {isEditing ? (
                                       <TextField
                                         size="small"

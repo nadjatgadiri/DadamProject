@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-
 // @mui
 import {
     Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
@@ -15,6 +14,9 @@ import './theme.css';
 import { getProgramme } from "../../RequestManagement/programManagement"
 
 import Iconify from '../../components/iconify';
+import SubscribersComponnent from './programeComponnent/subscribersComponnent';
+import GroupesComponnent from './programeComponnent/groupesComponnent';
+import { getProgGroups } from '../../RequestManagement/groupManagement';
 
 
 // ----------------------------------------------------------------------
@@ -59,6 +61,9 @@ const ProgrameProfile = () => {
     const [finSubDate2, setFinSubDate2] = useState(null);
     // skip
     const [isSkip, setIsSkip] = useState(false);
+
+    // Groups 
+    const [groupsData, setGroupsData] = useState([]);
     // api
     const fetchData = async () => {
         console.log(id);
@@ -101,6 +106,26 @@ const ProgrameProfile = () => {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
+        const result2 = await getProgGroups(id);
+        if (result2.code === 200) {
+            console.log(result2.groups);
+            const groups = await result2.groups.map(group => ({
+                id: group.ID_ROWID,
+                name: group.GroupeName,
+                teachers: group.teachers,
+                nbrPlaces: 0,
+                nbrStudents: group.students.length,
+                createdAt: group.createdAt,
+            }));
+            setGroupsData(groups);
+            console.log(groups);
+        } else {
+            // when we got an error
+            toast.error(`Error! + ${result2.message}`, {
+                position: toast.POSITION.TOP_RIGHT,
+            });
+        }
+
     };
     useEffect(() => {
         fetchData();
@@ -210,7 +235,7 @@ const ProgrameProfile = () => {
                     <div className="col-md-12 col-xl-8 col-12">
                         <div className="row">
                             <div className="col-12 mb-5">
-                                <div className="card">
+                                <div className="card" >
                                     <div className="card-header ">
                                         <div className="d-flex justify-content-betweenalign-items-center">
                                             <div>
@@ -222,7 +247,12 @@ const ProgrameProfile = () => {
 
                                     </div>
                                     <div className="card-body">
-                                        <p>{lib}</p>
+                                        <div style={{ maxHeight: '100px', minHeight: '100px', overflow: 'auto' }}>
+                                            <p>{lib}
+
+                                            </p>
+                                        </div>
+
                                         {type === "formation" ?
                                             <ul className="list-group list-group-flush">
                                                 <li className="list-group-item px-0">
@@ -415,254 +445,12 @@ const ProgrameProfile = () => {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-12 col-xl-8 col-12">
-                        <div className="row">
-                            <div className="col-md-12 mb-5">
-                                {/* <!-- card --> */}
-                                <div className="card">
-                                    {/* <!-- card body --> */}
+                    <SubscribersComponnent idProg={id} groups={groupsData} />
 
-                                    <div className="card-header">
-                                        <h4 className="mb-0">Liste des abonnés</h4>
-                                    </div>
-                                    {/* <!-- table --> */}
-                                    <div className="card-body">
-                                        <div className="table-responsive overflow-y-hidden table-card">
-                                            <table className="table mb-0 text-nowrap table-centered">
-                                                <thead className="table-light">
-                                                    <tr>
-                                                        <th>Member</th>
-                                                        <th>Task</th>
-                                                        <th>Deadline </th>
+                </div>
+                <div className="row">
+                    <GroupesComponnent idProg={id} groups={groupsData} />
 
-
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-                                                                <div className="avatar avatar-sm" />
-                                                                <div className="ms-2">
-                                                                    <h5 className="mb-0"><a href="#!" className="text-inherit">Eleanor Pena</a> </h5>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            Design a Dash UI Figma
-                                                        </td>
-                                                        <td>
-                                                            30 Aug, 2023
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-
-                                                                <div className="progress flex-auto" style={{ height: "6px" }}>
-                                                                    <div className="progress-bar bg-success " role="progressbar" style={{ width: "62%" }} aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" />
-                                                                </div>
-                                                                <div className="ms-2"> <span>62%</span></div>
-                                                            </div>
-                                                        </td>
-
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-                                                                <div className="avatar avatar-sm" />
-                                                                <div className="ms-2" />
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            Dash UI Webpack Workflow
-                                                        </td>
-                                                        <td>
-                                                            24 Sept, 2023
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-
-                                                                <div className="progress flex-auto" style={{ height: "6px" }}>
-                                                                    <div className="progress-bar bg-success " role="progressbar" style={{ width: '45%' }} aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" />
-                                                                </div>
-                                                                <div className="ms-2"> <span>45%</span></div>
-                                                            </div>
-                                                        </td>
-
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-                                                                <div className="ms-2">
-                                                                    <h5 className="mb-0"> <a href="#!" className="text-inherit">Wade Warren</a></h5>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            Dash UI React version
-                                                        </td>
-                                                        <td>
-                                                            30 Sept, 2023
-                                                        </td>
-
-
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-                                                                <div className="ms-2">
-                                                                    <h5 className="mb-0"><a href="#!" className="text-inherit"> Courtney Henry</a></h5>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            Dash UI Documents Improve
-                                                        </td>
-                                                        <td>
-                                                            20 Dec, 2023
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-
-                                                                <div className="progress flex-auto" style={{ height: "6px" }}>
-                                                                    <div className="progress-bar bg-success " role="progressbar" style={{ width: "10px" }} aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" />
-                                                                </div>
-                                                                <div className="ms-2"> <span>10%</span></div>
-                                                            </div>
-                                                        </td>
-
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-
-                                                                <div className="ms-2">
-                                                                    <h5 className="mb-0"><a href="#!" className="text-inherit">Brooklyn Simmons</a></h5>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            Ecommerce Design Dash UI
-                                                        </td>
-                                                        <td>
-                                                            25 Jan, 2023
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex align-items-center">
-
-                                                                <div className="progress flex-auto" style={{ height: "6px" }}>
-                                                                    <div className="progress-bar bg-success " role="progressbar" style={{ width: "8%" }} aria-valuenow="8" aria-valuemin="0" aria-valuemax="100" />
-                                                                </div>
-                                                                <div className="ms-2"> <span>8%</span></div>
-                                                            </div>
-                                                        </td>
-
-                                                    </tr>
-
-
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
-
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-12 col-xl-4 col-12">
-                        <div className="card">
-                            {/* <!-- Card header --> */}
-                            <div className="card-header d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h4 className="mb-0">Recent Activity
-                                    </h4>
-                                </div>
-                                <div><a href="#!" className="btn btn-primary btn-sm">View All</a></div>
-                            </div>
-                            {/* <!-- Card body --> */}
-                            <div className="card-body">
-                                {/* <!-- List group --> */}
-                                <ul className="list-group list-group-flush ">
-                                    <li className="list-group-item px-0 pt-0 border-0 pb-6">
-                                        <div className="row position-relative">
-                                            <div className="col-auto">
-                                                <div className="icon-shape icon-md bg-primary-soft text-primary rounded-circle">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-check icon-xs"><polyline points="20 6 9 17 4 12" /></svg>
-                                                </div>
-                                            </div>
-                                            <div className="col ms-n2">
-                                                <h4 className="mb-0 h5">Task Finished</h4>
-                                                <p className="mb-0 ">Paula finished figma task</p>
-
-                                            </div>
-                                            <div className="col-auto">
-                                                <span className="text-muted fs-6">2 mins ago</span>
-
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li className="list-group-item px-0 pt-0 border-0 pb-6">
-                                        <div className="row position-relative">
-                                            <div className="col-auto">
-                                                <div className="icon-shape icon-md bg-primary-soft text-primary rounded-circle line-icon">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-message-square icon-xs"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                                                </div>
-                                            </div>
-                                            <div className="col ms-n2">
-                                                <h4 className="mb-0 h5">New Comment</h4>
-                                                <p className="mb-0 ">Georg commented on task.</p>
-
-                                            </div>
-                                            <div className="col-auto">
-                                                <span className="text-muted fs-6">1 hour ago</span>
-
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li className="list-group-item px-0 pt-0 border-0 pb-6">
-                                        <div className="row position-relative">
-                                            <div className="col-auto">
-                                                <div className="icon-shape icon-md bg-primary-soft text-primary rounded-circle line-icon">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-alert-triangle icon-xs"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                                                </div>
-                                            </div>
-                                            <div className="col ms-n2">
-                                                <h4 className="mb-0 h5">Task Overdue</h4>
-                                                <p className="mb-0 ">Task <a href="#!"><u>status updatd for board</u></a>
-                                                    is overdue.</p>
-
-                                            </div>
-                                            <div className="col-auto">
-                                                <span className="text-muted fs-6">1 day</span>
-
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li className="list-group-item px-0 pt-0 border-0">
-                                        <div className="row position-relative">
-                                            <div className="col-auto">
-                                                <div className="icon-shape icon-md bg-primary-soft text-primary rounded-circle line-icon">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-mail icon-xs"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                            <div className="col ms-n2">
-                                                <h4 className="mb-0 h5">Update Send to Client</h4>
-                                                <p className="mb-0 ">Jitu send email to update design
-                                                    for client Dash UI.</p>
-
-                                            </div>
-                                            <div className="col-auto">
-                                                <span className="text-muted fs-6">1 day</span>
-
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </Container>
 
