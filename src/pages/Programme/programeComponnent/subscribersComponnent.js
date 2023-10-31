@@ -328,7 +328,7 @@ const SubscribersComponnent = (props) => {
                             <>
 
                                 <Scrollbar>
-                                    <TableContainer sx={{ maxWidth: 790, height: 300 }}>
+                                    <TableContainer sx={{ width: "100%", height: 300 }}>
                                         <Table>
                                             <UserListHead
                                                 order={order}
@@ -435,8 +435,9 @@ const SubscribersComponnent = (props) => {
                     </div>
                 </div>
             </div>
+
             <div className="col-md-12 col-xl-4 col-12">
-                <div className="card">
+                <div className="card mb-5">
                     {/* <!-- Card header --> */}
                     <div className="card-header d-flex justify-content-between align-items-center">
                         <div>
@@ -445,7 +446,7 @@ const SubscribersComponnent = (props) => {
                         </div>
                     </div>
                     {/* <!-- Card body --> */}
-                    <div className="card-body">
+                    <div className="card-body" style={{ display: 'flex', alignItems: 'center' }}>
                         {(groupPie1 !== null) ?
                             <PieChart
                                 series={[

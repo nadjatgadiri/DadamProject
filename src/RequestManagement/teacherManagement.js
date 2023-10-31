@@ -49,3 +49,15 @@ export const getAllTeachers = async () => {
         throw error;
     }
 };
+
+export const listTeachersForGroup = async () => {
+    try {
+        setReqHeader();
+        const response = await axios.get('/teachers/listTeachersForGroup');
+        const data = response.data;
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

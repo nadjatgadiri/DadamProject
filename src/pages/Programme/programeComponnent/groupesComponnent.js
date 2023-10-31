@@ -1,8 +1,8 @@
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filter } from 'lodash';
-import { useState, useEffect } from 'react';
-import { styled, alpha } from '@mui/material/styles';
+import React, { useState, useEffect } from 'react';
+import { styled, alpha, useTheme } from '@mui/material/styles';
 import { PieChart } from '@mui/x-charts/PieChart';
 import {
     Toolbar, Tooltip, OutlinedInput, InputAdornment,
@@ -24,21 +24,26 @@ import {
     TableContainer,
     TablePagination,
     DialogTitle,
+    Grid, Card, Box, TextField, InputLabel, FormControl, Chip
 } from '@mui/material';
 import { Buffer } from "buffer";
 import { Link } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-
+import {
+    Unstable_NumberInput as NumberInput,
+    numberInputClasses,
+} from '@mui/base/Unstable_NumberInput';
 // components
 import Label from '../../../components/label';
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
+
 // sections
 import { UserListHead, UserListToolbarP } from '../../../sections/@dashboard/user';
 // api importation
-import { getProgRegistrations } from '../../../RequestManagement/registrationManagement';
+import { listTeachersForGroup } from '../../../RequestManagement/teacherManagement';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -50,6 +55,124 @@ const TABLE_HEAD = [
 ];
 
 // ----------------------------------------------------------------------
+const grey = {
+    50: '#f6f8fa',
+    100: '#eaeef2',
+    200: '#d0d7de',
+    300: '#afb8c1',
+    400: '#8c959f',
+    500: '#6e7781',
+    600: '#57606a',
+    700: '#424a53',
+    800: '#32383f',
+    900: '#24292f',
+};
+const StyledInputRoot = styled('div')(
+    ({ theme }) => `
+    font-family: IBM Plex Sans, sans-serif;
+    font-weight: 400;
+    border-radius: 8px;
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+    background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
+    border: 1px solid ${theme.palette.mode === 'dark' ? grey[700] : grey[200]};
+    display: grid;
+    grid-template-columns: 1fr 19px;
+    grid-template-rows: 1fr 1fr;
+    overflow: hidden;
+    height:55px;
+    &:hover {
+        border-color: black;
+      }
+    &.${numberInputClasses.focused} {
+      border: 2px solid blue;
+    }
+    // firefox
+    &:focus-visible {
+      outline: 0;
+    }
+`
+);
+
+const StyledInputElement = styled('input')(
+    ({ theme }) => `
+    font-size: 0.875rem;
+    font-family: inherit;
+    font-weight: 400;
+    line-height: 1.5;
+    grid-column: 1/2;
+    grid-row: 1/3;
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+    background: inherit;
+    border: none;
+    border-radius: inherit;
+    padding: 8px 12px;
+    outline: 0;
+  `,
+);
+
+const StyledButton = styled('button')(
+    ({ theme }) => `
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    appearance: none;
+    padding: 0;
+    width: 19px;
+    height: 19px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1;
+    box-sizing: border-box;
+    background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
+    border: 0;
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 120ms;
+  
+    &:hover {
+      background: ${theme.palette.mode === 'dark' ? grey[800] : grey[50]};
+      border-color: ${theme.palette.mode === 'dark' ? grey[600] : grey[300]};
+      cursor: pointer;
+    }
+  
+    &.${numberInputClasses.incrementButton} {
+      grid-column: 2/3;
+      grid-row: 1/2;
+    }
+    &.${numberInputClasses.decrementButton} {
+      grid-column: 2/3;
+      grid-row: 2/3;
+    }
+  
+    & .arrow {
+      transform: translateY(-1px);
+    }
+  `,
+);
+const CustomNumberInput = React.forwardRef((props, ref) => {
+    return (
+        <NumberInput
+            slots={{
+                root: StyledInputRoot,
+                input: StyledInputElement,
+                incrementButton: StyledButton,
+                decrementButton: StyledButton,
+            }}
+            slotProps={{
+                incrementButton: {
+                    children: <span className="arrow">▴</span>,
+                },
+                decrementButton: {
+                    children: <span className="arrow">▾</span>,
+                },
+            }}
+            {...props}
+            ref={ref}
+        />
+    );
+});
 /** table functions  */
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -90,23 +213,35 @@ function formatDate(inputDate) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return date.toLocaleDateString('fr-FR', options);
 }
-const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
-    width: 50,
-    height: 40,
-    transition: theme.transitions.create(['box-shadow', 'width'], {
-        easing: theme.transitions.easing.easeInOut,
-        duration: theme.transitions.duration.shorter,
-    }),
-    '&.Mui-focused': {
-        width: 300,
-        boxShadow: theme.customShadows.z8,
-    },
-    '& fieldset': {
-        borderWidth: `1px !important`,
-        borderColor: `${alpha(theme.palette.grey[500], 0.32)} !important`,
-    },
-}));
+
 /** end */
+// multiselect 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+};
+
+const names = [
+    { ID_ROWID: 1, name: 'Oliver Hansen' },
+    { ID_ROWID: 2, name: 'Van Henry' },
+    { ID_ROWID: 3, name: 'April Tucker' },
+    { ID_ROWID: 4, name: 'Oliver' },
+];
+
+function getStyles(name, personName, theme) {
+    return {
+        fontWeight:
+            personName.indexOf(name) === -1
+                ? theme.typography.fontWeightRegular
+                : theme.typography.fontWeightMedium,
+    };
+}
 const GroupesComponnent = (props) => {
     const { idProg, groups } = props; // Accessing id from props
 
@@ -120,6 +255,7 @@ const GroupesComponnent = (props) => {
     const [menuTargetRow, setMenuTargetRow] = useState(null);
     /* start load data */
     const [data, setData] = useState([]);
+    const [teachersList, setTeachersList] = useState([]);
     const [filterGroup, setFilterGroup] = useState(''); // Add a state for the selected group filter
     const handleSortClick = (value) => {
         setFilterGroup(value);
@@ -151,15 +287,57 @@ const GroupesComponnent = (props) => {
         }));
         /** end Groups Pie */
         setPieGroupData(groupData);
-
+        //  fetch teachers list
+        const result = await listTeachersForGroup();
+        if (result.code === 200) {
+            const teachers = await Promise.all(result.teachers.map(async teacher => ({
+                ID_ROWID: teacher.ID_ROWID,
+                name: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`, // Concatenating first name and last name
+            })));
+            setTeachersList(teachers);
+        }
+        else {
+            // when we got an error 
+            console.log(result);
+            toast.error(`Error! + ${result.message}`, {
+                position: toast.POSITION.TOP_RIGHT,
+            });
+        }
+        console.log(teachersList);
     };
     useEffect(() => {
         // Check if groups have been received from props
         if (groups && groups.length > 0) {
             fetchData(); // Execute fetchData when groups are received
         }
+
     }, [groups]);
     /** end api */
+    // multiselect
+    const theme = useTheme();
+    const [personName, setPersonName] = React.useState([]);
+
+    // const handleChange = (event) => {
+    //     const {
+    //         target: { value },
+    //     } = event;
+    //     setPersonName(
+    //         // On autofill we get a stringified value.
+    //         typeof value === 'string' ? value.split(',') : value,
+    //     );
+    // };
+    const handleChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        // Assuming 'teachersList' is an array of objects with 'ID_ROWID' as the unique identifier
+        const selectedTeacherIDs = typeof value === 'string' ? value.split(',') : value;
+
+        // Now 'selectedTeacherIDs' contains an array of selected teacher IDs.
+        setPersonName(selectedTeacherIDs);
+        // You can use 'selectedTeacherIDs' for any further processing.
+    };
+
     /** dialog handdel */
 
     // delete
@@ -274,169 +452,274 @@ const GroupesComponnent = (props) => {
 
     return (
         <>
-            <div className="col-md-12 col-xl-8 col-12">
-                <div className="row">
-                    <div className="col-md-12 mb-5">
+            <>
+                <div className="col-md-12 col-xl-12 col-12">
+                    <div className="row">
                         {/* <!-- card --> */}
-                        <div className="card" >
-                            {/* <!-- card body --> */}
-
-                            <UserListToolbarP
-                                title="Liste des groupes"
-                                numSelected={selected.length}
-                                filterName={filterName}
-                                onFilterName={handleFilterByName}
-                                onDeleteSelected={() => {
-                                    handleDeleteClick2();
-                                }}
-                                selectList={groups}
-                                isFilterd={false}
-                                onGroupSelected={(value) => {
-                                    handleSortClick(value);
-                                }}
-                            />
-                            {/* <!-- table --> */}
-                            <>
-
-                                <Scrollbar>
-                                    <TableContainer sx={{ maxWidth: 790, height: 300 }}>
-                                        <Table>
-                                            <UserListHead
-                                                order={order}
-                                                orderBy={orderBy}
-                                                headLabel={TABLE_HEAD}
-                                                rowCount={filtered.length}
-                                                numSelected={selected.length}
-                                                onRequestSort={handleRequestSort}
-                                                onSelectAllClick={handleSelectAllClick}
-
+                        <div className="col-md-12 mb-5">
+                            <div className="card" style={{
+                                padding: '20px'
+                            }}>
+                                <form
+                                // onSubmit={handleSubmit}
+                                >
+                                    <Grid container spacing={1}>
+                                        <Grid item xs={3}>
+                                            <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Groupe Name</InputLabel>
+                                            <TextField
+                                                name="title"
+                                                // label="Titre"
+                                                // value={title}
+                                                // onChange={(e) => setTitle(e.target.value)}
+                                                required
+                                                fullWidth
+                                            // error={errors.title}
                                             />
-                                            <TableBody>
-                                                {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                    const { id, name, teachers, createdAt, nbrPlaces } = row;
+                                        </Grid>
+                                        <Grid item xs={3}>
+                                            <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Nombre De Place</InputLabel>
+                                            <CustomNumberInput
+                                                aria-label="Demo number input"
+                                                placeholder="Type a number…"
+                                            // value={nmbParticipant}
+                                            // onChange={(event, val) => setNMBParticipant(val)}
+                                            />
+                                        </Grid>
+                                        <Grid item className="col-sm-5 col-md-6">
+                                            <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Les Enseignantes</InputLabel>
+                                            <Select
+                                                style={{ width: "100%" }}
+                                                labelId="demo-multiple-name-label"
+                                                id="demo-multiple-name"
+                                                multiple
+                                                value={personName}
+                                                onChange={handleChange}
+                                                input={<OutlinedInput />}
+                                                MenuProps={MenuProps}
+                                            >
+                                                {teachersList.map((teacher) => (
+                                                    <MenuItem
+                                                        key={teacher.ID_ROWID}
+                                                        value={teacher.ID_ROWID}
+                                                        style={getStyles(teacher.name, personName, theme)}
+                                                    >
+                                                        {teacher.name}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </Grid>
 
-                                                    return (
-                                                        <TableRow hover key={id}>
-                                                            <TableCell padding="checkbox" >
-                                                                <Checkbox
-                                                                    checked={selected.indexOf(id) !== -1}
-                                                                    onChange={(event) => handleClick(event, id)}
-                                                                />
-                                                            </TableCell>
-                                                            <TableCell >
-                                                                <Stack direction="row" alignItems="center" >
-                                                                    <Typography variant="subtitle2" noWrap>
-                                                                        {name}
-                                                                    </Typography>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        {/* <Typography variant="body2" color="error">{feedback}</Typography> */}
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+                                            <Button
+                                                type="submit"
+                                                variant="contained"
+                                                style={{ backgroundColor: 'blue', color: 'white' }}>
+                                                Ajouter
+                                            </Button>
+                                        </Box>
+                                    </Grid>
+                                </form>
+                            </div>
+                        </div>
+                    </div></div></>
 
-                                                                </Stack>
-                                                            </TableCell>
-                                                            <TableCell  >
-                                                                {formatDate(createdAt)}
-                                                            </TableCell>
-                                                            <TableCell  >
-                                                                {nbrPlaces}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                {teachers?.map((teacher, index) => (
-                                                                    <span key={index}>{`${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}${index !== teachers.length - 1 ? ', ' : ''}`}</span>
-                                                                ))}
-                                                            </TableCell>
+            {data.length ?
+                (<>
+                    <div className="col-md-12 col-xl-12 col-12">
+                        <div className="row">
+                            <div className="col-md-12 mb-5">
+                                <div className="card bg-light-primary" style={{
+                                    padding: '20px'
+                                }}>
 
+                                    <div style={{ textAlign: 'center', }}>
+                                        <Typography variant="h6" paragraph >
+                                            Il n'y a pas des groupes
+                                        </Typography>
+                                        <Button className="" variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+                                            Ajouter
+                                        </Button>
+                                    </div>
 
+                                </div>
 
-                                                            <TableCell >
-
-                                                                <IconButton size="small" onClick={(e) => {
-                                                                    handleOpenMenu(e);
-                                                                    setMenuTargetRow(row);
-                                                                }}>
-                                                                    <Iconify icon={'eva:more-vertical-fill'} />
-                                                                </IconButton>
-
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    );
-                                                })}
-                                                {emptyRows > 0 && (
-                                                    <TableRow style={{ height: 53 * emptyRows }}>
-                                                        <TableCell colSpan={6} />
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-
-                                            {isNotFound && (
-                                                <TableBody>
-                                                    <TableRow>
-                                                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                                                            <Paper
-                                                                sx={{
-                                                                    textAlign: 'center',
-                                                                }}
-                                                            >
-                                                                <Typography variant="h6" paragraph>
-                                                                    Résultat non trouvé
-                                                                </Typography>
-
-                                                                <Typography variant="body2">
-                                                                    aucun résultat trouvé ! &nbsp;
-                                                                    <strong>&quot;{filterName}&quot;</strong>.
-                                                                    <br /> Réssayez.
-                                                                </Typography>
-                                                            </Paper>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </TableBody>
-                                            )}
-                                        </Table>
-                                    </TableContainer>
-                                </Scrollbar>
-
-                                <TablePagination
-                                    rowsPerPageOptions={[5, 10, 25]}
-                                    component="div"
-                                    count={filtered.length}
-                                    rowsPerPage={rowsPerPage}
-                                    page={page}
-                                    onPageChange={handleChangePage}
-                                    onRowsPerPageChange={handleChangeRowsPerPage}
-                                />
-                            </>
-
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div className="col-md-12 col-xl-4 col-12">
-                <div className="card">
-                    {/* <!-- Card header --> */}
-                    <div className="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
-                            </h4>
+
+
+                </>)
+                :
+                (<>
+                    <div className="col-md-12 col-xl-8 col-12">
+                        <div className="row">
+                            <div className="col-md-12 mb-5">
+                                {/* <!-- card --> */}
+                                <div className="card" >
+                                    {/* <!-- card body --> */}
+
+                                    <UserListToolbarP
+                                        title="Liste des groupes"
+                                        numSelected={selected.length}
+                                        filterName={filterName}
+                                        onFilterName={handleFilterByName}
+                                        onDeleteSelected={() => {
+                                            handleDeleteClick2();
+                                        }}
+                                        selectList={groups}
+                                        isFilterd={false}
+                                        onGroupSelected={(value) => {
+                                            handleSortClick(value);
+                                        }}
+                                    />
+                                    {/* <!-- table --> */}
+                                    <>
+
+                                        <Scrollbar>
+                                            <TableContainer sx={{ maxWidth: 790, height: 300 }}>
+                                                <Table>
+                                                    <UserListHead
+                                                        order={order}
+                                                        orderBy={orderBy}
+                                                        headLabel={TABLE_HEAD}
+                                                        rowCount={filtered.length}
+                                                        numSelected={selected.length}
+                                                        onRequestSort={handleRequestSort}
+                                                        onSelectAllClick={handleSelectAllClick}
+
+                                                    />
+                                                    <TableBody>
+                                                        {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                                                            const { id, name, teachers, createdAt, nbrPlaces } = row;
+
+                                                            return (
+                                                                <TableRow hover key={id}>
+                                                                    <TableCell padding="checkbox" >
+                                                                        <Checkbox
+                                                                            checked={selected.indexOf(id) !== -1}
+                                                                            onChange={(event) => handleClick(event, id)}
+                                                                        />
+                                                                    </TableCell>
+                                                                    <TableCell >
+                                                                        <Stack direction="row" alignItems="center" >
+                                                                            <Typography variant="subtitle2" noWrap>
+                                                                                {name}
+                                                                            </Typography>
+
+                                                                        </Stack>
+                                                                    </TableCell>
+                                                                    <TableCell  >
+                                                                        {formatDate(createdAt)}
+                                                                    </TableCell>
+                                                                    <TableCell  >
+                                                                        {nbrPlaces}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {teachers?.map((teacher, index) => (
+                                                                            <span key={index}>{`${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}${index !== teachers.length - 1 ? ', ' : ''}`}</span>
+                                                                        ))}
+                                                                    </TableCell>
+
+
+
+                                                                    <TableCell >
+
+                                                                        <IconButton size="small" onClick={(e) => {
+                                                                            handleOpenMenu(e);
+                                                                            setMenuTargetRow(row);
+                                                                        }}>
+                                                                            <Iconify icon={'eva:more-vertical-fill'} />
+                                                                        </IconButton>
+
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            );
+                                                        })}
+                                                        {emptyRows > 0 && (
+                                                            <TableRow style={{ height: 53 * emptyRows }}>
+                                                                <TableCell colSpan={6} />
+                                                            </TableRow>
+                                                        )}
+                                                    </TableBody>
+
+                                                    {isNotFound && (
+                                                        <TableBody>
+                                                            <TableRow>
+                                                                <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                                                    <Paper
+                                                                        sx={{
+                                                                            textAlign: 'center',
+                                                                        }}
+                                                                    >
+                                                                        <Typography variant="h6" paragraph>
+                                                                            Résultat non trouvé
+                                                                        </Typography>
+
+                                                                        <Typography variant="body2">
+                                                                            aucun résultat trouvé ! &nbsp;
+                                                                            <strong>&quot;{filterName}&quot;</strong>.
+                                                                            <br /> Réssayez.
+                                                                        </Typography>
+                                                                    </Paper>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        </TableBody>
+                                                    )}
+                                                </Table>
+                                            </TableContainer>
+                                        </Scrollbar>
+
+                                        <TablePagination
+                                            rowsPerPageOptions={[5, 10, 25]}
+                                            component="div"
+                                            count={filtered.length}
+                                            rowsPerPage={rowsPerPage}
+                                            page={page}
+                                            onPageChange={handleChangePage}
+                                            onRowsPerPageChange={handleChangeRowsPerPage}
+                                        />
+                                    </>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {/* <!-- Card body --> */}
-                    <div className="card-body">
-                        {(pieGroupData !== null) ?
-                            <PieChart
-                                series={[
-                                    {
-                                        paddingAngle: 5,
-                                        innerRadius: 50,
-                                        outerRadius: 100,
-                                        data: pieGroupData,
-                                    },
-                                ]}
-                                width={350}
-                                height={300}
-                                margin={{ right: 150 }}
-                            // legend={{ hidden: true }}
-                            /> : null}
+                    <div className="col-md-12 col-xl-4 col-12">
+                        <div className="card">
+                            {/* <!-- Card header --> */}
+                            <div className="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
+                                    </h4>
+                                </div>
+                            </div>
+                            {/* <!-- Card body --> */}
+                            <div className="card-body">
+                                {(pieGroupData !== null) ?
+                                    <PieChart
+                                        series={[
+                                            {
+                                                paddingAngle: 5,
+                                                innerRadius: 50,
+                                                outerRadius: 100,
+                                                data: pieGroupData,
+                                            },
+                                        ]}
+                                        width={350}
+                                        height={300}
+                                        margin={{ right: 150 }}
+                                    // legend={{ hidden: true }}
+                                    /> : null}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
+                </>)
+            }
 
             <Popover
                 open={Boolean(open)}
