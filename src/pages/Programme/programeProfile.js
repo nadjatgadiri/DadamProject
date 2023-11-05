@@ -5,18 +5,19 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 // @mui
-import {
-    Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
-    TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
-    TextField, Select,
+import {  Autocomplete,  Dialog,  DialogActions, DialogContent,   DialogContentText,Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, TableContainer, TablePagination,TextField, Select,
 } from '@mui/material';
 import './theme.css';
+import { addDays, subDays, isAfter } from 'date-fns';
 import { getProgramme } from "../../RequestManagement/programManagement"
-
 import Iconify from '../../components/iconify';
 import SubscribersComponnent from './programeComponnent/subscribersComponnent';
 import GroupesComponnent from './programeComponnent/groupesComponnent';
+import PaymentComponent from './programeComponnent/payedStudentComponnent';
+
 import { getProgGroups } from '../../RequestManagement/groupManagement';
+import { addNewPayment,getPaymentsInfoForProgram  } from '../../RequestManagement/paymentManagement';
+import { getProgRegistrations} from '../../RequestManagement/registrationManagement';
 
 
 // ----------------------------------------------------------------------
@@ -61,7 +62,12 @@ const ProgrameProfile = () => {
     const [finSubDate2, setFinSubDate2] = useState(null);
     // skip
     const [isSkip, setIsSkip] = useState(false);
-
+    const [students, setStudents] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
+    const [paymentAmount, setPaymentAmount] = useState(0); // Payment amount state
+    const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+    const [totalPayments, setTotalPayments] = useState(null);
+const [last30DaysPayments, setLast30DaysPayments] = useState(null);
     // Groups 
     const [groupsData, setGroupsData] = useState([]);
     // api
@@ -125,17 +131,151 @@ const ProgrameProfile = () => {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
+ // Fetch program registrations
+ const result3 = await getProgRegistrations(id);
+ console.log(result3);
+ if (result3.code === 200) {
+   const subscribe = result3.registrations.map((registration) => ({
+     id: registration.students.ID_ROWID,
+     name: `${registration.students.personProfile2.firstName} ${registration.students.personProfile2.lastName}`,
+     image:
+       registration.students.personProfile2.imagePath !== null &&
+       registration.students.personProfile2.imagePath !== ''
+         ? `data:image/jpeg;base64,${Buffer.from(
+             registration.students.personProfile2.imagePath.data
+           ).toString("base64")}`
+         : '',
+     group: registration.students.groupes[0]
+       ? registration.students.groupes[0].GroupeName
+       : null,
+     subDate: registration.createdAt,
+   }));
+   setStudents(subscribe); } else {
+    // Handle the case when there's an error in the API response for program registrations
+    console.error(result3);
+    toast.error(`Error! + ${result3.message}`, {
+      position: toast.POSITION.TOP_RIGHT,
+    });
+  }
+    
 
-    };
+    const paymentsInfo = await getPaymentsInfoForProgram(id);
+
+    if (paymentsInfo.code === 200) {
+        const { totalPayments, paymentsLast30Days } = paymentsInfo;
+        // You can do something with the payment information here
+        console.log("Total Payments:", totalPayments);
+        console.log("Last 30 Days Payments:", paymentsLast30Days);
+
+         setTotalPayments(totalPayments);
+    setLast30DaysPayments(paymentsLast30Days);
+    } else {
+        // Handle errors
+        console.error(paymentsInfo);
+        toast.error(`Error! ${paymentsInfo.message}`, {
+            position: toast.POSITION.TOP_RIGHT,
+        });
+    }
+};
     useEffect(() => {
         fetchData();
     }, []); // Empty dependency array means this effect runs once when component mounts
     // convert date
+
+
+    
     function formatDate(inputDate) {
         const date = new Date(inputDate);
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return date.toLocaleDateString('fr-FR', options);
     }
+
+    // Function to handle opening the payment dialog
+  const handleOpenPaymentDialog = () => {
+    setPaymentDialogOpen(true);
+  };
+
+  // Function to handle closing the payment dialog
+  const handleClosePaymentDialog = () => {
+    setPaymentDialogOpen(false);
+    setPaymentAmount(0); // Reset payment amount
+    setSelectedStudents([]);
+  };
+
+  // Function to add payments for selected students
+  const handleAddPayment = async () => {
+    // Prepare the payment data for each selected student
+    const paymentPromises = selectedStudents.map(async (student) => {
+      const paymentData = {
+        montant: paymentAmount,
+        IDstudent: [student.id], // Create an array with the current student
+        Idprogram:id,
+      };
+      console.log(paymentData);
+      return addNewPayment(paymentData);
+    });
+  
+    console.log("Selected Students for Payment:", selectedStudents);
+  
+    try {
+      const responses = await Promise.all(paymentPromises);
+  
+      // Process the responses
+      let success = true; // Assuming all payments are successful
+      responses.forEach((response) => {
+        if (response.code !== 200 && response.code  !== 409) {
+          success = false; // At least one payment failed
+          toast.error(`Failed to add payment: ${response.message}`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+        else if (response.code  === 409) {
+            success = false; // At least one payment failed
+            toast.warning(`Failed to add payment because : ${response.message}`, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+          }
+      });
+  
+      if (success) {
+        toast.success('Payments added successfully', {
+          position: toast.POSITION.TOP_RIGHT,
+          
+        });
+
+        // Close the payment dialog
+        handleClosePaymentDialog();
+        window.location.reload();
+
+      }
+    } catch (error) {
+      toast.error(`Error: ${error.message}`, {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+    }
+  };
+
+  const today = new Date(); // Current date
+
+  // Calculate the "Mois Dernier" date (30 days ago)
+  const lastMonthDate = subDays(today, 30);
+  
+  // Calculate the "Total" and "Mois Dernier" amounts
+  let totalAmount = 0;
+  let lastMonthAmount = 0;
+  
+  students.forEach((student) => {
+    const paymentDate = new Date(student.subDate);
+  
+    // Calculate the total amount
+    totalAmount += student.montant;
+  
+    // Check if the payment date is within the last 30 days
+    if (isAfter(paymentDate, lastMonthDate)) {
+      lastMonthAmount += student.montant;
+    }
+  });
+  
     return (
         <>
 
@@ -144,22 +284,34 @@ const ProgrameProfile = () => {
             </Helmet>
 
             <Container className="app-content-area">
+            <ToastContainer />
+
                 <div className="bg-primary pt-10 pb-21 mt-n5 mx-n14" />
                 <div className=" mt-n22 ">
                     <div className="row">
                         <div className="col-lg-12 col-md-12 col-12">
                             {/* Page header */}
                             <div className="d-flex justify-content-between align-items-center mb-5">
-                                <div className="mb-2 mb-lg-0">
-                                    <h3 className="mb-0  text-white">
-                                        {type === "cour" ? "Cour De " : null}
-                                        {type === "formation" ? "Formation De " : null}
-                                        {title}</h3>
-                                </div>
-                                <div>
-                                    <a href="#!" className="btn btn-white">Create New Project</a>
-                                </div>
-                            </div>
+  <div className="mb-2 mb-lg-0">
+    <h3 className="mb-0 text-white">
+      {type === "cour" ? "Cour De " : null}
+      {type === "formation" ? "Formation De " : null}
+      {title}
+    </h3>
+  </div>
+  <div>
+    <a href="#!" className="btn btn-white">Create New Project</a> 
+  
+  </div>
+  <div>  <Button
+      variant="contained"
+      color="primary"
+      onClick={handleOpenPaymentDialog}
+    >
+      Add Payment
+    </Button></div>
+</div>
+
                         </div>
                     </div>
                     <div className="row">
@@ -405,7 +557,7 @@ const ProgrameProfile = () => {
                                     <div className="mb-5 ">
                                         <div className="d-flex align-items-center justify-content-between p-4">
                                             <div>
-                                                <h2 className="h1  mb-0">52,000DA</h2>
+                                                <h2 className="h1  mb-0">{totalPayments}DA</h2>
                                                 <p className="mb-0">Total</p>
 
                                             </div>
@@ -423,7 +575,7 @@ const ProgrameProfile = () => {
                                     <div className="mb-5">
                                         <div className="d-flex align-items-center justify-content-between p-4">
                                             <div>
-                                                <h2 className="h1  mb-0">43,230DA</h2>
+                                                <h2 className="h1  mb-0">{last30DaysPayments}DA</h2>
                                                 <p className="mb-0">Mois Dernier</p>
 
                                             </div>
@@ -452,8 +604,69 @@ const ProgrameProfile = () => {
                     <GroupesComponnent idProg={id} groups={groupsData} />
 
                 </div>
-            </Container>
 
+                <div className="row">
+                    <PaymentComponent idProg={id} groups={groupsData} />
+                </div>
+
+            </Container>
+  {/* Payment Dialog */}
+  <Dialog open={paymentDialogOpen} onClose={handleClosePaymentDialog} PaperProps={{ style: { width: '50%', maxHeight: '70vh' } }}>
+  <DialogContent>
+  <DialogContentText>
+    Sélectionnez un ou des étudiants pour ajouter un paiement:
+  </DialogContentText>
+
+  <Autocomplete
+    multiple
+    disablePortal
+    id="combo-box-student"
+    options={students}
+    getOptionLabel={(option) => (option ? option.name : '')}
+    getOptionSelected={(option, value) => option.id === value.id}
+    value={selectedStudents}
+    onChange={(event, newValues) => {
+      setSelectedStudents(newValues);
+    }}
+    renderInput={(params) => (
+      <TextField {...params} label="Étudiants" variant="outlined" fullWidth />
+    )}
+    PaperComponent={({ children }) => <Paper square>{children}</Paper>}
+    ListboxProps={{ style: { maxHeight: '250px', overflow: 'auto' } }}
+    noOptionsText="Aucun étudiant trouvé"
+  />
+
+  <div style={{ marginBottom: '10px' }} />
+
+  <TextField
+    type="number"
+    label="Montant"
+    value={paymentAmount}
+    onChange={(e) => setPaymentAmount(e.target.value)}
+    inputProps={{
+      min: "0",
+      step: "50",
+    }}
+    fullWidth
+    onBlur={(e) => {
+      const inputValue = e.target.value;
+      const roundedValue = Math.round(inputValue / 50) * 50;
+      setPaymentAmount(roundedValue);
+    }}
+  />
+</DialogContent>
+
+
+
+  <DialogActions>
+    <Button color="primary" variant="contained" onClick={handleAddPayment}>
+      Ajouter Paiement
+    </Button>
+    <Button onClick={handleClosePaymentDialog} color="secondary">
+      Annuler
+    </Button>
+  </DialogActions>
+</Dialog>
 
         </>
     );

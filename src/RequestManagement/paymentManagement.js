@@ -55,3 +55,16 @@ export const getStudentsForProgramPayments = async (programId) => {
         throw error;
     }
 };
+// Function to get total payments and payments in the last 30 days for a program
+export const getPaymentsInfoForProgram = async (programId) => {
+    try {
+        setReqHeader();
+        const response = await axios.get(`/payment/stats/${programId}`);
+        const data = response.data;
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch payments information for the program:", error);
+        throw error;
+    }
+};
