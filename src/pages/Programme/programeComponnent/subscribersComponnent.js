@@ -148,7 +148,7 @@ const SubscribersComponnent = (props) => {
                 name: `${registraion.students.personProfile2.firstName} ${registraion.students.personProfile2.lastName}`,
                 image: registraion.students.personProfile2.imagePath !== null && registraion.students.personProfile2.imagePath !== '' ?
                     `data:image/jpeg;base64,${Buffer.from(
-                        registraion.students?.personProfile2.imagePath.data).toString("base64")}` : '',
+                        registraion.students?.personProfile2.imagePath).toString("base64")}` : '',
                 group: registraion.students.groupes[0] ? registraion.students.groupes[0].GroupeName : null,
                 subDate: registraion.createdAt
 

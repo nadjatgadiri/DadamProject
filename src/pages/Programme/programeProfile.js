@@ -8,6 +8,8 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import {  Autocomplete,  Dialog,  DialogActions, DialogContent,   DialogContentText,Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, TableContainer, TablePagination,TextField, Select,
 } from '@mui/material';
 import './theme.css';
+import { Buffer } from "buffer";
+
 import { addDays, subDays, isAfter } from 'date-fns';
 import { getProgramme } from "../../RequestManagement/programManagement"
 import Iconify from '../../components/iconify';
@@ -142,7 +144,7 @@ const [last30DaysPayments, setLast30DaysPayments] = useState(null);
        registration.students.personProfile2.imagePath !== null &&
        registration.students.personProfile2.imagePath !== ''
          ? `data:image/jpeg;base64,${Buffer.from(
-             registration.students.personProfile2.imagePath.data
+             registration.students.personProfile2.imagePath
            ).toString("base64")}`
          : '',
      group: registration.students.groupes[0]

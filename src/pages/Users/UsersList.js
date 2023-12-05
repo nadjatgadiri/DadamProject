@@ -134,10 +134,11 @@ export default function UserPage() {
           dateOfBirth: user.personProfile.dateOfBirth,
           image: user.personProfile.imagePath !== null && user.personProfile.imagePath !== '' ?
             `data:image/jpeg;base64,${Buffer.from(
-              user.personProfile.imagePath.data).toString("base64")}` : ''
+              user.personProfile.imagePath).toString("base64")}` : ''
         }));
         setError('');
-        if (users) {
+        if (users) { 
+          console.log(users);
           setData(users);
         }
       }

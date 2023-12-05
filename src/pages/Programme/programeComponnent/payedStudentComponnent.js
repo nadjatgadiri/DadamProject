@@ -238,7 +238,7 @@ const PaymentComponent = (props) => {
             payment.students.personProfile2.imagePath !== null &&
             payment.students.personProfile2.imagePath !== ''
               ? `data:image/jpeg;base64,${Buffer.from(
-                  payment.students.personProfile2.imagePath.data
+                  payment.students.personProfile2.imagePath
                 ).toString('base64')}`
               : '',
           paymentDate: payment.createdAt,

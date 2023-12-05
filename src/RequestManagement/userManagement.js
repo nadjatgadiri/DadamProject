@@ -64,3 +64,35 @@ export const deleteUser = async (userId) => {
         return { code: 500, message: "Internal Server Error" };
     }
 };
+export const updatePassword = async (data) => {
+    try {
+      setReqHeader();
+      console.log(data);
+
+      const response = await axios.put('/user/updatePasword', {
+        "data": data
+      });
+      const data2= response.data;
+      return data2;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+  
+
+
+export const getUser = async (userId) => {
+    try {
+        setReqHeader();
+        const response = await axios.get(`/user//getUserProfile/${userId}`);
+         
+        const res = response.data;
+        console.log(res);
+        return res;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+
+};

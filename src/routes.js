@@ -6,7 +6,9 @@ import SimpleLayout from './layouts/simple';
 import BlogPage from './pages/BlogPage';
 import UserPage from './pages/Users/UsersList';
 import StudentPage from './pages/Students/Studentslist';
+import SchooolinfoupdatePage from './pages/profileEcole/addschoolinfo';
 import RegistrationList from './pages/registration/RegistrationList';
+import Updatepassword from './pages/Users/Updateuserpassword';
 import TeacherPage from './pages/Teachers/Teacherslist';
 import RegistrationPage from './pages/registration/addRegistration';
 import LoginPage from './pages/LoginPage';
@@ -29,11 +31,12 @@ import ProgrameProfile from './pages/Programme/programeProfile';
 
 // ----------------------------------------------------------------------
 export default function Router() {
+  const isAuthenticated = sessionStorage.getItem("userID") !== null;
   const routes = useRoutes([
     {
       path: '/dashboard',
-      element: <DashboardLayout />,
-      children: [
+      element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />,     
+       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
@@ -53,6 +56,8 @@ export default function Router() {
         { path: 'Categorie', element: <CategoriePage /> },
         { path: 'Class', element: <ClassPage /> },
         { path: 'registration', element: <RegistrationList /> },
+        { path:'schooledit', element: <SchooolinfoupdatePage /> },
+        { path:'passwordedit', element: <Updatepassword /> },
 
 
       ],
