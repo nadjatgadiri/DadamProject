@@ -67,3 +67,35 @@ export const getProgRegistrations = async (progId) => {
         throw error;
     }
 };
+
+export const updateRegestraion = async (sendData) => {
+    try {
+        setReqHeader();
+        console.log(sendData)
+        const response = await axios.post('/registration/updateRegistrationGroup', {
+            "data": sendData
+        });
+        const data = response.data;
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch the list of registrations:", error);
+        throw error;
+    }
+};
+
+export const affectation = async (sendData) => {
+    try {
+        setReqHeader();
+        console.log(sendData)
+        const response = await axios.post('/registration/affectation', {
+            "data": sendData
+        });
+        const data = response.data;
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch the list of registrations:", error);
+        throw error;
+    }
+};

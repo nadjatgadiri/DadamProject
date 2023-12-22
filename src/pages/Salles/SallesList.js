@@ -27,6 +27,9 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // api importation
 import { getAllSalles, addNewSalle, updateSalleData, deleteSalle } from "../../RequestManagement/sallesManagement"
+import { getAllSessionsInSalle } from "../../RequestManagement/sessionsManagement"
+import { getGroups } from "../../RequestManagement/groupManagement"
+import MyCalendar from '../Programme/calendar/calendar'
 
 // ----------------------------------------------------------------------
 
@@ -34,6 +37,7 @@ const TABLE_HEAD = [
     { id: 'name', label: 'Nom', alignRight: false },
     { id: 'capacité', label: 'Capacité', alignRight: false },
     { id: 'createdAt', label: 'Date de creation', alignRight: false },
+    { id: 'calendar', label: 'Séances', alignRight: false },
     { id: '' },
 ];
 
@@ -104,11 +108,14 @@ export default function ClassPage() {
     /** dialogs */
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedSalle, setSelectedSalle] = useState(null);
     const [title, setTitle] = useState('');
     const [capacite, setCapacite] = useState(20);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDialogOpen2, setIsDialogOpen2] = useState(false);
+    const [isDialogOpen3, setIsDialogOpen3] = useState(false);
+    const [events, setEvents] = useState([]);
+    const [groups, setGroups] = useState([]);
     /** end */
 
     /** api */
@@ -128,7 +135,14 @@ export default function ClassPage() {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
-
+        const result2 = await getGroups();
+        if (result2.code === 200) {
+            const data = await result2.groups.map(group => ({
+                id: group.ID_ROWID,
+                name: group.GroupeName
+            }));
+            setGroups(ColorGenerator(data));
+        }
     };
     useEffect(() => {
         fetchData();
@@ -168,6 +182,40 @@ export default function ClassPage() {
         setIsDialogOpen2(false);
         setTitle('');
         setCapacite(20);
+    };
+    const handleCancelClick3 = () => {
+        setIsDialogOpen3(false);
+        setSelectedSalle(null);
+        setEvents([])
+    };
+    const handleOpenCalendar = async (id) => {
+        setIsDialogOpen3(true);
+        // get events
+        //  fetch sessions list
+        setSelectedSalle(id);
+        const result = await getAllSessionsInSalle(id);
+        if (result.code === 200) {
+            setEvents(result.events);
+        }
+
+    };
+    // generat colors to all classes 
+    const stringToColor = (name) => {
+        const hashCode = name.toString().split('').reduce((acc, char) => {
+            acc = (acc * 31) + char.charCodeAt(0) + 100;
+            return acc;
+        }, 0);
+        const color = `#${((hashCode & 0xffffff) << 0).toString(16).padStart(6, '0')}`; // eslint-disable-line no-bitwise
+        return color;
+    };
+
+    const ColorGenerator = (data) => {
+        const colors = {};
+
+        data?.forEach((option) => {
+            colors[option.id] = stringToColor(`${option.name}${option.id}`);
+        });
+        return colors;
     };
     const handleConfirmClick = () => {
         if (menuTargetRow && menuTargetRow.ID_ROWID) {
@@ -250,7 +298,7 @@ export default function ClassPage() {
 
             if (response.code === 200) {
                 // Delete was successful, now remove the cat from your local state
-                toast.success(`La categorie est bien supprimer.`, {
+                toast.success(`La salle est bien supprimer.`, {
                     position: toast.POSITION.TOP_RIGHT,
                 });
                 fetchData();
@@ -410,6 +458,11 @@ export default function ClassPage() {
                                                     <TableCell align="left">
                                                         {createdAt.split('T')[0]}
                                                     </TableCell>
+                                                    <TableCell align="center">
+                                                        <Button variant="light" onClick={() => handleOpenCalendar(row.ID_ROWID)} startIcon={<Iconify icon={'uil:calender'} sx={{ mr: 2 }} />}>
+                                                            Calendrier
+                                                        </Button>
+                                                    </TableCell>
                                                     <TableCell align="right">
                                                         <IconButton size="small" onClick={(e) => {
                                                             handleOpenMenu(e);
@@ -420,6 +473,7 @@ export default function ClassPage() {
                                                             <Iconify icon={'eva:more-vertical-fill'} />
                                                         </IconButton>
                                                     </TableCell>
+
                                                 </TableRow>
                                             );
                                         })}
@@ -619,7 +673,7 @@ export default function ClassPage() {
             </Dialog>
             {/* end */}
             {/* dialog for deleting many items */}
-            <Dialog open={isDialogOpen2} onClose={handleCancelClick2}>
+            <Dialog open={isDialogOpen2} scroll="body" onClose={handleCancelClick2}>
                 <DialogContent>
                     <DialogTitle>Êtes-vous sûr de vouloir supprimer ces éléments ?</DialogTitle>
                 </DialogContent>
@@ -631,6 +685,15 @@ export default function ClassPage() {
                         Confirmer
                     </Button>
                 </DialogActions>
+            </Dialog>
+            {/* end */}
+
+            {/* dialog for calendar */}
+            <Dialog open={isDialogOpen3} onClose={handleCancelClick3} fullWidth
+                maxWidth="lg">
+                <div style={{ textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
+                    <MyCalendar colorMap={groups} events={events} fetchEvents={fetchData} />
+                </div>
             </Dialog>
             {/* end */}
         </>

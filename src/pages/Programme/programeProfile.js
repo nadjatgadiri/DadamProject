@@ -16,6 +16,7 @@ import { getProgramme } from "../../RequestManagement/programManagement"
 import Iconify from '../../components/iconify';
 import SubscribersComponnent from './programeComponnent/subscribersComponnent';
 import GroupesComponnent from './programeComponnent/groupesComponnent';
+import AppointmentsAjustements from './programeComponnent/AppointmentsAjustements';
 import { getProgGroups } from '../../RequestManagement/groupManagement';
 
 
@@ -42,7 +43,7 @@ const ProgrameProfile = () => {
     // programe id
     const { id } = useParams();
     // first step states
-    const [data, setData] = useState([]);
+    const [data, setData] = useState(null);
     const [title, setTitle] = useState("");
     const [lib, setLib] = useState("");
     const [type, setType] = useState("");
@@ -90,11 +91,21 @@ const ProgrameProfile = () => {
                         setFinSubDate1(programeData.EndInsciptionDate);
                         setIsChecked(secondStepData.isLimited);
                         setNMBParticipant(secondStepData.nbrStudent);
+                        setData({
+                            "type": "formation",
+                            "SDate": startDate,
+                            "FDate": endDate,
+                        })
                     }
                     else if (programeData.type === "cour") {
                         setNMBSession(secondStepData.sessionsNumber);
                         setDuree(secondStepData.sessionTiming);
                         setFinSubDate2(programeData.EndInsciptionDate);
+                        setData({
+                            "type": "cour",
+                            "nmbSession": nmbSession,
+                            "duree": secondStepData.sessionTiming,
+                        })
                     }
                 }
             }
@@ -108,12 +119,11 @@ const ProgrameProfile = () => {
         }
         const result2 = await getProgGroups(id);
         if (result2.code === 200) {
-            console.log(result2.groups);
             const groups = await result2.groups.map(group => ({
                 id: group.ID_ROWID,
                 name: group.GroupeName,
                 teachers: group.teachers,
-                nbrPlaces: 0,
+                capacity: group.capacity,
                 nbrStudents: group.students.length,
                 createdAt: group.createdAt,
             }));
@@ -138,17 +148,15 @@ const ProgrameProfile = () => {
     }
     return (
         <>
-
-            <Helmet>
-                <title> Utilisateurs | Minimal UI </title>
-            </Helmet>
-
-            <Container className="app-content-area">
+            <Container>
+                <Helmet>
+                    <title> Utilisateurs | Minimal UI </title>
+                </Helmet>
+                <ToastContainer />
                 <div className="bg-primary pt-10 pb-21 mt-n5 mx-n14" />
                 <div className=" mt-n22 ">
                     <div className="row">
                         <div className="col-lg-12 col-md-12 col-12">
-                            {/* Page header */}
                             <div className="d-flex justify-content-between align-items-center mb-5">
                                 <div className="mb-2 mb-lg-0">
                                     <h3 className="mb-0  text-white">
@@ -445,16 +453,16 @@ const ProgrameProfile = () => {
                     </div>
                 </div>
                 <div className="row">
-                    <SubscribersComponnent idProg={id} groups={groupsData} />
+                    <SubscribersComponnent idProg={id} groups={groupsData} updateData={fetchData} />
 
                 </div>
                 <div className="row">
-                    <GroupesComponnent idProg={id} groups={groupsData} />
-
+                    <GroupesComponnent idProg={id} groups={groupsData} updateData={fetchData} />
+                </div>
+                <div className="row">
+                    <AppointmentsAjustements idProg={id} progData={data} groups={groupsData} />
                 </div>
             </Container>
-
-
         </>
     );
 }

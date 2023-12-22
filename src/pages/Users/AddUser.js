@@ -1,16 +1,10 @@
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import React, { useState } from 'react';
-import TextField from '@mui/material/TextField';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
+
+
+import { styled, FormControl, InputLabel, MenuItem, Select, Button, Avatar, TextField, Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { styled } from '@mui/material/styles';
 import { useNavigate, Link } from 'react-router-dom';
 import { addNewUser } from '../../RequestManagement/userManagement';
 import Iconify from '../../components/iconify';

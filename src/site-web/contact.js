@@ -21,25 +21,25 @@ export default class Contact extends Component {
               />
             </div>
 
-            <div class="row mt-5">
-              <div class="info d-flex flex-row">
-                <div class="col-lg-4">
-                  <div class="address">
-                    <i class="bi bi-geo-alt"></i>
+            <div className="row mt-5">
+              <div className="info d-flex flex-row">
+                <div className="col-lg-4">
+                  <div className="address">
+                    <i className="bi bi-geo-alt"></i>
                     <h4>Location:</h4>
                     <p>A108 Adam Street, New York, NY 535022</p>
                   </div>
                 </div>
-                <div class="col-lg-4">
-                  <div class="email">
-                    <i class="bi bi-envelope"></i>
+                <div className="col-lg-4">
+                  <div className="email">
+                    <i className="bi bi-envelope"></i>
                     <h4>Email:</h4>
                     <p>info@example.com</p>
                   </div>
                 </div>
-                <div class="col-lg-4">
-                  <div class="phone">
-                    <i class="bi bi-phone"></i>
+                <div className="col-lg-4">
+                  <div className="phone">
+                    <i className="bi bi-phone"></i>
                     <h4>Call:</h4>
                     <p>+1 5589 55488 55s</p>
                   </div>

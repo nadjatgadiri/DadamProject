@@ -6,6 +6,7 @@ import { styled, alpha } from '@mui/material/styles';
 import { PieChart } from '@mui/x-charts/PieChart';
 import {
     Toolbar, Tooltip, OutlinedInput, InputAdornment,
+    InputLabel,
     Avatar,
     Select,
     Table,
@@ -24,12 +25,14 @@ import {
     TableContainer,
     TablePagination,
     DialogTitle,
+    Grid, Box, FormGroup, FormControlLabel
 } from '@mui/material';
 import { Buffer } from "buffer";
 import { Link } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
+import CloseIcon from '@mui/icons-material/Close';
 
 // components
 import Label from '../../../components/label';
@@ -38,7 +41,7 @@ import Scrollbar from '../../../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbarP } from '../../../sections/@dashboard/user';
 // api importation
-import { getProgRegistrations } from '../../../RequestManagement/registrationManagement';
+import { getProgRegistrations, updateRegestraion, deleteRegistration, affectation } from '../../../RequestManagement/registrationManagement';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -117,6 +120,9 @@ const SubscribersComponnent = (props) => {
     const [filterName, setFilterName] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [menuTargetRow, setMenuTargetRow] = useState(null);
+    const [updateMode, setUpdateMode] = useState(false);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+
     /* start load data */
     const [data, setData] = useState([]);
     const [filterGroup, setFilterGroup] = useState(''); // Add a state for the selected group filter
@@ -131,7 +137,13 @@ const SubscribersComponnent = (props) => {
     const isNotFound = !filtered.length && !!filterName;
     /** ------------------------ */
     const [groupPie1, setGroupPie1] = useState(null);
+    const [checkedItems, setCheckedItems] = useState({}); // State to keep track of checked items
+    const [subWithOutGroup, setSubWithOutGroup] = useState(0); // State to keep of the number track of subscribers without groups
+    const [selectedPlacesNMB, setSelectedPlacesNMB] = useState(0); // State to keep track of the number new selected places in the groups
+    const [isDesabled, setIsDesabled] = useState(false); // State to keep track of the number new selected places in the groups
+
     /* -------------------------- */
+    const [selectdGroup, setSelectdGroup] = useState(false);
     /** dialogs */
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDialogOpen2, setIsDialogOpen2] = useState(false);
@@ -139,17 +151,26 @@ const SubscribersComponnent = (props) => {
 
     /** api */
     const fetchData = async () => {
+        setGroupPie1(null);
+        setCheckedItems({}); // State to keep track of checked items
+        setSubWithOutGroup(0); // State to keep of the number track of subscribers without groups
+        setSelectedPlacesNMB(0); // State to keep track of the number new selected places in the groups
+        setIsDesabled(false); // State to keep track of the number new selected places in the groups
+
         const result = await getProgRegistrations(idProg);
-        console.log(result);
         if (result.code === 200) {
 
             const subscribe = result.registrations.map(registraion => ({
                 id: registraion.ID_ROWID,
+                idStudent: registraion.students.ID_ROWID,
                 name: `${registraion.students.personProfile2.firstName} ${registraion.students.personProfile2.lastName}`,
                 image: registraion.students.personProfile2.imagePath !== null && registraion.students.personProfile2.imagePath !== '' ?
                     `data:image/jpeg;base64,${Buffer.from(
                         registraion.students?.personProfile2.imagePath.data).toString("base64")}` : '',
-                group: registraion.students.groupes[0] ? registraion.students.groupes[0].GroupeName : null,
+                group: registraion.students.groupes[0] ? {
+                    id: registraion.students.groupes[0].ID_ROWID,
+                    name: registraion.students.groupes[0].GroupeName,
+                } : null,
                 subDate: registraion.createdAt
 
             }));
@@ -164,33 +185,68 @@ const SubscribersComponnent = (props) => {
                 }
                 return acc;
             }, {});
-            console.log(groupCounts)
+
             // Convert groupCounts into an array of objects
             const groupData1 = Object.entries(groupCounts).map(([groupName, count]) => ({
                 name: groupName,
                 label: groupName === "with Group" ? "avec Groupe" : "sans groupe",
                 value: count,
             }));
+            console.log(groupData1?.find(entry => entry.name === 'without Group') === undefined);
+            if (groupData1?.find(entry => entry.name === 'without Group') === undefined || groupPie1?.find(entry => entry.name === 'without Group')?.value === 0) {
+                console.log("a");
+                setIsDesabled(true);
+            } else {
+                console.log("b");
+                setIsDesabled(false);
+            }
             setGroupPie1(groupData1);
-
+            setSubWithOutGroup(groupData1.find(entry => entry.name === 'without Group')?.value || 0);
             setData(subscribe);
 
         } else {
             // when we got an error
-            console.log(result);
             toast.error(`Error! + ${result.message}`, {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
-
     };
     useEffect(() => {
         fetchData();
-    }, []); // Empty dependency array means this effect runs once when component mounts
+    }, [groups]); // Empty dependency array means this effect runs once when component mounts
 
     /** end api */
     /** dialog handdel */
+    // update
+    const handleUpdateClick = async () => {
+        try {
 
+            const updatedData = {
+                "idRegestarion": menuTargetRow.id, // assuming the name format is "FirstName LastName"
+                "idGroup": menuTargetRow.group ? menuTargetRow.group.id : null,
+                "idStudent": menuTargetRow.idStudent,
+                "idProg": idProg
+            };
+            const response = await updateRegestraion(updatedData);
+
+            if (response.code === 200) {
+                toast.success("Le groupe de l'abonnée à été changer", {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+                await props.updateData();
+                setUpdateMode(false);
+                setMenuTargetRow(null);
+                setSelectdGroup(null);
+            } else {
+                toast.error(`Error! + ${response.message}`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+                console.error("Error updating Le groupe de l'abonnée:", response.message);
+            }
+        } catch (error) {
+            console.error("Error:", error.message);
+        }
+    };
     // delete
     const handleDeleteClick = (student) => {
         setMenuTargetRow(student);
@@ -206,8 +262,9 @@ const SubscribersComponnent = (props) => {
         setIsDialogOpen2(false);
     };
     const handleConfirmClick = () => {
-        if (menuTargetRow && menuTargetRow.ID_ROWID) {
-            onSubmitDeleteProgram(menuTargetRow.ID_ROWID);
+        console.log(menuTargetRow);
+        if (menuTargetRow && menuTargetRow.id) {
+            onSubmitDeleteProgram(menuTargetRow.id);
         }
         setIsDialogOpen(false); // close the dialog after deleting
         setMenuTargetRow(null); // reset the target row
@@ -218,26 +275,25 @@ const SubscribersComponnent = (props) => {
     };
     /** end */
     /** submit */
-    const onSubmitDeleteProgram = async (progId) => {
-        // try {
-        //     console.log(progId);
-        //     const response = await deleteProgramme(progId);
+    const onSubmitDeleteProgram = async (id) => {
+        try {
+            const response = await deleteRegistration(id);
 
-        //     if (response.code === 200) {
-        //         // Delete was successful, now remove the cat from your local state
-        //         toast.success(`Le programme est bien supprimer.`, {
-        //             position: toast.POSITION.TOP_RIGHT,
-        //         });
-        //         fetchData();
-        //     } else {
-        //         toast.error(`Error! + ${response.message}`, {
-        //             position: toast.POSITION.TOP_RIGHT,
-        //         });
-        //         console.error('Error deleting student:', response.message);
-        //     }
-        // } catch (error) {
-        //     console.error('Error:', error.message);
-        // }
+            if (response.code === 200) {
+                // Delete was successful, now remove the cat from your local state
+                toast.success(`L'abonnement est bien supprimer.`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+                fetchData();
+            } else {
+                toast.error(`Error! + ${response.message}`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+                console.error('Error deleting abonnement:', response.message);
+            }
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
     };
     const onSubmitDeleteMultiple = async () => {
         // Using Promise.all to make simultaneous delete requests for each selected student
@@ -300,173 +356,356 @@ const SubscribersComponnent = (props) => {
         setFilterName(event.target.value);
     };
     /** end */
+    // form part 
 
+    const handleCheckboxChange = async (option) => {
+        const leftedPlaces = option.capacity - option.nbrStudents;
+        let nmbPTaked;
+        if (!checkedItems[option.id]?.value === true) {
+            const result = (subWithOutGroup - leftedPlaces) < 0 ? 0 : subWithOutGroup - leftedPlaces;
+            nmbPTaked = subWithOutGroup - result;
+            const added = subWithOutGroup - result + selectedPlacesNMB;
+            setSelectedPlacesNMB(added);
+            setSubWithOutGroup(result);
+        }
+        else if (selectedPlacesNMB) {
+            const result = selectedPlacesNMB + checkedItems[option.id] ? checkedItems[option.id].take : 0;
+            setSubWithOutGroup(result);
+            nmbPTaked = 0;
+            const prices = selectedPlacesNMB - checkedItems[option.id] ? checkedItems[option.id].take : 0;
+            setSelectedPlacesNMB(prices);
+        }
+
+        setCheckedItems(prevState => ({
+            ...prevState,
+            [option.id]: {
+                id: option.id,
+                value: !prevState[option.id]?.value,
+                take: nmbPTaked
+            } // Toggle the checked state
+        }));
+    };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const sendData = { "groups": checkedItems, "idProg": idProg };
+            console.log(sendData);
+            const response = await affectation(sendData);
+            if (response && response.code === 200) {
+                toast.success(`Les abonnées sont affecter avec succès!`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+                await props.updateData();
+
+                // fetchData();
+            } else {
+                toast.error('Une erreur s\'est produite. Veuillez réessayer.', {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+            }
+        } catch (error) {
+            toast.error(error.message || 'Une erreur s\'est produite. Veuillez réessayer.', {
+                position: toast.POSITION.TOP_RIGHT,
+            });
+        }
+
+    };
     return (
         <>
-            <div className="col-md-12 col-xl-8 col-12">
-                <div className="row">
-                    <div className="col-md-12 mb-5">
+            {/*  form part */}
+            {isFormOpen ?
+                <div className="col-md-12 col-xl-12 col-12">
+                    <div className="row">
                         {/* <!-- card --> */}
-                        <div className="card" >
-                            {/* <!-- card body --> */}
+                        <div className="col-md-12 mb-5">
+                            <div className="card" style={{ padding: '20px' }}>
+                                <IconButton style={{ position: 'absolute', top: 0, right: 0 }} aria-label="close"
+                                    onClick={() => { setIsFormOpen(false) }} >
+                                    <CloseIcon />
+                                </IconButton>
+                                <div className="d-flex justify-content-betweenalign-items-center" style={{ padding: '10px' }}>
+                                    <div>
+                                        <h4 className="mb-0">
+                                            Nous avons enregistré {groupPie1?.find(entry => entry.name === 'without Group')?.value || 0} inscriptions qui ne sont pas rattachées à un groupe.
+                                        </h4>
+                                    </div>
 
-                            <UserListToolbarP
-                                title="Liste des abonnés"
-                                numSelected={selected.length}
-                                filterName={filterName}
-                                onFilterName={handleFilterByName}
-                                onDeleteSelected={() => {
-                                    handleDeleteClick2();
-                                }}
-                                isFilterd={1}
-                                selectList={groups}
-                                onGroupSelected={(value) => {
-                                    handleSortClick(value);
-                                }}
-                            />
-                            {/* <!-- table --> */}
-                            <>
+                                </div>
+                                <form
+                                    onSubmit={handleSubmit}
+                                >
+                                    <Grid container spacing={1} >
+                                        {
+                                            groups.map((option) => (
+                                                (option.capacity !== option.nbrStudents) && (
+                                                    <Grid item xs={(groups.length < 4 && 12) || (groups.length >= 4 && groups.length < 7 && 6) || 3} key={option.id}>
 
-                                <Scrollbar>
-                                    <TableContainer sx={{ width: "100%", height: 300 }}>
-                                        <Table>
-                                            <UserListHead
-                                                order={order}
-                                                orderBy={orderBy}
-                                                headLabel={TABLE_HEAD}
-                                                rowCount={filtered.length}
-                                                numSelected={selected.length}
-                                                onRequestSort={handleRequestSort}
-                                                onSelectAllClick={handleSelectAllClick}
+                                                        <FormGroup>
+                                                            <FormControlLabel
+                                                                control={<Checkbox checked={checkedItems[option.id]?.value || false}
+                                                                    disabled={subWithOutGroup === 0 && (!checkedItems[option.id]?.value)}
+                                                                    onChange={() => handleCheckboxChange(option)} />}
+                                                                label={`Groupe ${option.name} [${option.capacity - option.nbrStudents} Places Libre]`}
+                                                            />
+                                                        </FormGroup>
+                                                    </Grid>
 
-                                            />
-                                            <TableBody>
-                                                {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                    const { id, name, image, group, subDate } = row;
+                                                )))
+                                        }
 
-                                                    return (
-                                                        <TableRow hover key={id}>
-                                                            <TableCell padding="checkbox" >
-                                                                <Checkbox
-                                                                    checked={selected.indexOf(id) !== -1}
-                                                                    onChange={(event) => handleClick(event, id)}
-                                                                />
-                                                            </TableCell>
-                                                            <TableCell >
-                                                                <Stack direction="row" alignItems="center" >
-                                                                    <Avatar alt={name} src={image} style={{ width: '40px', height: '40px', marginRight: '5px' }} />
-
-                                                                    <Typography variant="subtitle2" noWrap>
-                                                                        {name}
-                                                                    </Typography>
-
-                                                                </Stack>
-                                                            </TableCell>
-                                                            <TableCell  >
-                                                                {formatDate(subDate)}
-                                                            </TableCell>
-                                                            <TableCell >
-                                                                {group !== null ? group :
-                                                                    <>
-                                                                        <Label color='success'>{"Non Spécifié"}</Label>
-                                                                    </>}
-                                                            </TableCell>
-
-
-                                                            <TableCell >
-
-                                                                <IconButton size="small" onClick={(e) => {
-                                                                    handleOpenMenu(e);
-                                                                    setMenuTargetRow(row);
-                                                                }}>
-                                                                    <Iconify icon={'eva:more-vertical-fill'} />
-                                                                </IconButton>
-
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    );
-                                                })}
-                                                {emptyRows > 0 && (
-                                                    <TableRow style={{ height: 53 * emptyRows }}>
-                                                        <TableCell colSpan={6} />
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-
-                                            {isNotFound && (
-                                                <TableBody>
-                                                    <TableRow>
-                                                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                                                            <Paper
-                                                                sx={{
-                                                                    textAlign: 'center',
-                                                                }}
-                                                            >
-                                                                <Typography variant="h6" paragraph>
-                                                                    Résultat non trouvé
-                                                                </Typography>
-
-                                                                <Typography variant="body2">
-                                                                    aucun résultat trouvé ! &nbsp;
-                                                                    <strong>&quot;{filterName}&quot;</strong>.
-                                                                    <br /> Réssayez.
-                                                                </Typography>
-                                                            </Paper>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </TableBody>
-                                            )}
-                                        </Table>
-                                    </TableContainer>
-                                </Scrollbar>
-
-                                <TablePagination
-                                    rowsPerPageOptions={[5, 10, 25]}
-                                    component="div"
-                                    count={filtered.length}
-                                    rowsPerPage={rowsPerPage}
-                                    page={page}
-                                    onPageChange={handleChangePage}
-                                    onRowsPerPageChange={handleChangeRowsPerPage}
-                                />
-                            </>
-
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        Il y a {selectedPlacesNMB} places qui ont été définies.
+                                    </Grid>
+                                    <Grid item xs={12} style={{ paddingTop: "10px" }}>
+                                        <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+                                            <Button
+                                                type="submit"
+                                                variant="contained"
+                                                style={(subWithOutGroup !== 0) ? { backgroundColor: 'gray', color: 'white' } : { backgroundColor: 'blue', color: 'white' }}
+                                                disabled={subWithOutGroup !== 0}
+                                            >
+                                                Affecter
+                                            </Button>
+                                        </Box>
+                                    </Grid>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                :
+                <>
+                    <div className="col-md-12 col-xl-8 col-12">
+                        <div className="row">
+                            <div className="col-md-12 mb-5">
+                                {/* <!-- card --> */}
+                                <div className="card" >
+                                    {/* <!-- card body --> */}
 
-            <div className="col-md-12 col-xl-4 col-12">
-                <div className="card mb-5">
-                    {/* <!-- Card header --> */}
-                    <div className="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 className="mb-0">Répartition des Abonnés par Groupe
-                            </h4>
+                                    <UserListToolbarP
+                                        title="Liste des abonnés"
+                                        numSelected={selected.length}
+                                        filterName={filterName}
+                                        onFilterName={handleFilterByName}
+                                        onDeleteSelected={() => {
+                                            handleDeleteClick2();
+                                        }}
+                                        isFilterd={1}
+                                        selectList={groups}
+                                        onGroupSelected={(value) => {
+                                            handleSortClick(value);
+                                        }}
+                                    />
+                                    {/* <!-- table --> */}
+                                    <>
+
+                                        <Scrollbar>
+                                            <TableContainer sx={{ width: "100%", height: 300 }}>
+                                                <Table>
+                                                    <UserListHead
+                                                        order={order}
+                                                        orderBy={orderBy}
+                                                        headLabel={TABLE_HEAD}
+                                                        rowCount={filtered.length}
+                                                        numSelected={selected.length}
+                                                        onRequestSort={handleRequestSort}
+                                                        onSelectAllClick={handleSelectAllClick}
+
+                                                    />
+                                                    <TableBody>
+                                                        {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                                                            const { id, name, image, group, subDate } = row;
+                                                            const isEditing = updateMode && menuTargetRow && menuTargetRow.id === row.id;
+                                                            return (
+                                                                <TableRow hover key={id}>
+                                                                    <TableCell padding="checkbox" >
+                                                                        <Checkbox
+                                                                            checked={selected.indexOf(id) !== -1}
+                                                                            onChange={(event) => handleClick(event, id)}
+                                                                        />
+                                                                    </TableCell>
+                                                                    <TableCell >
+                                                                        <Stack direction="row" alignItems="center" >
+                                                                            <Avatar alt={name} src={image} style={{ width: '40px', height: '40px', marginRight: '5px' }} />
+
+                                                                            <Typography variant="subtitle2" noWrap>
+                                                                                {name}
+                                                                            </Typography>
+
+                                                                        </Stack>
+                                                                    </TableCell>
+                                                                    <TableCell  >
+                                                                        {formatDate(subDate)}
+                                                                    </TableCell>
+                                                                    <TableCell >
+                                                                        {isEditing ? (
+
+                                                                            <Select
+                                                                                fullWidth
+                                                                                size="small"
+                                                                                value={menuTargetRow.group ? menuTargetRow.group.id : "aucun"}
+                                                                                onChange={(e) => {
+                                                                                    const value = e.target.value;
+                                                                                    if (value === "aucun") {
+                                                                                        setMenuTargetRow({
+                                                                                            ...menuTargetRow,
+                                                                                            group: null // Stored value
+                                                                                        })
+                                                                                    }
+                                                                                    else {
+                                                                                        const obj = groups.find(obj => obj.id === value)
+                                                                                        setMenuTargetRow({
+                                                                                            ...menuTargetRow,
+                                                                                            group: obj // Stored value
+                                                                                        })
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                <MenuItem key="aucun" value="aucun">
+                                                                                    Non spécifié
+                                                                                </MenuItem>
+                                                                                {
+                                                                                    groups.map((option) => (
+                                                                                        (option.capacity !== option.nbrStudents || option.id === selectdGroup) && (
+                                                                                            <MenuItem key={option.id} value={option.id}>
+                                                                                                {option.name}
+                                                                                            </MenuItem>
+                                                                                        )
+                                                                                    ))
+                                                                                }
+
+                                                                            </Select>
+                                                                        ) :
+                                                                            (group !== null ? group.name :
+                                                                                <>
+                                                                                    <Label color='success'>Non Spécifié</Label>
+                                                                                </>
+                                                                            )
+                                                                        }
+                                                                    </TableCell>
+
+
+                                                                    <TableCell >
+                                                                        {isEditing ? (
+                                                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                                <IconButton size="small"
+                                                                                    onClick={() => handleUpdateClick()}
+                                                                                >
+                                                                                    <Iconify icon="icon-park-solid:correct" style={{ color: 'blue', margin: '2px' }} />
+                                                                                </IconButton>
+                                                                                <IconButton size="small"
+                                                                                    onClick={() => {
+                                                                                        setUpdateMode(false);
+                                                                                        setMenuTargetRow(null);
+                                                                                        setSelectdGroup(null);
+                                                                                    }}
+                                                                                >
+                                                                                    <Iconify icon="foundation:x" style={{ color: 'red', margin: '2px' }} />
+                                                                                </IconButton>
+                                                                            </div>
+
+                                                                        ) : (
+                                                                            <IconButton size="small" onClick={(e) => {
+                                                                                handleOpenMenu(e);
+                                                                                setUpdateMode(false);
+                                                                                setMenuTargetRow(row);
+                                                                                setSelectdGroup(row.group?.id);
+                                                                            }}>
+                                                                                <Iconify icon={'eva:more-vertical-fill'} />
+                                                                            </IconButton>)}
+
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            );
+                                                        })}
+                                                        {emptyRows > 0 && (
+                                                            <TableRow style={{ height: 53 * emptyRows }}>
+                                                                <TableCell colSpan={6} />
+                                                            </TableRow>
+                                                        )}
+                                                    </TableBody>
+
+                                                    {isNotFound && (
+                                                        <TableBody>
+                                                            <TableRow>
+                                                                <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                                                    <Paper
+                                                                        sx={{
+                                                                            textAlign: 'center',
+                                                                        }}
+                                                                    >
+                                                                        <Typography variant="h6" paragraph>
+                                                                            Résultat non trouvé
+                                                                        </Typography>
+
+                                                                        <Typography variant="body2">
+                                                                            aucun résultat trouvé ! &nbsp;
+                                                                            <strong>&quot;{filterName}&quot;</strong>.
+                                                                            <br /> Réssayez.
+                                                                        </Typography>
+                                                                    </Paper>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        </TableBody>
+                                                    )}
+                                                </Table>
+                                            </TableContainer>
+                                        </Scrollbar>
+
+                                        <TablePagination
+                                            rowsPerPageOptions={[5, 10, 25]}
+                                            component="div"
+                                            count={filtered.length}
+                                            rowsPerPage={rowsPerPage}
+                                            page={page}
+                                            onPageChange={handleChangePage}
+                                            onRowsPerPageChange={handleChangeRowsPerPage}
+                                        />
+                                    </>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {/* <!-- Card body --> */}
-                    <div className="card-body" style={{ display: 'flex', alignItems: 'center' }}>
-                        {(groupPie1 !== null) ?
-                            <PieChart
-                                series={[
-                                    {
-                                        paddingAngle: 5,
-                                        innerRadius: 50,
-                                        outerRadius: 100,
-                                        data: groupPie1,
-                                    },
-                                ]}
-                                width={350}
-                                height={300}
-                                margin={{ right: 150 }}
-                            // legend={{ hidden: true }}
-                            /> : null}
+
+                    <div className="col-md-12 col-xl-4 col-12">
+                        <div className="card mb-5">
+                            {/* <!-- Card header --> */}
+                            <div className="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 className="mb-0">Répartition des Abonnés par Groupe
+                                    </h4>
+                                </div>
+                            </div>
+                            {/* <!-- Card body --> */}
+                            <div className="card-body" >
+                                {(groupPie1 !== null) ?
+                                    <PieChart
+                                        series={[
+                                            {
+                                                paddingAngle: 2,
+                                                innerRadius: 50,
+                                                outerRadius: 90,
+                                                data: groupPie1,
+                                            },
+                                        ]}
+                                        width={350}
+                                        height={265}
+                                        margin={{ right: 150 }}
+                                    // legend={{ hidden: true }}
+                                    /> : null}
+                                <Button className="" variant="contained" disabled={isDesabled} style={{ width: "100%" }} startIcon={<Iconify icon="eva:plus-fill" />}
+                                    onClick={() => { setIsFormOpen(true) }}
+
+                                >
+                                    Affecter Les Abonnée Aux Groupes
+                                </Button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-
+                </>
+            }
             <Popover
                 open={Boolean(open)}
                 anchorEl={open}
@@ -485,7 +724,10 @@ const SubscribersComponnent = (props) => {
                     },
                 }}
             >
-                <MenuItem onClick={() => { }}>
+                <MenuItem onClick={() => {
+                    setUpdateMode(true);
+                    handleCloseMenu();
+                }}>
                     <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
                     Modifier
                 </MenuItem>

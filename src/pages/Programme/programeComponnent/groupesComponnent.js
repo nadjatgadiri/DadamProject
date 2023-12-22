@@ -24,17 +24,17 @@ import {
     TableContainer,
     TablePagination,
     DialogTitle,
-    Grid, Card, Box, TextField, InputLabel, FormControl, Chip
+    Grid, Card, Box, TextField, InputLabel, FormControl, Chip,
 } from '@mui/material';
 import { Buffer } from "buffer";
 import { Link } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import {
-    Unstable_NumberInput as NumberInput,
-    numberInputClasses,
-} from '@mui/base/Unstable_NumberInput';
+import { Unstable_NumberInput as BaseNumberInput } from '@mui/base/Unstable_NumberInput';
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 // components
 import Label from '../../../components/label';
 import Iconify from '../../../components/iconify';
@@ -44,6 +44,8 @@ import Scrollbar from '../../../components/scrollbar';
 import { UserListHead, UserListToolbarP } from '../../../sections/@dashboard/user';
 // api importation
 import { listTeachersForGroup } from '../../../RequestManagement/teacherManagement';
+import { addGroupe, updateGroupe, deleteGroupe } from '../../../RequestManagement/groupManagement';
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -55,124 +57,118 @@ const TABLE_HEAD = [
 ];
 
 // ----------------------------------------------------------------------
-const grey = {
-    50: '#f6f8fa',
-    100: '#eaeef2',
-    200: '#d0d7de',
-    300: '#afb8c1',
-    400: '#8c959f',
-    500: '#6e7781',
-    600: '#57606a',
-    700: '#424a53',
-    800: '#32383f',
-    900: '#24292f',
+
+
+
+
+const blue = {
+    100: '#daecff',
+    200: '#b6daff',
+    300: '#66b2ff',
+    400: '#3399ff',
+    500: '#007fff',
+    600: '#0072e5',
+    700: '#0059B2',
+    800: '#004c99',
 };
+
+const grey = {
+    50: '#F3F6F9',
+    100: '#E5EAF2',
+    200: '#DAE2ED',
+    300: '#C7D0DD',
+    400: '#B0B8C4',
+    500: '#9DA8B7',
+    600: '#6B7A90',
+    700: '#434D5B',
+    800: '#303740',
+    900: '#1C2025',
+};
+
 const StyledInputRoot = styled('div')(
     ({ theme }) => `
     font-family: IBM Plex Sans, sans-serif;
     font-weight: 400;
-    border-radius: 8px;
-    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
-    background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
-    border: 1px solid ${theme.palette.mode === 'dark' ? grey[700] : grey[200]};
-    display: grid;
-    grid-template-columns: 1fr 19px;
-    grid-template-rows: 1fr 1fr;
-    overflow: hidden;
-    height:55px;
-    &:hover {
-        border-color: black;
-      }
-    &.${numberInputClasses.focused} {
-      border: 2px solid blue;
-    }
-    // firefox
-    &:focus-visible {
-      outline: 0;
-    }
-`
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[500]};
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+  `,
 );
 
-const StyledInputElement = styled('input')(
+const StyledInput = styled('input')(
     ({ theme }) => `
     font-size: 0.875rem;
     font-family: inherit;
     font-weight: 400;
-    line-height: 1.5;
-    grid-column: 1/2;
-    grid-row: 1/3;
+    line-height: 1.375;
     color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
-    background: inherit;
-    border: none;
-    border-radius: inherit;
-    padding: 8px 12px;
+    background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
+    border: 1px solid ${theme.palette.mode === 'dark' ? grey[700] : grey[200]};
+    box-shadow: 0px 2px 4px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0, 0.5)' : 'rgba(0,0,0, 0.05)'
+        };
+    border-radius: 8px;
+    margin: 0 8px;
+    padding: 10px 12px;
     outline: 0;
+    min-width: 0;
+    width: 4rem;
+    text-align: center;
+  
+    &:hover {
+      border-color: ${blue[400]};
+    }
+  
+    &:focus {
+      border-color: ${blue[400]};
+      box-shadow: 0 0 0 3px ${theme.palette.mode === 'dark' ? blue[700] : blue[200]};
+    }
+  
+    &:focus-visible {
+      outline: 0;
+    }
   `,
 );
 
 const StyledButton = styled('button')(
     ({ theme }) => `
+    font-family: IBM Plex Sans, sans-serif;
+    font-size: 0.875rem;
+    box-sizing: border-box;
+    line-height: 1.5;
+    border: 1px solid;
+    border-radius: 999px;
+    border-color: ${theme.palette.mode === 'dark' ? grey[800] : grey[200]};
+    background: ${theme.palette.mode === 'dark' ? grey[900] : grey[50]};
+    color: ${theme.palette.mode === 'dark' ? grey[200] : grey[900]};
+    width: 32px;
+    height: 32px;
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
     align-items: center;
-    appearance: none;
-    padding: 0;
-    width: 19px;
-    height: 19px;
-    font-family: system-ui, sans-serif;
-    font-size: 0.875rem;
-    line-height: 1;
-    box-sizing: border-box;
-    background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
-    border: 0;
-    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
     transition-property: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 120ms;
   
     &:hover {
-      background: ${theme.palette.mode === 'dark' ? grey[800] : grey[50]};
-      border-color: ${theme.palette.mode === 'dark' ? grey[600] : grey[300]};
       cursor: pointer;
+      background: ${theme.palette.mode === 'dark' ? blue[700] : blue[500]};
+      border-color: ${theme.palette.mode === 'dark' ? blue[500] : blue[400]};
+      color: ${grey[50]};
     }
   
-    &.${numberInputClasses.incrementButton} {
-      grid-column: 2/3;
-      grid-row: 1/2;
-    }
-    &.${numberInputClasses.decrementButton} {
-      grid-column: 2/3;
-      grid-row: 2/3;
+    &:focus-visible {
+      outline: 0;
     }
   
-    & .arrow {
-      transform: translateY(-1px);
+    &.increment {
+      order: 1;
     }
   `,
 );
-const CustomNumberInput = React.forwardRef((props, ref) => {
-    return (
-        <NumberInput
-            slots={{
-                root: StyledInputRoot,
-                input: StyledInputElement,
-                incrementButton: StyledButton,
-                decrementButton: StyledButton,
-            }}
-            slotProps={{
-                incrementButton: {
-                    children: <span className="arrow">▴</span>,
-                },
-                decrementButton: {
-                    children: <span className="arrow">▾</span>,
-                },
-            }}
-            {...props}
-            ref={ref}
-        />
-    );
-});
+
 /** table functions  */
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -274,6 +270,7 @@ const GroupesComponnent = (props) => {
     const [isDialogOpen2, setIsDialogOpen2] = useState(false);
     /** end */
 
+
     /** api */
     const fetchData = async () => {
         setData(groups);
@@ -303,7 +300,7 @@ const GroupesComponnent = (props) => {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
-        console.log(teachersList);
+
     };
     useEffect(() => {
         // Check if groups have been received from props
@@ -313,19 +310,15 @@ const GroupesComponnent = (props) => {
 
     }, [groups]);
     /** end api */
+
     // multiselect
     const theme = useTheme();
-    const [personName, setPersonName] = React.useState([]);
-
-    // const handleChange = (event) => {
-    //     const {
-    //         target: { value },
-    //     } = event;
-    //     setPersonName(
-    //         // On autofill we get a stringified value.
-    //         typeof value === 'string' ? value.split(',') : value,
-    //     );
-    // };
+    const [personName, setPersonName] = useState([]);
+    const [title, setTitle] = useState("");
+    const [feedback, setFeedback] = useState("");
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isFormOpen2, setIsFormOpen2] = useState(false);
+    const [capacity, setCapacity] = useState(0);
     const handleChange = (event) => {
         const {
             target: { value },
@@ -336,8 +329,99 @@ const GroupesComponnent = (props) => {
         // Now 'selectedTeacherIDs' contains an array of selected teacher IDs.
         setPersonName(selectedTeacherIDs);
         // You can use 'selectedTeacherIDs' for any further processing.
+        console.log(personName);
+    };
+    const NumberInput = React.forwardRef((props, ref) => {
+        return (
+            <BaseNumberInput
+                slots={{
+                    root: StyledInputRoot,
+                    input: StyledInput,
+                    incrementButton: StyledButton,
+                    decrementButton: StyledButton,
+                }}
+                slotProps={{
+                    incrementButton: {
+                        children: <AddIcon fontSize="small" />,
+                        className: 'increment',
+                    },
+                    decrementButton: {
+                        children: <RemoveIcon fontSize="small" />,
+                    },
+                }}
+                {...props}
+                value={capacity}
+                onChange={(event, val) => setCapacity(val)}
+                ref={ref}
+            />
+        );
+    });
+    /** add Groups */
+    const handleSubmit = async (e) => {
+        setFeedback("");
+        e.preventDefault();
+
+        if (!capacity) {
+            setFeedback('la capacity est obligatoire!');
+        }
+        else {
+            const body = {
+                "GroupeName": title, "capacity": capacity, "teachers": personName, "progID": idProg
+            }
+            try {
+                const response = await addGroupe(body);
+                if (response && response.code === 200) {
+                    toast.success(`Le goupe est ajouté avec succès!`, {
+                        position: toast.POSITION.TOP_RIGHT,
+                    });
+                    setCapacity(0);
+                    setTitle('');
+                    setPersonName([]);
+                    setFeedback("");
+                    await props.updateData();
+                } else {
+                    setFeedback(response.message || 'Erreur lors de l\'ajout du groupe.');
+                }
+            } catch (error) {
+                setFeedback(error.message || 'Une erreur s\'est produite. Veuillez réessayer.');
+            }
+        }
+
     };
 
+    const handleSubmitUpdate = async (e) => {
+        setFeedback("");
+        e.preventDefault();
+
+        if (!capacity) {
+            setFeedback('la capacity est obligatoire!');
+        }
+        else {
+            const body = {
+                "GroupeName": title, "capacity": capacity, "teachers": personName, "progID": idProg
+            }
+            try {
+                const response = await updateGroupe(body, menuTargetRow.id);
+                if (response && response.code === 200) {
+                    toast.success(`Le goupe a été modifier avec succès!`, {
+                        position: toast.POSITION.TOP_RIGHT,
+                    });
+                    setCapacity(0);
+                    setTitle('');
+                    setPersonName([]);
+                    setFeedback("");
+                    await props.updateData();
+                    setIsFormOpen2(false);
+                } else {
+                    setFeedback(response.message || 'Erreur lors de la modife du groupe.');
+                }
+            } catch (error) {
+                setFeedback(error.message || 'Une erreur s\'est produite. Veuillez réessayer.');
+            }
+        }
+
+    };
+    /** end  */
     /** dialog handdel */
 
     // delete
@@ -354,12 +438,13 @@ const GroupesComponnent = (props) => {
     const handleCancelClick2 = () => {
         setIsDialogOpen2(false);
     };
-    const handleConfirmClick = () => {
-        if (menuTargetRow && menuTargetRow.ID_ROWID) {
-            onSubmitDeleteProgram(menuTargetRow.ID_ROWID);
+    const handleConfirmClick = async () => {
+        if (menuTargetRow && menuTargetRow.id) {
+            onSubmitDeleteProgram(menuTargetRow.id);
         }
         setIsDialogOpen(false); // close the dialog after deleting
         setMenuTargetRow(null); // reset the target row
+        await props.updateData();
     };
     const handleConfirmClick2 = () => {
         onSubmitDeleteMultiple();
@@ -367,32 +452,31 @@ const GroupesComponnent = (props) => {
     };
     /** end */
     /** submit */
-    const onSubmitDeleteProgram = async (progId) => {
-        // try {
-        //     console.log(progId);
-        //     const response = await deleteProgramme(progId);
+    const onSubmitDeleteProgram = async (groupId) => {
+        try {
+            const response = await deleteGroupe(groupId);
 
-        //     if (response.code === 200) {
-        //         // Delete was successful, now remove the cat from your local state
-        //         toast.success(`Le programme est bien supprimer.`, {
-        //             position: toast.POSITION.TOP_RIGHT,
-        //         });
-        //         fetchData();
-        //     } else {
-        //         toast.error(`Error! + ${response.message}`, {
-        //             position: toast.POSITION.TOP_RIGHT,
-        //         });
-        //         console.error('Error deleting student:', response.message);
-        //     }
-        // } catch (error) {
-        //     console.error('Error:', error.message);
-        // }
+            if (response.code === 200) {
+                // Delete was successful, now remove the cat from your local state
+                toast.success(`Le groupe est bien supprimer.`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+            } else {
+                toast.error(`Error! + ${response.message}`, {
+                    position: toast.POSITION.TOP_RIGHT,
+                });
+                console.error('Error deleting group:', response.message);
+            }
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
     };
     const onSubmitDeleteMultiple = async () => {
         // Using Promise.all to make simultaneous delete requests for each selected student
         await Promise.all(selected.map((id) => onSubmitDeleteProgram(id)));
         await fetchData();
         setSelected([]); // Clear the selection after deleting
+        await props.updateData();
     };
     /** end submit */
     /** default used */
@@ -452,273 +536,352 @@ const GroupesComponnent = (props) => {
 
     return (
         <>
-            <>
-                <div className="col-md-12 col-xl-12 col-12">
-                    <div className="row">
-                        {/* <!-- card --> */}
-                        <div className="col-md-12 mb-5">
-                            <div className="card" style={{
-                                padding: '20px'
-                            }}>
-                                <form
-                                // onSubmit={handleSubmit}
-                                >
-                                    <Grid container spacing={1}>
-                                        <Grid item xs={3}>
-                                            <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Groupe Name</InputLabel>
-                                            <TextField
-                                                name="title"
-                                                // label="Titre"
-                                                // value={title}
-                                                // onChange={(e) => setTitle(e.target.value)}
-                                                required
-                                                fullWidth
-                                            // error={errors.title}
-                                            />
-                                        </Grid>
-                                        <Grid item xs={3}>
-                                            <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Nombre De Place</InputLabel>
-                                            <CustomNumberInput
-                                                aria-label="Demo number input"
-                                                placeholder="Type a number…"
-                                            // value={nmbParticipant}
-                                            // onChange={(event, val) => setNMBParticipant(val)}
-                                            />
-                                        </Grid>
-                                        <Grid item className="col-sm-5 col-md-6">
-                                            <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Les Enseignantes</InputLabel>
-                                            <Select
-                                                style={{ width: "100%" }}
-                                                labelId="demo-multiple-name-label"
-                                                id="demo-multiple-name"
-                                                multiple
-                                                value={personName}
-                                                onChange={handleChange}
-                                                input={<OutlinedInput />}
-                                                MenuProps={MenuProps}
-                                            >
-                                                {teachersList.map((teacher) => (
-                                                    <MenuItem
-                                                        key={teacher.ID_ROWID}
-                                                        value={teacher.ID_ROWID}
-                                                        style={getStyles(teacher.name, personName, theme)}
-                                                    >
-                                                        {teacher.name}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        </Grid>
-
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        {/* <Typography variant="body2" color="error">{feedback}</Typography> */}
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
-                                            <Button
-                                                type="submit"
-                                                variant="contained"
-                                                style={{ backgroundColor: 'blue', color: 'white' }}>
-                                                Ajouter
-                                            </Button>
-                                        </Box>
-                                    </Grid>
-                                </form>
-                            </div>
-                        </div>
-                    </div></div></>
-
-            {data.length ?
+            {isFormOpen &&
                 (<>
                     <div className="col-md-12 col-xl-12 col-12">
                         <div className="row">
+                            {/* <!-- card --> */}
                             <div className="col-md-12 mb-5">
-                                <div className="card bg-light-primary" style={{
+                                <div className="card" style={{
                                     padding: '20px'
                                 }}>
+                                    <IconButton style={{ position: 'absolute', top: 0, right: 0 }} aria-label="close"
+                                        onClick={() => { setIsFormOpen(false) }} >
+                                        <CloseIcon />
+                                    </IconButton>
+                                    <form
+                                        onSubmit={handleSubmit}
+                                    >
+                                        <Grid container spacing={1}>
+                                            <Grid item xs={3.5}>
+                                                <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Groupe Name</InputLabel>
+                                                <TextField
+                                                    name="title"
+                                                    value={title}
+                                                    onChange={(e) => setTitle(e.target.value)}
+                                                    required
+                                                    fullWidth
+                                                />
+                                            </Grid>
+                                            <Grid item xs={0.25} />
+                                            <Grid item xs={2}>
+                                                <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Nombre De Place</InputLabel>
+                                                <NumberInput aria-label="Quantity Input" min={0} />
+                                            </Grid>
+                                            <Grid item xs={0.25} />
+                                            <Grid item className="col-sm-5 col-md-6">
+                                                <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Les Enseignantes</InputLabel>
+                                                <Select
+                                                    style={{ width: "100%" }}
+                                                    labelId="demo-multiple-name-label"
+                                                    id="demo-multiple-name"
+                                                    multiple
+                                                    value={personName}
+                                                    onChange={handleChange}
+                                                    input={<OutlinedInput />}
+                                                    MenuProps={MenuProps}
+                                                >
+                                                    {teachersList.map((teacher) => (
+                                                        <MenuItem
+                                                            key={teacher.ID_ROWID}
+                                                            value={teacher.ID_ROWID}
+                                                            style={getStyles(teacher.name, personName, theme)}
+                                                        >
+                                                            {teacher.name}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </Grid>
 
-                                    <div style={{ textAlign: 'center', }}>
-                                        <Typography variant="h6" paragraph >
-                                            Il n'y a pas des groupes
-                                        </Typography>
-                                        <Button className="" variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-                                            Ajouter
-                                        </Button>
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <Typography variant="body2" color="error">{feedback}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} style={{ paddingTop: "10px" }}>
+                                            <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+                                                <Button
+                                                    type="submit"
+                                                    variant="contained"
+                                                    style={{ backgroundColor: 'blue', color: 'white' }}>
+                                                    Ajouter
+                                                </Button>
+                                            </Box>
+                                        </Grid>
+                                    </form>
+                                </div>
+                            </div>
+                        </div></div>
+                </>)}
+            {isFormOpen2 &&
+                (<>
+                    <div className="col-md-12 col-xl-12 col-12">
+                        <div className="row">
+                            {/* <!-- card --> */}
+                            <div className="col-md-12 mb-5">
+                                <div className="card" style={{
+                                    padding: '20px'
+                                }}>
+                                    <IconButton style={{ position: 'absolute', top: 0, right: 0 }} aria-label="close"
+                                        onClick={() => { setIsFormOpen2(false) }} >
+                                        <CloseIcon />
+                                    </IconButton>
+                                    <form
+                                        onSubmit={handleSubmitUpdate}
+                                    >
+                                        <Grid container spacing={1}>
+                                            <Grid item xs={3.5}>
+                                                <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Groupe Name</InputLabel>
+                                                <TextField
+                                                    name="title"
+                                                    value={title}
+                                                    onChange={(e) => setTitle(e.target.value)}
+                                                    required
+                                                    fullWidth
+                                                />
+                                            </Grid>
+                                            <Grid item xs={0.25} />
+                                            <Grid item xs={2}>
+                                                <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Nombre De Place</InputLabel>
+                                                <NumberInput aria-label="Quantity Input" min={0} />
+                                            </Grid>
+                                            <Grid item xs={0.25} />
+                                            <Grid item className="col-sm-5 col-md-6">
+                                                <InputLabel htmlFor="role" style={{ paddingBottom: "10px" }}>Les Enseignantes</InputLabel>
+                                                <Select
+                                                    style={{ width: "100%" }}
+                                                    labelId="demo-multiple-name-label"
+                                                    id="demo-multiple-name"
+                                                    multiple
+                                                    value={personName}
+                                                    onChange={handleChange}
+                                                    input={<OutlinedInput />}
+                                                    MenuProps={MenuProps}
+                                                >
+                                                    {teachersList.map((teacher) => (
+                                                        <MenuItem
+                                                            key={teacher.ID_ROWID}
+                                                            value={teacher.ID_ROWID}
+                                                            style={getStyles(teacher.name, personName, theme)}
+                                                        >
+                                                            {teacher.name}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </Grid>
+
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <Typography variant="body2" color="error">{feedback}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} style={{ paddingTop: "10px" }}>
+                                            <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+                                                <Button
+                                                    type="submit"
+                                                    variant="contained"
+                                                    style={{ backgroundColor: 'blue', color: 'white' }}>
+                                                    Modifier
+                                                </Button>
+                                            </Box>
+                                        </Grid>
+                                    </form>
+                                </div>
+                            </div>
+                        </div></div>
+                </>)}
+            {!isFormOpen && !isFormOpen2 ?
+                (!data.length ?
+                    (<>
+                        <div className="col-md-12 col-xl-12 col-12">
+                            <div className="row">
+                                <div className="col-md-12 mb-5">
+                                    <div className="card bg-light-primary" style={{
+                                        padding: '20px'
+                                    }}>
+
+                                        <div style={{ textAlign: 'center', }}>
+                                            <Typography variant="h6" paragraph >
+                                                Il n'y a pas des groupes
+                                            </Typography>
+                                            <Button className="" variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => { setIsFormOpen(true) }} >
+                                                Ajouter
+                                            </Button>
+                                        </div>
+
                                     </div>
 
                                 </div>
-
                             </div>
                         </div>
-                    </div>
+
+                    </>)
+                    :
+                    (<>
+                        <div className="col-md-12 col-xl-8 col-12">
+                            <div className="row">
+                                <div className="col-md-12 mb-5">
+                                    {/* <!-- card --> */}
+                                    <div className="card" >
+                                        {/* <!-- card body --> */}
+
+                                        <UserListToolbarP
+                                            title="Liste des groupes"
+                                            numSelected={selected.length}
+                                            filterName={filterName}
+                                            onFilterName={handleFilterByName}
+                                            onDeleteSelected={() => {
+                                                handleDeleteClick2();
+                                            }}
+                                            selectList={groups}
+                                            isFilterd={false}
+                                            onGroupSelected={(value) => {
+                                                handleSortClick(value);
+                                            }}
+                                        />
+                                        {/* <!-- table --> */}
+                                        <>
+
+                                            <Scrollbar>
+                                                <TableContainer sx={{ maxWidth: 790, height: 300 }}>
+                                                    <Table>
+                                                        <UserListHead
+                                                            order={order}
+                                                            orderBy={orderBy}
+                                                            headLabel={TABLE_HEAD}
+                                                            rowCount={filtered.length}
+                                                            numSelected={selected.length}
+                                                            onRequestSort={handleRequestSort}
+                                                            onSelectAllClick={handleSelectAllClick}
+
+                                                        />
+                                                        <TableBody>
+                                                            {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                                                                const { id, name, teachers, createdAt, capacity } = row;
+
+                                                                return (
+                                                                    <TableRow hover key={id}>
+                                                                        <TableCell padding="checkbox" >
+                                                                            <Checkbox
+                                                                                checked={selected.indexOf(id) !== -1}
+                                                                                onChange={(event) => handleClick(event, id)}
+                                                                            />
+                                                                        </TableCell>
+                                                                        <TableCell >
+                                                                            <Stack direction="row" alignItems="center" >
+                                                                                <Typography variant="subtitle2" noWrap>
+                                                                                    {name}
+                                                                                </Typography>
+
+                                                                            </Stack>
+                                                                        </TableCell>
+                                                                        <TableCell  >
+                                                                            {formatDate(createdAt)}
+                                                                        </TableCell>
+                                                                        <TableCell  >
+                                                                            {capacity}
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            {teachers?.map((teacher, index) => (
+                                                                                <span key={index}>{`${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}${index !== teachers.length - 1 ? ', ' : ''}`}</span>
+                                                                            ))}
+                                                                        </TableCell>
 
 
-                </>)
-                :
-                (<>
-                    <div className="col-md-12 col-xl-8 col-12">
-                        <div className="row">
-                            <div className="col-md-12 mb-5">
-                                {/* <!-- card --> */}
-                                <div className="card" >
-                                    {/* <!-- card body --> */}
 
-                                    <UserListToolbarP
-                                        title="Liste des groupes"
-                                        numSelected={selected.length}
-                                        filterName={filterName}
-                                        onFilterName={handleFilterByName}
-                                        onDeleteSelected={() => {
-                                            handleDeleteClick2();
-                                        }}
-                                        selectList={groups}
-                                        isFilterd={false}
-                                        onGroupSelected={(value) => {
-                                            handleSortClick(value);
-                                        }}
-                                    />
-                                    {/* <!-- table --> */}
-                                    <>
+                                                                        <TableCell >
 
-                                        <Scrollbar>
-                                            <TableContainer sx={{ maxWidth: 790, height: 300 }}>
-                                                <Table>
-                                                    <UserListHead
-                                                        order={order}
-                                                        orderBy={orderBy}
-                                                        headLabel={TABLE_HEAD}
-                                                        rowCount={filtered.length}
-                                                        numSelected={selected.length}
-                                                        onRequestSort={handleRequestSort}
-                                                        onSelectAllClick={handleSelectAllClick}
+                                                                            <IconButton size="small" onClick={(e) => {
+                                                                                handleOpenMenu(e);
+                                                                                setMenuTargetRow(row);
+                                                                            }}>
+                                                                                <Iconify icon={'eva:more-vertical-fill'} />
+                                                                            </IconButton>
 
-                                                    />
-                                                    <TableBody>
-                                                        {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                            const { id, name, teachers, createdAt, nbrPlaces } = row;
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                );
+                                                            })}
+                                                            {emptyRows > 0 && (
+                                                                <TableRow style={{ height: 53 * emptyRows }}>
+                                                                    <TableCell colSpan={6} />
+                                                                </TableRow>
+                                                            )}
+                                                        </TableBody>
 
-                                                            return (
-                                                                <TableRow hover key={id}>
-                                                                    <TableCell padding="checkbox" >
-                                                                        <Checkbox
-                                                                            checked={selected.indexOf(id) !== -1}
-                                                                            onChange={(event) => handleClick(event, id)}
-                                                                        />
-                                                                    </TableCell>
-                                                                    <TableCell >
-                                                                        <Stack direction="row" alignItems="center" >
-                                                                            <Typography variant="subtitle2" noWrap>
-                                                                                {name}
+                                                        {isNotFound && (
+                                                            <TableBody>
+                                                                <TableRow>
+                                                                    <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                                                        <Paper
+                                                                            sx={{
+                                                                                textAlign: 'center',
+                                                                            }}
+                                                                        >
+                                                                            <Typography variant="h6" paragraph>
+                                                                                Résultat non trouvé
                                                                             </Typography>
 
-                                                                        </Stack>
-                                                                    </TableCell>
-                                                                    <TableCell  >
-                                                                        {formatDate(createdAt)}
-                                                                    </TableCell>
-                                                                    <TableCell  >
-                                                                        {nbrPlaces}
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        {teachers?.map((teacher, index) => (
-                                                                            <span key={index}>{`${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}${index !== teachers.length - 1 ? ', ' : ''}`}</span>
-                                                                        ))}
-                                                                    </TableCell>
-
-
-
-                                                                    <TableCell >
-
-                                                                        <IconButton size="small" onClick={(e) => {
-                                                                            handleOpenMenu(e);
-                                                                            setMenuTargetRow(row);
-                                                                        }}>
-                                                                            <Iconify icon={'eva:more-vertical-fill'} />
-                                                                        </IconButton>
-
+                                                                            <Typography variant="body2">
+                                                                                aucun résultat trouvé ! &nbsp;
+                                                                                <strong>&quot;{filterName}&quot;</strong>.
+                                                                                <br /> Réssayez.
+                                                                            </Typography>
+                                                                        </Paper>
                                                                     </TableCell>
                                                                 </TableRow>
-                                                            );
-                                                        })}
-                                                        {emptyRows > 0 && (
-                                                            <TableRow style={{ height: 53 * emptyRows }}>
-                                                                <TableCell colSpan={6} />
-                                                            </TableRow>
+                                                            </TableBody>
                                                         )}
-                                                    </TableBody>
+                                                    </Table>
+                                                </TableContainer>
+                                            </Scrollbar>
 
-                                                    {isNotFound && (
-                                                        <TableBody>
-                                                            <TableRow>
-                                                                <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                                                                    <Paper
-                                                                        sx={{
-                                                                            textAlign: 'center',
-                                                                        }}
-                                                                    >
-                                                                        <Typography variant="h6" paragraph>
-                                                                            Résultat non trouvé
-                                                                        </Typography>
+                                            <TablePagination
+                                                rowsPerPageOptions={[5, 10, 25]}
+                                                component="div"
+                                                count={filtered.length}
+                                                rowsPerPage={rowsPerPage}
+                                                page={page}
+                                                onPageChange={handleChangePage}
+                                                onRowsPerPageChange={handleChangeRowsPerPage}
+                                            />
+                                        </>
 
-                                                                        <Typography variant="body2">
-                                                                            aucun résultat trouvé ! &nbsp;
-                                                                            <strong>&quot;{filterName}&quot;</strong>.
-                                                                            <br /> Réssayez.
-                                                                        </Typography>
-                                                                    </Paper>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        </TableBody>
-                                                    )}
-                                                </Table>
-                                            </TableContainer>
-                                        </Scrollbar>
-
-                                        <TablePagination
-                                            rowsPerPageOptions={[5, 10, 25]}
-                                            component="div"
-                                            count={filtered.length}
-                                            rowsPerPage={rowsPerPage}
-                                            page={page}
-                                            onPageChange={handleChangePage}
-                                            onRowsPerPageChange={handleChangeRowsPerPage}
-                                        />
-                                    </>
-
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="col-md-12 col-xl-4 col-12">
-                        <div className="card">
-                            {/* <!-- Card header --> */}
-                            <div className="card-header d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h4 className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
-                                    </h4>
+                        <div className="col-md-12 col-xl-4 col-12">
+                            <div className="card">
+                                {/* <!-- Card header --> */}
+                                <div className="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h4 className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
+                                        </h4>
+                                    </div>
+                                </div>
+                                {/* <!-- Card body --> */}
+                                <div className="card-body">
+                                    {(pieGroupData !== null) ?
+                                        <PieChart
+                                            series={[
+                                                {
+                                                    paddingAngle: 2,
+                                                    innerRadius: 50,
+                                                    outerRadius: 90,
+                                                    data: pieGroupData,
+                                                },
+                                            ]}
+                                            width={350}
+                                            height={265}
+                                            margin={{ right: 150 }}
+                                        // legend={{ hidden: true }}
+                                        /> : null}
+                                    <Button className="" variant="contained" style={{ width: "100%" }} startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => { setIsFormOpen(true) }} >
+                                        Ajouter Groupe
+                                    </Button>
                                 </div>
                             </div>
-                            {/* <!-- Card body --> */}
-                            <div className="card-body">
-                                {(pieGroupData !== null) ?
-                                    <PieChart
-                                        series={[
-                                            {
-                                                paddingAngle: 5,
-                                                innerRadius: 50,
-                                                outerRadius: 100,
-                                                data: pieGroupData,
-                                            },
-                                        ]}
-                                        width={350}
-                                        height={300}
-                                        margin={{ right: 150 }}
-                                    // legend={{ hidden: true }}
-                                    /> : null}
-                            </div>
                         </div>
-                    </div>
-                </>)
+                    </>)) : null
             }
 
             <Popover
@@ -739,7 +902,16 @@ const GroupesComponnent = (props) => {
                     },
                 }}
             >
-                <MenuItem onClick={() => { }}>
+                <MenuItem onClick={() => {
+                    setTitle(menuTargetRow.name);
+                    setCapacity(menuTargetRow.capacity);
+                    const list = menuTargetRow.teachers.map((teacher) => {
+                        return teacher.ID_ROWID; // Using 'return' to return the value.
+                    })
+                    setPersonName(list);
+                    setIsFormOpen2(true);
+                    handleCloseMenu();
+                }}>
                     <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
                     Modifier
                 </MenuItem>
@@ -786,6 +958,7 @@ const GroupesComponnent = (props) => {
                 </DialogActions>
             </Dialog>
             {/* end */}
+
         </>
     );
 }
