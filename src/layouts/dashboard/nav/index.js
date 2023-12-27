@@ -54,10 +54,13 @@ export default function Nav({ openNav, onCloseNav }) {
         '& .simplebar-content': { height: 1, display: 'flex', flexDirection: 'column' },
       }}
     >
-      <Box sx={{ px: 9, py: 3, display: 'inline-flex' }}>
+      <Box sx={{ px: 5, py: 3, display: 'inline-flex' }}>
         {/* <Logo /> */}
         {/* <img src={Logo} alt="" /> */}
-        School Management
+        <Typography variant="h4" component="h2">
+          School Management
+        </Typography>
+
       </Box>
 
       <NavSection data={navConfig} />
