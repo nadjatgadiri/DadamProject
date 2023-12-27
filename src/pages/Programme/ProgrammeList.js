@@ -23,7 +23,7 @@ import {
     TablePagination,
     DialogTitle,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -43,6 +43,7 @@ const TABLE_HEAD = [
     { id: 'programme', label: 'Programme', alignRight: false },
     { id: 'type', label: 'Type', alignRight: false },
     { id: 'category', label: 'Catégorie', alignRight: false },
+    { id: 'prix', label: 'prix', alignRight: false },
     { id: 'stat', label: 'Statut Des Données', alignRight: false },
     { id: 'isPublished', label: 'Publié', alignRight: false },
     { id: '' },
@@ -80,6 +81,8 @@ function applySortFilter(array, comparator, query) {
 }
 /** end */
 export default function ProgrammePage() {
+    const navigate = useNavigate();
+
     const [open, setOpen] = useState(null);
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('asc');
@@ -275,7 +278,7 @@ export default function ProgrammePage() {
                                 />
                                 <TableBody>
                                     {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { ID_ROWID, title, type, isPublished, isSkiped, categorie } = row;
+                                        const { ID_ROWID, title, type, isPublished, isSkiped, categorie, prix, typeOfPaiment } = row;
                                         // const isEditing = editedUser && editedUser.ID_ROWID === row.ID_ROWID;
 
                                         const selectedUser = selected.indexOf(title) !== -1;
@@ -289,9 +292,13 @@ export default function ProgrammePage() {
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Typography variant="subtitle2" noWrap>
-                                                        {title}
-                                                    </Typography>
+                                                    <Link to={`/dashboard/ProgrameProfile/${ID_ROWID}`}>
+
+                                                        <Typography variant="subtitle2" noWrap>
+                                                            {title}
+                                                            <Iconify icon={'mingcute:link-fill'} sx={{ mr: 1 }} style={{ margin: "5px" }} />
+                                                        </Typography>
+                                                    </Link>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Typography variant="subtitle2" noWrap>
@@ -301,6 +308,11 @@ export default function ProgrammePage() {
                                                 <TableCell>
                                                     <Typography variant="subtitle2" noWrap>
                                                         {categorie.title}
+                                                    </Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="subtitle2" noWrap>
+                                                        {prix} DA {typeOfPaiment}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell align="left">
@@ -371,7 +383,7 @@ export default function ProgrammePage() {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </Card>
-            </Container>
+            </Container >
 
             <Popover
                 open={Boolean(open)}
@@ -391,7 +403,7 @@ export default function ProgrammePage() {
                     },
                 }}
             >
-                <MenuItem onClick={() => { }}>
+                <MenuItem onClick={() => { navigate(`/dashboard/updateProgramme/${menuTargetRow.ID_ROWID}`, { replace: true }); }}>
                     <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
                     Modifier
                 </MenuItem>

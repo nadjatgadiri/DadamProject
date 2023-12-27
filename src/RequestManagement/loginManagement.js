@@ -1,5 +1,6 @@
 import axios from 'axios';
 import setReqHeader from './headerSetup';
+import { reloadOn501 } from './reloadBrouser'; // Replace './yourFile.js' with the correct path
 
 export const logIn = async (username, password) => {
     try {
@@ -10,11 +11,12 @@ export const logIn = async (username, password) => {
         });
 
         const data = response.data;
+        reloadOn501(data);
         if (data.code === 200) {
-            await sessionStorage.setItem('token', data.token);
-            await sessionStorage.setItem('is-active', true);
-            await sessionStorage.setItem('userID', data.userID);
-            await sessionStorage.setItem('role', data.userRole);
+            await localStorage.setItem('token', data.token);
+            await localStorage.setItem('is-active', true);
+            await localStorage.setItem('userID', data.userID);
+            await localStorage.setItem('role', data.userRole);
         };
         return data
     } catch (error) {

@@ -1,14 +1,16 @@
 import axios from 'axios';
 import setReqHeader from './headerSetup';
+import { reloadOn501 } from './reloadBrouser'; // Replace './yourFile.js' with the correct path
 
 // Function to fetch all groupes
 export const getProgGroups = async (progId) => {
     try {
         setReqHeader();
-        const response = await axios.post('/groupe/listProgrammeGroups', {
+        const response = await axios.post('/protected/groupe/listProgrammeGroups', {
             "progId": progId
         }); // Assuming the endpoint is /programs/registrable
         const data = response.data;
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to list groupes:", error);
@@ -19,8 +21,9 @@ export const getProgGroups = async (progId) => {
 export const getGroups = async () => {
     try {
         setReqHeader();
-        const response = await axios.post('/groupe/listGroups'); // Assuming the endpoint is /programs/registrable
+        const response = await axios.post('/protected/groupe/listGroups'); // Assuming the endpoint is /programs/registrable
         const data = response.data;
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to list groupes:", error);
@@ -30,10 +33,11 @@ export const getGroups = async () => {
 export const addGroupe = async (body) => {
     try {
         setReqHeader();
-        const response = await axios.post('/groupe/add', {
+        const response = await axios.post('/protected/groupe/add', {
             "data": body
         }); // Assuming the endpoint is /programs/registrable
         const data = response.data;
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to add groupe:", error);
@@ -44,10 +48,11 @@ export const addGroupe = async (body) => {
 export const updateGroupe = async (body, groupId) => {
     try {
         setReqHeader();
-        const response = await axios.put(`/groupe/update/${groupId}`, {
+        const response = await axios.put(`/protected/groupe/update/${groupId}`, {
             "data": body
         }); // Assuming the endpoint is /programs/registrable
         const data = response.data;
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to add groupe:", error);
@@ -56,7 +61,8 @@ export const updateGroupe = async (body, groupId) => {
 };
 export const deleteGroupe = async (groupId) => {
     try {
-        const response = await axios.delete(`/groupe/remove/${groupId}`);
+        const response = await axios.delete(`/protected/groupe/remove/${groupId}`);
+        reloadOn501(response.data);
         return response.data;
     } catch (error) {
         console.error("Failed to delete category:", error);

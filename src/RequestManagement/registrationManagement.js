@@ -1,14 +1,16 @@
 import axios from 'axios';
 import setReqHeader from './headerSetup';
+import { reloadOn501 } from './reloadBrouser'; // Replace './yourFile.js' with the correct path
 
 // Function to add a new registration
 export const addNewRegistration = async (registrationData) => {
     try {
         setReqHeader();
-        const response = await axios.post('/registration/add', { // Assuming the endpoint is /registrations/add
+        const response = await axios.post('/protected/registration/add', { // Assuming the endpoint is /registrations/add
             "data": registrationData
         });
         const data = response.data;
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to add registration:", error);
@@ -20,7 +22,9 @@ export const addNewRegistration = async (registrationData) => {
 export const deleteRegistration = async (registrationId) => {
     try {
         setReqHeader();
-        const response = await axios.delete(`/registration/remove/${registrationId}`);
+        const response = await axios.delete(`/protected/registration/remove/${registrationId}`);
+        reloadOn501(response.data);
+
         return response.data;
     } catch (error) {
         console.error("Failed to delete registration:", error);
@@ -32,8 +36,10 @@ export const deleteRegistration = async (registrationId) => {
 export const getRegistrablePrograms = async () => {
     try {
         setReqHeader();
-        const response = await axios.get('/program/registrable'); // Assuming the endpoint is /programs/registrable
+        const response = await axios.get('/protected/program/registrable'); // Assuming the endpoint is /programs/registrable
         const data = response.data;
+        reloadOn501(data);
+
         return data;
     } catch (error) {
         console.error("Failed to list registrable programs:", error);
@@ -43,9 +49,9 @@ export const getRegistrablePrograms = async () => {
 export const getAllRegistrations = async () => {
     try {
         setReqHeader();
-        const response = await axios.get('/registration/list');
+        const response = await axios.get('/protected/registration/list');
         const data = response.data;
-        console.log(data);
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to fetch the list of registrations:", error);
@@ -56,11 +62,11 @@ export const getAllRegistrations = async () => {
 export const getProgRegistrations = async (progId) => {
     try {
         setReqHeader();
-        const response = await axios.post('/registration/programmeListRegestarion', {
+        const response = await axios.post('/protected/registration/programmeListRegestarion', {
             "progId": progId
         });
         const data = response.data;
-        console.log(data);
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to fetch the list of registrations:", error);
@@ -72,11 +78,11 @@ export const updateRegestraion = async (sendData) => {
     try {
         setReqHeader();
         console.log(sendData)
-        const response = await axios.post('/registration/updateRegistrationGroup', {
+        const response = await axios.post('/protected/registration/updateRegistrationGroup', {
             "data": sendData
         });
         const data = response.data;
-        console.log(data);
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to fetch the list of registrations:", error);
@@ -88,11 +94,11 @@ export const affectation = async (sendData) => {
     try {
         setReqHeader();
         console.log(sendData)
-        const response = await axios.post('/registration/affectation', {
+        const response = await axios.post('/protected/registration/affectation', {
             "data": sendData
         });
         const data = response.data;
-        console.log(data);
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error("Failed to fetch the list of registrations:", error);

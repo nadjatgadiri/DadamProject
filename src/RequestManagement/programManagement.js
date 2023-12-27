@@ -1,16 +1,17 @@
 import axios from 'axios';
 import setReqHeader from './headerSetup';
+import { reloadOn501 } from './reloadBrouser'; // Replace './yourFile.js' with the correct path
 
 export const addNewPrograme = async (dataProgram, dataType) => {
     try {
         setReqHeader();
 
-        const response = await axios.post('/program/addProgram', {
+        const response = await axios.post('/protected/program/addProgram', {
             "dataProgram": dataProgram,
             "dataType": dataType
         });
-        console.log(response);
         const data = response.data;
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error(error);
@@ -21,12 +22,12 @@ export const updatePrograme = async (id, dataProgram, dataType) => {
     try {
         setReqHeader();
 
-        const response = await axios.put(`/program/updateProgram/${id}`, {
+        const response = await axios.put(`/protected/program/updateProgram/${id}`, {
             "dataProgram": dataProgram,
             "dataType": dataType
         });
-        console.log(response);
         const data = response.data;
+        reloadOn501(data);
         return data;
     } catch (error) {
         console.error(error);
@@ -36,8 +37,9 @@ export const updatePrograme = async (id, dataProgram, dataType) => {
 export const getAllProgrammes = async () => {
     try {
         setReqHeader();
-        const response = await axios.get('/program/listProgram');
+        const response = await axios.get('/protected/program/listProgram');
         const data = response.data;
+        reloadOn501(data);
         return data
     } catch (error) {
         console.error(error);
@@ -46,7 +48,8 @@ export const getAllProgrammes = async () => {
 };
 export const deleteProgramme = async (progID) => {
     try {
-        const response = await axios.delete(`/program/removeProgram/${progID}`);
+        const response = await axios.delete(`/protected/program/removeProgram/${progID}`);
+        reloadOn501(response.data);
         return response.data;
     } catch (error) {
         console.error("Failed to delete the programme:", error);
@@ -55,7 +58,8 @@ export const deleteProgramme = async (progID) => {
 };
 export const getProgramme = async (progID) => {
     try {
-        const response = await axios.get(`/program/getProgram/${progID}`);
+        const response = await axios.get(`/protected/program/getProgram/${progID}`);
+        reloadOn501(response.data);
         return response.data;
     } catch (error) {
         console.error("Failed to fetsh the programme:", error);

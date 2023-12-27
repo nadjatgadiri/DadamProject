@@ -1,13 +1,15 @@
 import axios from 'axios';
 import setReqHeader from './headerSetup';
+import { reloadOn501 } from './reloadBrouser'; // Replace './yourFile.js' with the correct path
 
 export const getAvailableSessions = async (daysData) => {
     try {
         setReqHeader();
-        const response = await axios.post('/session/getAvailableData', {
+        const response = await axios.post('/protected/session/getAvailableData', {
             "data": daysData
         });
         const data = response.data;
+        reloadOn501(data);
         return data
     } catch (error) {
         console.error(error);
@@ -18,10 +20,11 @@ export const getAvailableSessions = async (daysData) => {
 export const addSessions = async (selectedSessions) => {
     try {
         setReqHeader();
-        const response = await axios.post('/session/addSessions', {
+        const response = await axios.post('/protected/session/addSessions', {
             "dataSessions": selectedSessions
         });
         const data = response.data;
+        reloadOn501(data);
         return data
     } catch (error) {
         console.error(error);
@@ -32,10 +35,11 @@ export const addSessions = async (selectedSessions) => {
 export const getAllSessionsInProg = async (idProg) => {
     try {
         setReqHeader();
-        const response = await axios.post('/session/getAllSessionsInProg', {
+        const response = await axios.post('/protected/session/getAllSessionsInProg', {
             "idProg": idProg
         });
         const data = response.data;
+        reloadOn501(data);
         return data
     } catch (error) {
         console.error(error);
@@ -46,10 +50,11 @@ export const getAllSessionsInProg = async (idProg) => {
 export const deleteSession = async (idSession) => {
     try {
         setReqHeader();
-        const response = await axios.post('/session/deleteSession', {
+        const response = await axios.post('/protected/session/deleteSession', {
             "idSession": idSession
         });
         const data = response.data;
+        reloadOn501(data);
         return data
     } catch (error) {
         console.error(error);
@@ -60,10 +65,23 @@ export const deleteSession = async (idSession) => {
 export const getAllSessionsInSalle = async (idSalle) => {
     try {
         setReqHeader();
-        const response = await axios.post('/session/getAllSessionsForSalle', {
+        const response = await axios.post('/protected/session/getAllSessionsForSalle', {
             "idSalle": idSalle
         });
         const data = response.data;
+        reloadOn501(data);
+        return data
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+export const getAllSessions = async () => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/session/getAllSessions',);
+        const data = response.data;
+        reloadOn501(data);
         return data
     } catch (error) {
         console.error(error);

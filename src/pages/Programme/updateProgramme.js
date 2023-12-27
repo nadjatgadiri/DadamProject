@@ -146,6 +146,7 @@ const StyledButton = styled('button')(
   `,
 );
 const UpdateProgramme = () => {
+    const navigate = useNavigate();
     // programe id
     const { id } = useParams();
     //
@@ -158,6 +159,8 @@ const UpdateProgramme = () => {
     const [lib, setLib] = useState("");
     const [type, setType] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
+    const [prix, setPrix] = useState(0.00);
+    const [typeOfPaiment, setTypeOfPaiment] = useState("Total");
     const [errors, setErrors] = useState({
         "title": false,
         "cat": false,
@@ -350,6 +353,8 @@ const UpdateProgramme = () => {
                 setTitle(programeData.title);
                 setLib(programeData.discription);
                 setType(programeData.type);
+                setPrix(programeData.prix);
+                setTypeOfPaiment(programeData.typeOfPaiment);
                 setSelectedCategory({
                     id: programeData.categorie.ID_ROWID,
                     label: programeData.categorie.title,
@@ -389,6 +394,8 @@ const UpdateProgramme = () => {
             "type": type,
             "isSkip": isSkip,
             "isPublished": isPublished,
+            "prix": prix,
+            "typeOfPaiment": typeOfPaiment
         };
         let dataType = {};
         if (type === "formation") {
@@ -415,6 +422,7 @@ const UpdateProgramme = () => {
                     position: toast.POSITION.TOP_RIGHT,
                 });
                 // Optionally reset form fields here
+                navigate(`/dashboard/ProgrameProfile/${id}`, { replace: true });
             }
         } catch (error) {
             console.log(error);
@@ -490,11 +498,11 @@ const UpdateProgramme = () => {
                                                 fullWidth
                                             />
                                         </Grid>
-                                        <Grid item xs={12}>
+                                        <Grid item xs={6}>
                                             <FormControl fullWidth
                                                 error={errors.type}
                                             >
-                                                <InputLabel htmlFor="role">Type</InputLabel>
+                                                <InputLabel htmlFor="role">Type De Programme</InputLabel>
                                                 <Select
                                                     name="type"
                                                     label="Type"
@@ -512,7 +520,7 @@ const UpdateProgramme = () => {
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={12}
+                                        <Grid item xs={6}
                                             sx={{ position: 'relative' }}>
                                             <Autocomplete
                                                 disablePortal
@@ -526,6 +534,45 @@ const UpdateProgramme = () => {
 
                                             />
 
+                                        </Grid>
+                                        <Grid item xs={6}
+                                            sx={{ position: 'relative' }}>
+                                            <TextField
+                                                id="outlined-number"
+                                                label="Prix"
+                                                type="number"
+                                                value={prix}
+                                                onChange={(e) => {
+                                                    setPrix(e.target.value);
+                                                }}
+                                                InputLabelProps={{
+                                                    shrink: true,
+                                                }}
+                                                fullWidth
+                                                defaultValue={0.0}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={6}
+                                            sx={{ position: 'relative' }}>
+                                            <FormControl fullWidth
+                                                error={errors.type}
+                                            >
+                                                <InputLabel htmlFor="role">Type De Programme</InputLabel>
+                                                <Select
+                                                    name="type"
+                                                    label="Type De Programme"
+                                                    value={typeOfPaiment}
+                                                    onChange={(e) => setTypeOfPaiment(e.target.value)}
+                                                    inputProps={{
+                                                        id: 'role',
+                                                    }}
+                                                    required
+
+                                                >
+                                                    <MenuItem value="Total">Total</MenuItem>
+                                                    <MenuItem value="Mensuel">Mensuel</MenuItem>
+                                                    <MenuItem value="activité">Par Séance</MenuItem>
+                                                </Select> </FormControl>
                                         </Grid>
                                         <Grid item xs={12} >
                                             <FormGroup>
@@ -690,7 +737,12 @@ const UpdateProgramme = () => {
                                                 <Grid xs={9} paddingTop={2}>
                                                     {selectedCategory.label}
                                                 </Grid>
-
+                                                <Grid xs={3} paddingTop={2}>
+                                                    <Typography level="body-sm" justifySelf="flex-end">Prix {typeOfPaiment}</Typography>
+                                                </Grid>
+                                                <Grid xs={9} paddingTop={2}>
+                                                    {prix}
+                                                </Grid>
                                             </Grid>
                                         </Grid>
                                         <Grid item xs={6} style={{ paddingLeft: '50px', paddingTop: '50px', paddingBottom: '50px' }}>

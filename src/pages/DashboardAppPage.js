@@ -1,8 +1,9 @@
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
 import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography } from '@mui/material';
+import { Grid, Container, Typography, Card } from '@mui/material';
 // components
 import Iconify from '../components/iconify';
 // sections
@@ -17,12 +18,61 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
-
+import MyCalendar from './Programme/calendar/calendar'
+import { getStatistiqueDataForDashbaord1 } from "../RequestManagement/dataManagment"
+import { getGroups } from "../RequestManagement/groupManagement"
+import { getAllSessions } from "../RequestManagement/sessionsManagement"
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const theme = useTheme();
+  const [dataStatistique, setDataStatistique] = useState({
+    "nmbStudents": 0,
+    "nmbTeachers": 0,
+    "nmbPrograms": 0,
+    "nmbClasses": 0
+  });
+  const [groups, setGroups] = useState([]);
+  const [events, setEvents] = useState([]);
+  /** api */
+  const fetchData = async () => {
+    const result = await getStatistiqueDataForDashbaord1();
+    if (result.code === 200) {
+      setDataStatistique(result.staticData);
+    }
+    const result2 = await getGroups();
+    if (result2.code === 200) {
+      const data = await result2.groups.map(group => ({
+        id: group.ID_ROWID,
+        name: group.GroupeName
+      }));
+      setGroups(ColorGenerator(data));
+    }
+    const result3 = await getAllSessions();
+    if (result3.code === 200) {
+      setEvents(result3.events);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []); // Empty dependency array means this effect runs once when component mounts
+  const stringToColor = (name) => {
+    const hashCode = name.toString().split('').reduce((acc, char) => {
+      acc = (acc * 31) + char.charCodeAt(0) + 100;
+      return acc;
+    }, 0);
+    const color = `#${((hashCode & 0xffffff) << 0).toString(16).padStart(6, '0')}`; // eslint-disable-line no-bitwise
+    return color;
+  };
 
+  const ColorGenerator = (data) => {
+    const colors = {};
+
+    data?.forEach((option) => {
+      colors[option.id] = stringToColor(`${option.name}${option.id}`);
+    });
+    return colors;
+  };
   return (
     <>
       <Helmet>
@@ -36,62 +86,30 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Weekly Sales" total={714000} icon={'ant-design:android-filled'} />
+            <AppWidgetSummary title="Étudiants" total={dataStatistique.nmbStudents} icon={'ph:student-fill'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="New Users" total={1352831} color="info" icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Professeurs" total={dataStatistique.nmbTeachers} color="info" icon={'ph:chalkboard-teacher-fill'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={'ant-design:windows-filled'} />
+            <AppWidgetSummary title="Programmes" total={dataStatistique.nmbPrograms} color="warning" icon={'solar:programming-bold'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Bug Reports" total={234} color="error" icon={'ant-design:bug-filled'} />
+            <AppWidgetSummary title="Salles" total={dataStatistique.nmbClasses} color="error" icon={'mdi:dining-room'} />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={8}>
-            <AppWebsiteVisits
-              title="Website Visits"
-              subheader="(+43%) than last year"
-              chartLabels={[
-                '01/01/2003',
-                '02/01/2003',
-                '03/01/2003',
-                '04/01/2003',
-                '05/01/2003',
-                '06/01/2003',
-                '07/01/2003',
-                '08/01/2003',
-                '09/01/2003',
-                '10/01/2003',
-                '11/01/2003',
-              ]}
-              chartData={[
-                {
-                  name: 'Team A',
-                  type: 'column',
-                  fill: 'solid',
-                  data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-                },
-                {
-                  name: 'Team B',
-                  type: 'area',
-                  fill: 'gradient',
-                  data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-                },
-                {
-                  name: 'Team C',
-                  type: 'line',
-                  fill: 'solid',
-                  data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
-                },
-              ]}
-            />
+          <Grid item xs={12} md={12} lg={12}>
+            <Card>
+              <div style={{ textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
+                <MyCalendar colorMap={groups} events={events} fetchEvents={fetchData} />
+              </div>
+            </Card>
           </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
+          {/* <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
               title="Current Visits"
               chartData={[
@@ -211,7 +229,7 @@ export default function DashboardAppPage() {
                 { id: '5', label: 'Sprint Showcase' },
               ]}
             />
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </>

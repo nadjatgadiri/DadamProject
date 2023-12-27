@@ -56,7 +56,8 @@ export default function Nav({ openNav, onCloseNav }) {
     >
       <Box sx={{ px: 9, py: 3, display: 'inline-flex' }}>
         {/* <Logo /> */}
-        <img src={Logo} alt="" />
+        {/* <img src={Logo} alt="" /> */}
+        School Management
       </Box>
 
       <NavSection data={navConfig} />

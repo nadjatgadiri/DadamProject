@@ -45,9 +45,6 @@ const CustomNumberInput = React.forwardRef((props, ref) => {
         />
     );
 });
-
-
-
 const grey = {
     50: '#f6f8fa',
     100: '#eaeef2',
@@ -146,6 +143,7 @@ const StyledButton = styled('button')(
   `,
 );
 export default function AddProgramme() {
+    const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
     const [skipped, setSkipped] = useState(new Set());
     const [editorState, setEditorState] = useState(null);
@@ -154,6 +152,8 @@ export default function AddProgramme() {
     const [title, setTitle] = useState("");
     const [lib, setLib] = useState("");
     const [type, setType] = useState("");
+    const [prix, setPrix] = useState(0.00);
+    const [typeOfPaiment, setTypeOfPaiment] = useState("Total");
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [errors, setErrors] = useState({
         "title": false,
@@ -350,6 +350,8 @@ export default function AddProgramme() {
             "type": type,
             "isSkip": isSkip,
             "isPublished": isPublished,
+            "prix": prix,
+            "typeOfPaiment": typeOfPaiment
         };
         let dataType = {};
         if (type === "formation") {
@@ -376,6 +378,7 @@ export default function AddProgramme() {
                     position: toast.POSITION.TOP_RIGHT,
                 });
                 // Optionally reset form fields here
+                navigate(`/dashboard/ProgrameProfile/${response.programId}`, { replace: true });
             }
         } catch (error) {
             console.log(error);
@@ -451,11 +454,11 @@ export default function AddProgramme() {
                                                 fullWidth
                                             />
                                         </Grid>
-                                        <Grid item xs={12}>
+                                        <Grid item xs={6}>
                                             <FormControl fullWidth
                                                 error={errors.type}
                                             >
-                                                <InputLabel htmlFor="role">Type</InputLabel>
+                                                <InputLabel htmlFor="role">Type De Programme</InputLabel>
                                                 <Select
                                                     name="type"
                                                     label="Type"
@@ -473,7 +476,7 @@ export default function AddProgramme() {
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={12}
+                                        <Grid item xs={6}
                                             sx={{ position: 'relative' }}>
                                             <Autocomplete
                                                 disablePortal
@@ -481,12 +484,51 @@ export default function AddProgramme() {
                                                 name="supperCat"
                                                 options={data}
                                                 renderInput={(params) => <TextField error={errors.cat}
-                                                    {...params} label="Catégorie" />}
+                                                    {...params} label="Catégorie De Programme" />}
                                                 value={selectedCategory} // Set the value prop
                                                 onChange={handleAutocompleteChange} // Handle change event
 
                                             />
 
+                                        </Grid>
+                                        <Grid item xs={6}
+                                            sx={{ position: 'relative' }}>
+                                            <TextField
+                                                id="outlined-number"
+                                                label="Prix"
+                                                type="number"
+                                                value={prix}
+                                                onChange={(e) => {
+                                                    setPrix(e.target.value);
+                                                }}
+                                                InputLabelProps={{
+                                                    shrink: true,
+                                                }}
+                                                fullWidth
+                                                defaultValue={0.0}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={6}
+                                            sx={{ position: 'relative' }}>
+                                            <FormControl fullWidth
+                                                error={errors.type}
+                                            >
+                                                <InputLabel htmlFor="role">Type De Programme</InputLabel>
+                                                <Select
+                                                    name="type"
+                                                    label="Type De Programme"
+                                                    value={typeOfPaiment}
+                                                    onChange={(e) => setTypeOfPaiment(e.target.value)}
+                                                    inputProps={{
+                                                        id: 'role',
+                                                    }}
+                                                    required
+
+                                                >
+                                                    <MenuItem value="Total">Total</MenuItem>
+                                                    <MenuItem value="Mensuel">Mensuel</MenuItem>
+                                                    <MenuItem value="activité">Par Séance</MenuItem>
+                                                </Select> </FormControl>
                                         </Grid>
                                         <Grid item xs={12} >
                                             <FormGroup>
@@ -651,7 +693,12 @@ export default function AddProgramme() {
                                                 <Grid xs={9} paddingTop={2}>
                                                     {selectedCategory.label}
                                                 </Grid>
-
+                                                <Grid xs={3} paddingTop={2}>
+                                                    <Typography level="body-sm" justifySelf="flex-end">Prix {typeOfPaiment}</Typography>
+                                                </Grid>
+                                                <Grid xs={9} paddingTop={2}>
+                                                    {prix}
+                                                </Grid>
                                             </Grid>
                                         </Grid>
                                         <Grid item xs={6} style={{ paddingLeft: '50px', paddingTop: '50px', paddingBottom: '50px' }}>
