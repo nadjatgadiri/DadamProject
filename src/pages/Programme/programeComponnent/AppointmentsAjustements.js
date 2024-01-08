@@ -712,6 +712,7 @@ const AppointmentsAjustements = (props) => {
             const response = await addSessions(selectedPlansList);
             if (response && response.code === 200) {
                 console.log(response.message);
+                await fetchData();
             }
         }
     }

@@ -9,7 +9,7 @@ import Nav from './nav';
 // ----------------------------------------------------------------------
 
 const APP_BAR_MOBILE = 64;
-const APP_BAR_DESKTOP = 92;
+const APP_BAR_DESKTOP = 60;
 
 const StyledRoot = styled('div')({
   display: 'flex',
@@ -33,13 +33,15 @@ const Main = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function DashboardLayout() {
-  const [open, setOpen] = useState(false);
-
+  const [open, setOpen] = useState(true);
+  console.log(open);
   return (
     <StyledRoot>
       <Header onOpenNav={() => setOpen(true)} />
 
-      <Nav openNav={open} onCloseNav={() => setOpen(false)} />
+      {open &&
+        (<Nav openNav={open} onCloseNav={() => setOpen(false)} />)
+      }
 
       <Main>
         <Outlet />

@@ -88,3 +88,17 @@ export const getAllSessions = async () => {
         throw error;
     }
 };
+export const getAllSessionsForStudent = async (id) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/session/getAllSessionsForStudent', {
+            "id": id
+        });
+        const data = response.data;
+        reloadOn501(data);
+        return data
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

@@ -239,7 +239,7 @@ export default function ProgrammePage() {
     return (
         <>
             <Helmet>
-                <title> Utilisateurs | Minimal UI </title>
+                <title> Utilisateurs</title>
             </Helmet>
 
             <Container>

@@ -321,7 +321,7 @@ export default function StudentPage() {
     <>
 
       <Helmet>
-        <title> Étudiants | Minimal UI </title>
+        <title> Étudiants</title>
       </Helmet>
 
       <Container>

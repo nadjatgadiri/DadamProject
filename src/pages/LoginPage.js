@@ -1,12 +1,13 @@
 import { Helmet } from 'react-helmet-async';
+import { useState, useEffect } from 'react';
+
 // @mui
 import { styled } from '@mui/material/styles';
-import { Link, Container, Typography, Divider, Stack, Button } from '@mui/material';
+import { Link, Container, Typography, } from '@mui/material';
 // hooks
 import useResponsive from '../hooks/useResponsive';
 // components
-import Logo from '../components/logo/logo_dadam2.png';
-import Iconify from '../components/iconify';
+import Logo from '../components/logo/CLASSFLOW.png';
 // sections
 import { LoginForm } from '../sections/auth/login';
 
@@ -43,21 +44,22 @@ const StyledContent = styled('div')(({ theme }) => ({
 export default function LoginPage() {
   const mdUp = useResponsive('up', 'md');
 
+
+
+
   return (
     <>
       <Helmet>
-        <title> Login | Minimal UI </title>
+        <title> Login</title>
       </Helmet>
 
       <StyledRoot>
         {mdUp && (
           <StyledSection>
             <center>
-              <img src={Logo} alt="" width={120} height={80} />
+              <img src={Logo} alt="" width={150} height={150} style={{ marginTop: "20px" }} />
 
-              <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
-                Bienvenue
-              </Typography>
+
               <img src="/assets/illustrations/illustration_login.png" alt="login" />
             </center>
           </StyledSection>

@@ -26,7 +26,7 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user'; // 
 
 // to load data 
-import { getAllTeachers, updateTeacherData, deleteTeacher } from '../../RequestManagement/teacherManagement'; 
+import { getAllTeachers, updateTeacherData, deleteTeacher } from '../../RequestManagement/teacherManagement';
 
 
 const TABLE_HEAD = [
@@ -104,9 +104,9 @@ export default function TeacherPage() {
           dateOfBirth: teacher.personProfile2.dateOfBirth,
           subject: teacher.subject,
           image: teacher.personProfile2.imagePath !== null && teacher.personProfile2.imagePath !== '' ?
-          `data:image/jpeg;base64,${Buffer.from(
-            teacher.personProfile2.imagePath.data).toString("base64")}` : ''
-      }));
+            `data:image/jpeg;base64,${Buffer.from(
+              teacher.personProfile2.imagePath.data).toString("base64")}` : ''
+        }));
         setData(teachers);
         console.log(teachers);
       } else {
@@ -136,7 +136,7 @@ export default function TeacherPage() {
         subject: editedTeacher.subject, // assuming teachers also have status like students
         image: editedTeacher.image
       };
-       console.log(updatedData);
+      console.log(updatedData);
       const response = await updateTeacherData(teacherId, updatedData);
 
       if (response.code === 200) {
@@ -264,19 +264,19 @@ export default function TeacherPage() {
     const remainingTeachers = data.filter(teacher => !selected.includes(teacher.id));
 
     setData(remainingTeachers);
-    setSelected([]);  
+    setSelected([]);
   };
   const handleDeleteClick = (teacher) => {
     setMenuTargetRow(teacher);
     setIsDialogOpen(true);
   };
   const handleConfirmClick = () => {
-  
+
     if (menuTargetRow && menuTargetRow.id) {
       handleDeleteTeacher(menuTargetRow.id);
     }
-    setIsDialogOpen(false); 
-    setMenuTargetRow(null); 
+    setIsDialogOpen(false);
+    setMenuTargetRow(null);
   };
   const handleDeleteClick2 = () => {
     setIsDialogOpen2(true);
@@ -286,69 +286,69 @@ export default function TeacherPage() {
     setIsDialogOpen2(false);
   };
   return (
-  
-    <>
-    <Helmet>
-      <title> Enseignants | Minimal UI </title>
-    </Helmet>
 
-    <Container>
-    <ToastContainer />
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4" gutterBottom>
-        Enseignants
-        </Typography>
-        <Link to="/dashboard/addTeacher">
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            Nouveau Enseignants
-          </Button>
-        </Link>
-      </Stack>
-      <Card>
-        {error ? (
-          <Typography variant="h6" paragraph style={{ padding: '20px' }}>
-            {error}
+    <>
+      <Helmet>
+        <title> Enseignants</title>
+      </Helmet>
+
+      <Container>
+        <ToastContainer />
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+          <Typography variant="h4" gutterBottom>
+            Enseignants
           </Typography>
-        ) : (
-          data.length === 0 ? (
-            <Typography style={{ padding: '20px' }} variant="h6" paragraph>
-              Aucun résultat n'a été trouvé.
+          <Link to="/dashboard/addTeacher">
+            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+              Nouveau Enseignants
+            </Button>
+          </Link>
+        </Stack>
+        <Card>
+          {error ? (
+            <Typography variant="h6" paragraph style={{ padding: '20px' }}>
+              {error}
             </Typography>
           ) : (
-            <>
-              <UserListToolbar
-                numSelected={selected.length}
-                filterName={filterName}
-                onFilterName={handleFilterByName}
-                // onDeleteSelected={handleDeleteMultiple}
-                onDeleteSelected={() => { handleDeleteClick2() }}
-              />
-              <Scrollbar>
-                    <TableContainer sx={{ minWidth: 800 }}>
-                      <Table>
-                        <UserListHead
-                          order={order}
-                          orderBy={orderBy}
-                          headLabel={TABLE_HEAD}
-                          rowCount={data.length}
-                          numSelected={selected.length}
-                          onRequestSort={handleRequestSort}
-                          onSelectAllClick={handleSelectAllClick}
-                        />
-                        <TableBody>
-                          {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                            const { id, name, email, phone, subject, dateOfBirth, image } = row;
-                            const isEditing = editedTeacher && editedTeacher.id === row.id;
-  
-                            return (
-                              <TableRow hover key={id}>
-                                  <TableCell padding="checkbox">
+            data.length === 0 ? (
+              <Typography style={{ padding: '20px' }} variant="h6" paragraph>
+                Aucun résultat n'a été trouvé.
+              </Typography>
+            ) : (
+              <>
+                <UserListToolbar
+                  numSelected={selected.length}
+                  filterName={filterName}
+                  onFilterName={handleFilterByName}
+                  // onDeleteSelected={handleDeleteMultiple}
+                  onDeleteSelected={() => { handleDeleteClick2() }}
+                />
+                <Scrollbar>
+                  <TableContainer sx={{ minWidth: 800 }}>
+                    <Table>
+                      <UserListHead
+                        order={order}
+                        orderBy={orderBy}
+                        headLabel={TABLE_HEAD}
+                        rowCount={data.length}
+                        numSelected={selected.length}
+                        onRequestSort={handleRequestSort}
+                        onSelectAllClick={handleSelectAllClick}
+                      />
+                      <TableBody>
+                        {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                          const { id, name, email, phone, subject, dateOfBirth, image } = row;
+                          const isEditing = editedTeacher && editedTeacher.id === row.id;
+
+                          return (
+                            <TableRow hover key={id}>
+                              <TableCell padding="checkbox">
                                 <Checkbox
                                   checked={selected.indexOf(id) !== -1}
                                   onChange={(event) => handleClick(event, id)}
                                 />
                               </TableCell>
-                                <TableCell component="th" scope="row" padding="1">
+                              <TableCell component="th" scope="row" padding="1">
                                 <Stack direction="row" alignItems="center" spacing={2}>
                                   <>
                                     {isEditing ? (
@@ -393,198 +393,198 @@ export default function TeacherPage() {
                                   </>
                                 </Stack>
                               </TableCell>
-                                <TableCell>
-                                  <Stack direction="row" alignItems="center" spacing={2}>
-                                    {isEditing ? (
-                                      <TextField
-                                        size="small"
-                                        defaultValue={name}
-                                        onChange={(e) => setEditedTeacher({ ...editedTeacher, name: e.target.value })}
-                                      />
-                                    ) : (
-                                      <Typography variant="subtitle2" noWrap>
-                                        {name}
-                                      </Typography>
-                                    )}
-                                  </Stack>
-                                </TableCell>
-                                <TableCell>
+                              <TableCell>
+                                <Stack direction="row" alignItems="center" spacing={2}>
                                   {isEditing ? (
                                     <TextField
                                       size="small"
-                                      defaultValue={email}
-                                      onChange={(e) => setEditedTeacher({ ...editedTeacher, email: e.target.value })}
+                                      defaultValue={name}
+                                      onChange={(e) => setEditedTeacher({ ...editedTeacher, name: e.target.value })}
                                     />
                                   ) : (
-                                    email
+                                    <Typography variant="subtitle2" noWrap>
+                                      {name}
+                                    </Typography>
                                   )}
-                                </TableCell>
-                                <TableCell>
-                                  {isEditing ? (
-                                    <TextField
-                                      size="small"
-                                      defaultValue={phone}
-                                      onChange={(e) => setEditedTeacher({ ...editedTeacher, phone: e.target.value })}
-                                    />
-                                  ) : (
-                                    phone
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  {isEditing ? (
-                                    <TextField
-                                      size="small"
-                                      type="date"
-                                      defaultValue={dateOfBirth}
-                                      onChange={(e) => setEditedTeacher({ ...editedTeacher, dateOfBirth: e.target.value })}
-                                    />
-                                  ) : (
-                                    new Date(dateOfBirth).toLocaleDateString()
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  {isEditing ? (
-                                    <TextField
-                                      size="small"
-                                      defaultValue={subject}
-                                      onChange={(e) => setEditedTeacher({ ...editedTeacher, subject: e.target.value })}
-                                    />
-                                  ) : (
-                                    subject
-                                  )}
-                                </TableCell>
-                            <TableCell>
-                              {isEditing ? (
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                  <IconButton size="small" onClick={() => handleUpdateClick(row.id)} >
-                                    <Iconify icon="icon-park-solid:correct" style={{ color: 'blue', margin: '2px' }} />
-                                  </IconButton>
-                                  <IconButton size="small" onClick={() => setEditedTeacher(null)} >
-                                    <Iconify icon="foundation:x" style={{ color: 'red', margin: '2px' }} />
-                                  </IconButton>
-                                </div>
+                                </Stack>
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <TextField
+                                    size="small"
+                                    defaultValue={email}
+                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, email: e.target.value })}
+                                  />
+                                ) : (
+                                  email
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <TextField
+                                    size="small"
+                                    defaultValue={phone}
+                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, phone: e.target.value })}
+                                  />
+                                ) : (
+                                  phone
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <TextField
+                                    size="small"
+                                    type="date"
+                                    defaultValue={dateOfBirth}
+                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, dateOfBirth: e.target.value })}
+                                  />
+                                ) : (
+                                  new Date(dateOfBirth).toLocaleDateString()
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <TextField
+                                    size="small"
+                                    defaultValue={subject}
+                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, subject: e.target.value })}
+                                  />
+                                ) : (
+                                  subject
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {isEditing ? (
+                                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <IconButton size="small" onClick={() => handleUpdateClick(row.id)} >
+                                      <Iconify icon="icon-park-solid:correct" style={{ color: 'blue', margin: '2px' }} />
+                                    </IconButton>
+                                    <IconButton size="small" onClick={() => setEditedTeacher(null)} >
+                                      <Iconify icon="foundation:x" style={{ color: 'red', margin: '2px' }} />
+                                    </IconButton>
+                                  </div>
 
-                              ) : (
-                                <IconButton size="small" onClick={(e) => {
-                                  handleOpenMenu(e);
-                                  setMenuTargetRow(row);
-                                }}>
-                                  <Iconify icon={'eva:more-vertical-fill'} />
-                                </IconButton>
+                                ) : (
+                                  <IconButton size="small" onClick={(e) => {
+                                    handleOpenMenu(e);
+                                    setMenuTargetRow(row);
+                                  }}>
+                                    <Iconify icon={'eva:more-vertical-fill'} />
+                                  </IconButton>
 
-                              )}
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                        {emptyRows > 0 && (
+                          <TableRow style={{ height: 53 * emptyRows }}>
+                            <TableCell colSpan={6} />
+                          </TableRow>
+                        )}
+                        {isNotFound && (
+                          <TableRow>
+                            <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                              <Paper sx={{ textAlign: 'center' }}>
+                                <Typography variant="h6" paragraph>
+                                  Résultat non trouvé
+                                </Typography>
+                                <Typography variant="body2">
+                                  aucun résultat trouvé pour &nbsp;
+                                  <strong>&quot;{filterName}&quot;</strong>.
+                                  <br /> Réssayez.
+                                </Typography>
+                              </Paper>
                             </TableCell>
                           </TableRow>
-                        );
-                      })}
-                      {emptyRows > 0 && (
-                        <TableRow style={{ height: 53 * emptyRows }}>
-                          <TableCell colSpan={6} />
-                        </TableRow>
-                      )}
-                      {isNotFound && (
-                        <TableRow>
-                          <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                            <Paper sx={{ textAlign: 'center' }}>
-                              <Typography variant="h6" paragraph>
-                                Résultat non trouvé
-                              </Typography>
-                              <Typography variant="body2">
-                                aucun résultat trouvé pour &nbsp;
-                                <strong>&quot;{filterName}&quot;</strong>.
-                                <br /> Réssayez.
-                              </Typography>
-                            </Paper>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
+                        )}
+                      </TableBody>
 
-                  </Table>
-                </TableContainer>
-              </Scrollbar>
+                    </Table>
+                  </TableContainer>
+                </Scrollbar>
 
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={data.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </>
-          )
-        )}
-      </Card>
-    </Container>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={data.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </>
+            )
+          )}
+        </Card>
+      </Container>
 
-    <Popover
-      open={Boolean(open)}
-      anchorEl={open}
-      onClose={handleCloseMenu}
-      anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      PaperProps={{
-        sx: {
-          p: 1,
-          width: 140,
-          '& .MuiMenuItem-root': {
-            px: 1,
-            typography: 'body2',
-            borderRadius: 0.75,
+      <Popover
+        open={Boolean(open)}
+        anchorEl={open}
+        onClose={handleCloseMenu}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{
+          sx: {
+            p: 1,
+            width: 140,
+            '& .MuiMenuItem-root': {
+              px: 1,
+              typography: 'body2',
+              borderRadius: 0.75,
+            },
           },
-        },
-      }}
-    >
+        }}
+      >
 
-      <MenuItem onClick={() => {
-        console.log("Editing for row:", menuTargetRow); // Debugging log
-        setEditedTeacher(menuTargetRow);
-        handleCloseMenu();
-      }}>
-        <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-        Modifier
-      </MenuItem>
+        <MenuItem onClick={() => {
+          console.log("Editing for row:", menuTargetRow); // Debugging log
+          setEditedTeacher(menuTargetRow);
+          handleCloseMenu();
+        }}>
+          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+          Modifier
+        </MenuItem>
 
-      <MenuItem sx={{ color: 'error.main' }} onClick={() => {
-        handleDeleteClick(menuTargetRow);
-        handleCloseMenu();
-      }}>
-        <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-        Supprimer
-      </MenuItem>
-    </Popover>
-    {/* dialog for deleting one item */}
-    <Dialog open={isDialogOpen} onClose={handleCancelClick}>
-      <DialogContent>
-        <DialogContentText>Êtes-vous sûr de vouloir supprimer cet élément ?</DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancelClick} color="primary">
-          Annuler
-        </Button>
-        <Button onClick={handleConfirmClick} color="error">
-          Confirmer
-        </Button>
-      </DialogActions>
-    </Dialog>
-    {/* end */}
-    {/* dialog for deleting many items */}
-    <Dialog open={isDialogOpen2} onClose={handleCancelClick2}>
-      <DialogContent>
-        <DialogContentText>Êtes-vous sûr de vouloir supprimer ces éléments ?</DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancelClick2} color="primary">
-          Annuler
-        </Button>
-        <Button onClick={handleConfirmClick2} color="error">
-          Confirmer
-        </Button>
-      </DialogActions>
-    </Dialog>
-    {/* end */}
-  </>
-);
+        <MenuItem sx={{ color: 'error.main' }} onClick={() => {
+          handleDeleteClick(menuTargetRow);
+          handleCloseMenu();
+        }}>
+          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+          Supprimer
+        </MenuItem>
+      </Popover>
+      {/* dialog for deleting one item */}
+      <Dialog open={isDialogOpen} onClose={handleCancelClick}>
+        <DialogContent>
+          <DialogContentText>Êtes-vous sûr de vouloir supprimer cet élément ?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelClick} color="primary">
+            Annuler
+          </Button>
+          <Button onClick={handleConfirmClick} color="error">
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* end */}
+      {/* dialog for deleting many items */}
+      <Dialog open={isDialogOpen2} onClose={handleCancelClick2}>
+        <DialogContent>
+          <DialogContentText>Êtes-vous sûr de vouloir supprimer ces éléments ?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelClick2} color="primary">
+            Annuler
+          </Button>
+          <Button onClick={handleConfirmClick2} color="error">
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* end */}
+    </>
+  );
 }

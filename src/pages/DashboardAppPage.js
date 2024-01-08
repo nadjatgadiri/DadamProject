@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
 import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography, Card } from '@mui/material';
+import { Grid, Container, Typography, Card, Avatar, List, ListItem, ListItemAvatar, ListItemText, Divider } from '@mui/material';
 // components
 import Iconify from '../components/iconify';
 // sections
@@ -22,6 +22,9 @@ import MyCalendar from './Programme/calendar/calendar'
 import { getStatistiqueDataForDashbaord1 } from "../RequestManagement/dataManagment"
 import { getGroups } from "../RequestManagement/groupManagement"
 import { getAllSessions } from "../RequestManagement/sessionsManagement"
+import { getUser } from '../RequestManagement/userManagement'
+import { getGeneralSchoolData } from '../RequestManagement/schoolManagement'; // Update the import paths
+
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
@@ -32,6 +35,8 @@ export default function DashboardAppPage() {
     "nmbPrograms": 0,
     "nmbClasses": 0
   });
+  const [userData, setUserData] = useState('');
+  const [schoolData, setSchoolData] = useState('');
   const [groups, setGroups] = useState([]);
   const [events, setEvents] = useState([]);
   /** api */
@@ -52,6 +57,34 @@ export default function DashboardAppPage() {
     if (result3.code === 200) {
       setEvents(result3.events);
     }
+    // user Data 
+    const usersData1 = await getUser(localStorage.getItem("userID"));
+    const usersData = usersData1.userData;
+    const image = usersData.personProfile.imagePath !== null && usersData.personProfile.imagePath !== '' ?
+      `data:image/jpeg;base64,${Buffer.from(
+        usersData.personProfile.imagePath).toString("base64")}` : "../assets/images/avatars/avatar_10.jpg";
+
+    const user = {
+      id: usersData.ID_ROWID,
+      name: `${usersData.personProfile.firstName} ${usersData.personProfile.lastName}`,
+      phone: usersData.personProfile.phoneNumber,
+      email: usersData.personProfile.mail,
+      status: usersData.isConnected,
+      role: usersData.role,
+      dateOfBirth: usersData.personProfile.dateOfBirth,
+      image, // shorthand notation for image: image
+    };
+    setUserData(user); // Putting user in an array, assuming setUserData expects an array
+    // school 
+
+    const dataSchool = await getGeneralSchoolData();
+    const school = {
+      name: dataSchool.data.name || '',
+      email: dataSchool.data.contacts?.mail || '',
+      phone: dataSchool.data.contacts?.phone || '',
+      logo: dataSchool.data.logo || ''
+    }
+    setSchoolData(school);
   };
   useEffect(() => {
     fetchData();
@@ -76,7 +109,7 @@ export default function DashboardAppPage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard | Minimal UI </title>
+        <title> Dashboard</title>
       </Helmet>
 
       <Container maxWidth="xl">
@@ -86,6 +119,7 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
+
             <AppWidgetSummary title="Étudiants" total={dataStatistique.nmbStudents} icon={'ph:student-fill'} />
           </Grid>
 
@@ -100,9 +134,82 @@ export default function DashboardAppPage() {
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary title="Salles" total={dataStatistique.nmbClasses} color="error" icon={'mdi:dining-room'} />
           </Grid>
+          <Grid item xs={12} md={6} lg={7}>
+            <div className="card">
+              {/* <!-- card body --> */}
+              <div style={{ marginLeft: "20px", marginRight: "20px" }}>
+                {/* <!-- card title --> */}
+                <List
+                  sx={{
+                    width: '100%',
+                    bgcolor: 'background.paper',
+                  }}
+                >
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar
+                        src={userData?.image} alt={userData?.name}
+                        className="avatar-xl mr-3" // Increase size with the class
+                      />
 
+                    </ListItemAvatar>
+                    <ListItemText style={{ paddingLeft: '16px' }} primary={<Typography variant="h5">{userData.name}</Typography>}
+                      secondary={<Typography variant="body1">{userData.role}</Typography>} />
+                  </ListItem>
+                  <Divider component="li" style={{ marginBottom: "10px" }} />
+                  <ListItem>
+                    <ListItemText primary={<Typography variant="subtitle2">Téléphone</Typography>}
+                      secondary={<Typography variant="body1">{userData?.phone}</Typography>} />
+                    <ListItemText style={{ paddingLeft: '10px' }} primary={<Typography variant="subtitle2">Mail</Typography>}
+                      secondary={<Typography variant="body1">{userData?.email}</Typography>} />
+
+                    <ListItemText style={{ paddingLeft: '10px' }} primary={<Typography variant="subtitle2">Date De Naissance</Typography>}
+                      secondary={<Typography variant="body1">{userData?.dateOfBirth}</Typography>} />
+                  </ListItem>
+                </List>
+
+              </div>
+            </div>
+          </Grid>
+          <Grid item xs={12} md={6} lg={5}>
+            <div className="card">
+              {/* <!-- card body --> */}
+              <div style={{ marginLeft: "20px", marginRight: "20px" }}>
+                {/* <!-- card title --> */}
+                <List
+                  sx={{
+                    width: '100%',
+                    bgcolor: 'background.paper',
+                  }}
+                >
+                  <ListItem>
+                    <ListItemAvatar>
+                      <img
+                        src={schoolData.logo}
+                        alt="logo"
+                        width={100}
+                        height={79}
+                      // Increase size with the class
+                      />
+
+                    </ListItemAvatar>
+                    <ListItemText style={{ paddingLeft: '16px' }} primary={<Typography variant="h5">École : {schoolData.name}</Typography>} />
+                  </ListItem>
+                  <Divider component="li" style={{ marginBottom: "10px" }} />
+                  <ListItem>
+                    <ListItemText primary={<Typography variant="subtitle2">Téléphone</Typography>}
+                      secondary={<Typography variant="body1">{schoolData.phone}</Typography>} />
+                    <ListItemText style={{ paddingLeft: '10px' }} primary={<Typography variant="subtitle2">Mail</Typography>}
+                      secondary={<Typography variant="body1">{schoolData.email}</Typography>} />
+
+                  </ListItem>
+                </List>
+
+              </div>
+            </div>
+          </Grid>
           <Grid item xs={12} md={12} lg={12}>
-            <Card>
+            <Card style={{ height: '650px' }}>
               <div style={{ textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
                 <MyCalendar colorMap={groups} events={events} fetchEvents={fetchData} />
               </div>
@@ -157,9 +264,9 @@ export default function DashboardAppPage() {
               ]}
               chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} md={6} lg={8}>
+          {/* <Grid item xs={12} md={6} lg={8}>
             <AppNewsUpdate
               title="News Update"
               list={[...Array(5)].map((_, index) => ({
@@ -170,9 +277,9 @@ export default function DashboardAppPage() {
                 postedAt: faker.date.recent(),
               }))}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} md={6} lg={4}>
+          {/* <Grid item xs={12} md={6} lg={4}>
             <AppOrderTimeline
               title="Order Timeline"
               list={[...Array(5)].map((_, index) => ({
@@ -231,7 +338,7 @@ export default function DashboardAppPage() {
             />
           </Grid> */}
         </Grid>
-      </Container>
+      </Container >
     </>
   );
 }

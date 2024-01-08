@@ -340,7 +340,7 @@ const PaymentComponent = (props) => {
               onDeleteSelected={() => {
                 handleDeleteClick2();
               }}
-              isFilterd={1}
+              isFilterd={false}
               selectList={groups}
               onGroupSelected={(value) => {
                 handleSortClick(value);

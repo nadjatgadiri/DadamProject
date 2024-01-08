@@ -384,7 +384,7 @@ export default function ClassPage() {
         <>
 
             <Helmet>
-                <title> Utilisateurs | Minimal UI </title>
+                <title> Utilisateurs</title>
             </Helmet>
 
             <Container>

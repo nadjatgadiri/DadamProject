@@ -68,3 +68,32 @@ export const deleteStudent = async (studentId) => {
         return { code: 500, message: "Internal Server Error" };
     }
 };
+
+export const getStudentHistory = async (id) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/students/getStudentHistory', {
+            "id": id
+        });
+        const data = response.data;
+        reloadOn501(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+export const getStudent = async (id) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/students/getStudent', {
+            "id": id
+        });
+        const data = response.data;
+        reloadOn501(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

@@ -759,7 +759,7 @@ const GroupesComponnent = (props) => {
 
                                                                 return (
                                                                     <TableRow hover key={id}>
-                                                                        <TableCell padding="checkbox" >
+                                                                        <TableCell padding="checkbox">
                                                                             <Checkbox
                                                                                 checked={selected.indexOf(id) !== -1}
                                                                                 onChange={(event) => handleClick(event, id)}
@@ -854,8 +854,8 @@ const GroupesComponnent = (props) => {
                                 {/* <!-- Card header --> */}
                                 <div className="card-header d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h4 className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
-                                        </h4>
+                                        <Typography className="mb-0 " variant="h6" className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
+                                        </Typography>
                                     </div>
                                 </div>
                                 {/* <!-- Card body --> */}

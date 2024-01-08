@@ -446,7 +446,7 @@ export default function AddProgramme() {
                                         <Grid item xs={12}>
                                             <TextField
                                                 name="lib"
-                                                label="Description"
+                                                label="Déscription"
                                                 value={lib}
                                                 onChange={(e) => setLib(e.target.value)}
                                                 rows={3}

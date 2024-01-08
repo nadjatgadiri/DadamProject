@@ -24,15 +24,15 @@ import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
 
 // sections
-import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user'; 
+import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import { getAllRegistrations, deleteRegistration } from '../../RequestManagement/registrationManagement';
 
 const REGISTRATION_TABLE_HEAD = [
-    { id: 'studentName', label: 'Nom d\'Étudiant', alignRight: false },
-    { id: 'programTitle', label: 'Titre du programme', alignRight: false },
-    { id: 'registrationDate', label: 'Date d\'inscription', alignRight: false },
-    { id: '' },
-  ];
+  { id: 'studentName', label: 'Nom d\'Étudiant', alignRight: false },
+  { id: 'programTitle', label: 'Titre du programme', alignRight: false },
+  { id: 'registrationDate', label: 'Date d\'inscription', alignRight: false },
+  { id: '' },
+];
 
 // ----------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function RegistrationPage() {
- 
+
   const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
       backgroundColor: '#44b700',
@@ -123,7 +123,7 @@ export default function RegistrationPage() {
             programTitle: registration.programs.title,
             registrationDate: registration.createdAt, // using createdAt from the registration model
           }));
-          
+
           setData(registrations);
         } else {
           setError(result.message);
@@ -139,12 +139,12 @@ export default function RegistrationPage() {
       }
     };
     fetchData();
-}, []);
+  }, []);
 
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
-};
+  };
 
   const handleCloseMenu = () => {
     setOpen(null);
@@ -164,7 +164,7 @@ export default function RegistrationPage() {
     }
     setSelected([]);
   };
- 
+
   const handleClick = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -205,62 +205,62 @@ export default function RegistrationPage() {
   const handleDeleteClick = (registration) => {
     setMenuTargetRow(registration);
     setIsDialogOpen(true);
-};
+  };
   const handleDeleteClick2 = () => {
     setIsDialogOpen2(true);
   };
   const handleDeleteRegistration = async (registrationId) => {
     try {
-        const response = await deleteRegistration(registrationId);
+      const response = await deleteRegistration(registrationId);
 
-        if (response.code === 200) {
-            toast.success(`L'inscription a été supprimée avec succès.`, {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            const updatedRegistrations = data.filter(registration => registration.id !== registrationId);
-            setData(updatedRegistrations);
-        } else {
-            toast.error(`Erreur! ${response.message}`, {
-                position: toast.POSITION.TOP_RIGHT,
-            });
-            console.error("Erreur lors de la suppression de l'inscription:", response.message);
-        }
+      if (response.code === 200) {
+        toast.success(`L'inscription a été supprimée avec succès.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        const updatedRegistrations = data.filter(registration => registration.id !== registrationId);
+        setData(updatedRegistrations);
+      } else {
+        toast.error(`Erreur! ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        console.error("Erreur lors de la suppression de l'inscription:", response.message);
+      }
     } catch (error) {
-        console.error("Erreur:", error.message);
+      console.error("Erreur:", error.message);
     }
-};
+  };
   const handleCancelClick = () => {
     setIsDialogOpen(false);
-};
+  };
   const handleCancelClick2 = () => {
     setIsDialogOpen2(false);
   };
 
-  
+
   const handleDeleteMultiple = async () => {
     await Promise.all(selected.map(id => handleDeleteRegistration(id)));
     const remainingRegistrations = data.filter(registration => !selected.includes(registration.id));
     setData(remainingRegistrations);
     setSelected([]);  // Clear the selection after deleting
-};
+  };
 
   const handleConfirmClick = () => {
     if (menuTargetRow && menuTargetRow.id) {
-        handleDeleteRegistration(menuTargetRow.id);
+      handleDeleteRegistration(menuTargetRow.id);
     }
     setIsDialogOpen(false); // close the dialog after deleting
     setMenuTargetRow(null); // reset the target row
-};
+  };
 
-const handleConfirmClick2 = () => {
+  const handleConfirmClick2 = () => {
     handleDeleteMultiple();
     setIsDialogOpen2(false); // close the dialog after deleting
-};
+  };
   return (
-    
-  <>
+
+    <>
       <Helmet>
-        <title> Inscriptions | Minimal UI </title>
+        <title> Inscriptions</title>
       </Helmet>
 
       <Container>
@@ -404,5 +404,5 @@ const handleConfirmClick2 = () => {
       </Dialog>
 
     </>
-);
+  );
 }

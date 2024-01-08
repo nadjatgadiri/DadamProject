@@ -10,7 +10,7 @@ import account from '../../../_mock/account';
 import useResponsive from '../../../hooks/useResponsive';
 // components
 // import Logo from '../../../components/logo';
-import Logo from '../../../components/logo/logo_dadam2.png';
+import Logo from '../../../components/logo/CLASSFLOW.png';
 import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
@@ -18,7 +18,7 @@ import navConfig from './config';
 
 // ----------------------------------------------------------------------
 
-const NAV_WIDTH = 280;
+const NAV_WIDTH = 270;
 
 const StyledAccount = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -40,12 +40,12 @@ export default function Nav({ openNav, onCloseNav }) {
 
   const isDesktop = useResponsive('up', 'lg');
 
-  useEffect(() => {
-    if (openNav) {
-      onCloseNav();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  // useEffect(() => {
+  //   if (openNav) {
+  //     onCloseNav();
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [pathname]);
 
   const renderContent = (
     <Scrollbar
@@ -53,13 +53,18 @@ export default function Nav({ openNav, onCloseNav }) {
         height: 1,
         '& .simplebar-content': { height: 1, display: 'flex', flexDirection: 'column' },
       }}
+
     >
-      <Box sx={{ px: 5, py: 3, display: 'inline-flex' }}>
+      <Box sx={{
+        px: 3,
+        py: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center', // Center content vertically
+        alignItems: 'center', // Center content horizontally
+      }}>
         {/* <Logo /> */}
-        {/* <img src={Logo} alt="" /> */}
-        <Typography variant="h4" component="h2">
-          School Management
-        </Typography>
+        <img src={Logo} alt="" width={150} height={90} />
 
       </Box>
 
@@ -75,36 +80,43 @@ export default function Nav({ openNav, onCloseNav }) {
       sx={{
         flexShrink: { lg: 0 },
         width: { lg: NAV_WIDTH },
+        backgroundColor: 'white'
       }}
     >
-      {isDesktop ? (
-        <Drawer
-          open
-          variant="permanent"
-          PaperProps={{
-            sx: {
-              width: NAV_WIDTH,
-              bgcolor: 'background.default',
-              borderRightStyle: 'dashed',
-            },
-          }}
-        >
-          {renderContent}
-        </Drawer>
-      ) : (
-        <Drawer
-          open={openNav}
-          onClose={onCloseNav}
-          ModalProps={{
-            keepMounted: true,
-          }}
-          PaperProps={{
-            sx: { width: NAV_WIDTH },
-          }}
-        >
-          {renderContent}
-        </Drawer>
-      )}
+      {isDesktop
+        ? (
+          <Drawer
+            anchor="left"
+            open={openNav}
+            onClose={onCloseNav}
+            variant="permanent"
+            PaperProps={{
+              sx: {
+                width: NAV_WIDTH,
+                bgcolor: 'white',
+                borderRightStyle: 'dashed',
+              },
+            }}
+          >
+            {renderContent}
+          </Drawer>
+
+        ) :
+        (
+          <Drawer
+            open={openNav}
+            onClose={onCloseNav}
+            ModalProps={{
+              keepMounted: true,
+            }}
+            PaperProps={{
+              sx: { width: NAV_WIDTH },
+            }}
+          >
+            {renderContent}
+          </Drawer>
+        )
+      }
     </Box>
   );
 }

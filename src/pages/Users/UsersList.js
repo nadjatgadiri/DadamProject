@@ -137,7 +137,7 @@ export default function UserPage() {
               user.personProfile.imagePath).toString("base64")}` : ''
         }));
         setError('');
-        if (users) { 
+        if (users) {
           console.log(users);
           setData(users);
         }
@@ -330,7 +330,7 @@ export default function UserPage() {
     <>
 
       <Helmet>
-        <title> Utilisateurs | Minimal UI </title>
+        <title> Utilisateurs</title>
       </Helmet>
 
       <Container>

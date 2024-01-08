@@ -61,15 +61,15 @@ export default function UserListToolbarP({ isFilterd, selectList, title, numSele
         >
 
             {numSelected > 0 ? (
-                <Typography component="div" variant="subtitle1" >
+                <Typography className="mb-0 " variant="h6">
                     {numSelected} selected
                 </Typography>
             ) :
                 (
                     <>
-                        <h4 >
+                        <Typography className="mb-0 " variant="h6" >
                             {title}
-                        </h4>
+                        </Typography>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <StyledSearch
                                 value={filterName}

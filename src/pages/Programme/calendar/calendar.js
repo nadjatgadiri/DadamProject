@@ -3,7 +3,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import moment from 'moment';
 import './app.css'; // Import the external CSS file
-import { Button, Typography, ButtonGroup, Dialog, DialogTitle, DialogContent, DialogActions, } from '@mui/material';
+import { Button, Typography, ButtonGroup, Dialog, DialogTitle, DialogContent, DialogActions, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { deleteSession } from '../../../RequestManagement/sessionsManagement'
 
 const localizer = momentLocalizer(moment);
@@ -98,51 +98,61 @@ const MyCalendar = (props) => {
       toolbar.onNavigate('NEXT');
     };
 
-    return (
-      <div className="custom-toolbar" style={{ margin: '30px' }}>
-        <div className="toolbar-left">
-          <ButtonGroup className="custom-button-group">
-            <Button onClick={goToBack}>Back</Button>
-            <Button onClick={goToToday}>Today</Button>
-            <Button onClick={goToNext}>Next</Button>
-          </ButtonGroup>
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-        </div>
-        <div className="toolbar-center">
-          <Typography variant="h4">{toolbar.label}</Typography>
-        </div>
-        <div className="toolbar-right">
-          <ButtonGroup className="custom-button-group">
-            <Button
-              onClick={() => {
-                handleViewChange('month');
-                toolbar.onView('month');
-              }}
-              className={selectedView === 'month' ? 'selected' : ''}
-            >
-              Month
-            </Button>
-            <Button
-              onClick={() => {
-                handleViewChange('week');
-                toolbar.onView('week');
-              }}
-              className={selectedView === 'week' ? 'selected' : ''}
-            >
-              Week
-            </Button>
-            <Button
-              onClick={() => {
-                handleViewChange('day');
-                toolbar.onView('day');
-              }}
-              className={selectedView === 'day' ? 'selected' : ''}
-            >
-              Day
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+    return (
+      <Grid container spacing={2} justifyContent="center" alignItems="center" style={{ marginTop: '15px', marginBottom: '30px' }}>
+        <Grid item xs={12} sm={3} md={3} lg={3} xl={3}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <ButtonGroup className="custom-button-group" fullWidth={!isSmallScreen}>
+              <Button onClick={goToBack}>Back</Button>
+              <Button onClick={goToToday}>Today</Button>
+              <Button onClick={goToNext}>Next</Button>
+            </ButtonGroup>
+          </div>
+        </Grid>
+
+        <Grid item xs={12} sm={4} md={4} lg={4} xl={4} style={{ textAlign: 'center' }}>
+          <Typography variant="h4">
+            {toolbar.label}
+          </Typography>
+        </Grid>
+
+        <Grid item xs={12} sm={3} md={3} lg={3} xl={3}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <ButtonGroup className="custom-button-group" fullWidth={!isSmallScreen}>
+              <Button
+                onClick={() => {
+                  handleViewChange('month');
+                  toolbar.onView('month');
+                }}
+                className={selectedView === 'month' ? 'selected' : ''}
+              >
+                Month
+              </Button>
+              <Button
+                onClick={() => {
+                  handleViewChange('week');
+                  toolbar.onView('week');
+                }}
+                className={selectedView === 'week' ? 'selected' : ''}
+              >
+                Week
+              </Button>
+              <Button
+                onClick={() => {
+                  handleViewChange('day');
+                  toolbar.onView('day');
+                }}
+                className={selectedView === 'day' ? 'selected' : ''}
+              >
+                Day
+              </Button>
+            </ButtonGroup>
+          </div>
+        </Grid>
+      </Grid>
     );
   };
 
@@ -189,3 +199,51 @@ const MyCalendar = (props) => {
 };
 
 export default MyCalendar;
+
+
+/**
+ *  <div className="custom-toolbar" style={{ margin: '30px' }}>
+        <div className="toolbar-left">
+          <ButtonGroup className="custom-button-group">
+            <Button onClick={goToBack}>Back</Button>
+            <Button onClick={goToToday}>Today</Button>
+            <Button onClick={goToNext}>Next</Button>
+          </ButtonGroup>
+
+        </div>
+        <div className="toolbar-center">
+          <Typography variant="h4">{toolbar.label}</Typography>
+        </div>
+        <div className="toolbar-right">
+          <ButtonGroup className="custom-button-group">
+            <Button
+              onClick={() => {
+                handleViewChange('month');
+                toolbar.onView('month');
+              }}
+              className={selectedView === 'month' ? 'selected' : ''}
+            >
+              Month
+            </Button>
+            <Button
+              onClick={() => {
+                handleViewChange('week');
+                toolbar.onView('week');
+              }}
+              className={selectedView === 'week' ? 'selected' : ''}
+            >
+              Week
+            </Button>
+            <Button
+              onClick={() => {
+                handleViewChange('day');
+                toolbar.onView('day');
+              }}
+              className={selectedView === 'day' ? 'selected' : ''}
+            >
+              Day
+            </Button>
+          </ButtonGroup>
+        </div>
+      </div>
+ */

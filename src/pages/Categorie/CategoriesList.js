@@ -1,24 +1,45 @@
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
 // @mui
 import {
-    Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
-    TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
-    TextField, Grid, Box, Popper, Autocomplete, DialogTitle, FormGroup, FormControlLabel
+    Badge,
+    Card,
+    Table,
+    Stack,
+    Paper,
+    Avatar,
+    Button,
+    Popover,
+    Checkbox,
+    TableRow,
+    MenuItem,
+    TableBody,
+    TableCell,
+    Container,
+    Typography,
+    IconButton,
+    TableContainer,
+    TablePagination,
+    TextField,
+    Grid,
+    Box,
+    Popper,
+    Autocomplete,
+    DialogTitle,
+    FormGroup,
+    FormControlLabel,
+    List,
+    ListItem,
+    ListItemIcon,
 } from '@mui/material';
-
-import { styled } from '@mui/material/styles';
+import { InlineIcon } from '@iconify/react';
 import Dialog from '@mui/material/Dialog';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import { Link } from 'react-router-dom';
+
 // components
 import Label from '../../components/label';
 import Iconify from '../../components/iconify';
@@ -26,7 +47,12 @@ import Scrollbar from '../../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // api importation
-import { getAllCategories, addNewCategory, updateCategoryData, deleteCategory } from "../../RequestManagement/categorieManagement"
+import {
+    getAllCategories,
+    addNewCategory,
+    updateCategoryData,
+    deleteCategory,
+} from '../../RequestManagement/categorieManagement';
 
 // ----------------------------------------------------------------------
 
@@ -102,6 +128,10 @@ export default function CategoriePage() {
     const [catTitle, setCatTitle] = useState(false);
     const [selectList, setSelectList] = useState([]);
 
+    const [iconsList, setIconsList] = useState([]);
+    const [selectedIcon, setSelectedIcon] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [searchText, setSearchText] = useState('');
     /*--------------------------*/
     /** dialogs */
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -117,39 +147,77 @@ export default function CategoriePage() {
     const fetchData = async () => {
         const result = await getAllCategories();
         if (result.code === 200) {
-            const categories = await Promise.all(result.categories.map(async cat => ({
-                id: cat.ID_ROWID,
-                title: cat.title, // Concatenating first name and last name
-                publishedAt: cat.publishedAt,
-                isPublished: cat.isPublished,
-                princCategorie: await result.categories.find(princCat => princCat.ID_ROWID === cat.supperCatID),
-                subCategories: cat.categories,
-            })));
+            const categories = await Promise.all(
+                result.categories.map(async (cat) => ({
+                    id: cat.ID_ROWID,
+                    title: cat.title, // Concatenating first name and last name
+                    publishedAt: cat.publishedAt,
+                    isPublished: cat.isPublished,
+                    princCategorie: await result.categories.find(
+                        (princCat) => princCat.ID_ROWID === cat.supperCatID
+                    ),
+                    subCategories: cat.categories,
+                    icon: cat.icon,
+                }))
+            );
             setError('');
-            const data = await Promise.all(categories.map(async cat => ({
-                id: cat.id,
-                label: cat.title,
-            })));
+            const data = await Promise.all(
+                categories.map(async (cat) => ({
+                    id: cat.id,
+                    label: cat.title,
+                }))
+            );
             console.log(data);
             if (categories) {
                 setData(categories);
                 setAllCat(categories);
                 setSelectList(data);
             }
-        }
-        else {
-            // when we got an error 
+        } else {
+            // when we got an error
             console.log(result);
             toast.error(`Error! + ${result.message}`, {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
+    };
 
+    const fetchIcons = async () => {
+        try {
+            const response = await fetch(`https://api.iconify.design/search?query=home`);
+            const data = await response.json();
+            console.log(data);
+            setIconsList(data.icons);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching icons:', error);
+            setLoading(false);
+        }
     };
     useEffect(() => {
         fetchData();
+        // fetchIcons();
     }, []); // Empty dependency array means this effect runs once when component mounts
 
+    const handleSearch = async (event) => {
+        const inputText = event.target.value.toLowerCase();
+        setSearchText(inputText);
+
+        setLoading(true);
+        try {
+            const response = await fetch(`https://api.iconify.design/search?query=${inputText}`);
+            const data = await response.json();
+            setIconsList(data.icons);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching icons:', error);
+        }
+        setLoading(false);
+    };
+
+    const handleMenuItemClick = (icon) => {
+        setSelectedIcon(icon);
+    };
     /** end api */
     /** dialog handdel */
     // add
@@ -159,13 +227,15 @@ export default function CategoriePage() {
         setIsChecked(false);
         setSelectedCategory(null);
         setTitle('');
+        setSelectedIcon('');
     };
-    // update 
+    // update
     const handleCancelUpdateDialogClick = () => {
         setIsUpdateDialogOpen(false);
         setIsChecked(false);
         setSelectedCategory(null);
         setTitle('');
+        setSelectedIcon('');
     };
     const handleAutocompleteChange = (event, newValue) => {
         console.log(newValue);
@@ -206,9 +276,9 @@ export default function CategoriePage() {
         const data = {
             "title": title,
             "supperCatID": selectedCategory?.id,
-            "isPublished": isChecked
-        }
-        console.log(data);
+            "isPublished": isChecked,
+            "icon": selectedIcon,
+        };
         // Additional logic to handle form submission
         try {
             const response = await addNewCategory(data);
@@ -224,7 +294,7 @@ export default function CategoriePage() {
                 });
             }
         } catch (error) {
-            toast.error('Erreur! Une erreur s\'est produite. Veuillez réessayer.', {
+            toast.error("Erreur! Une erreur s'est produite. Veuillez réessayer.", {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
@@ -236,8 +306,9 @@ export default function CategoriePage() {
         const data = {
             "title": title,
             "supperCatID": selectedCategory?.id,
-            "isPublished": isChecked
-        }
+            "isPublished": isChecked,
+            "icon": selectedIcon,
+        };
         console.log(data);
         // Additional logic to handle form submission
         try {
@@ -254,7 +325,7 @@ export default function CategoriePage() {
                 });
             }
         } catch (error) {
-            toast.error('Erreur! Une erreur s\'est produite. Veuillez réessayer.', {
+            toast.error("Erreur! Une erreur s'est produite. Veuillez réessayer.", {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
@@ -275,24 +346,24 @@ export default function CategoriePage() {
                 toast.error(`Error! + ${response.message}`, {
                     position: toast.POSITION.TOP_RIGHT,
                 });
-                console.error("Error deleting student:", response.message);
+                console.error('Error deleting student:', response.message);
             }
         } catch (error) {
-            console.error("Error:", error.message);
+            console.error('Error:', error.message);
         }
     };
     const onSubmitDeleteMultiple = async () => {
         // Using Promise.all to make simultaneous delete requests for each selected student
-        await Promise.all(selected.map(id => onSubmitDeleteCategory(id)));
+        await Promise.all(selected.map((id) => onSubmitDeleteCategory(id)));
         await fetchData();
-        setSelected([]);  // Clear the selection after deleting
+        setSelected([]); // Clear the selection after deleting
     };
     /** end submit */
     /** default used */
     const handleSubCatClick = async (categories, title) => {
-        const result = await allCat.filter(A => categories.some(B => B.ID_ROWID === A.id));
+        const result = await allCat.filter((A) => categories.some((B) => B.ID_ROWID === A.id));
         setIsSub(true);
-        setCatTitle(title)
+        setCatTitle(title);
         await setData(result);
     };
     const clearSelectedSubcategory = () => {
@@ -333,7 +404,10 @@ export default function CategoriePage() {
         } else if (selectedIndex === selected.length - 1) {
             newSelected = newSelected.concat(selected.slice(0, -1));
         } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+            newSelected = newSelected.concat(
+                selected.slice(0, selectedIndex),
+                selected.slice(selectedIndex + 1)
+            );
         }
         setSelected(newSelected);
     };
@@ -355,38 +429,41 @@ export default function CategoriePage() {
 
     return (
         <>
-
             <Helmet>
-                <title> Utilisateurs | Minimal UI </title>
+                <title> Utilisateurs</title>
             </Helmet>
 
             <Container>
                 <ToastContainer />
                 <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
                     <Typography variant="h4" gutterBottom>
-                        {isSub ? (`Sous-Categories De ${catTitle}`) : ("Categories")}
-
+                        {isSub ? `Sous-Categories De ${catTitle}` : 'Categories'}
                     </Typography>
 
-                    <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}
+                    <Button
+                        variant="contained"
+                        startIcon={<Iconify icon="eva:plus-fill" />}
                         onClick={() => {
                             setIsAddDialogOpen(true);
-                        }}>
+                        }}
+                    >
                         Nouvelle Categorie
                     </Button>
                 </Stack>
                 <Card>
-
                     <UserListToolbar
                         numSelected={selected.length}
                         filterName={filterName}
                         onFilterName={handleFilterByName}
-                        onDeleteSelected={() => { handleDeleteClick2() }}
+                        onDeleteSelected={() => {
+                            handleDeleteClick2();
+                        }}
                         isSub={isSub}
-                        onClearSelected={() => { clearSelectedSubcategory() }}
+                        onClearSelected={() => {
+                            clearSelectedSubcategory();
+                        }}
                     />
                     <Scrollbar>
-
                         <TableContainer sx={{ minWidth: 800 }}>
                             <Table>
                                 <UserListHead
@@ -399,55 +476,66 @@ export default function CategoriePage() {
                                     onSelectAllClick={handleSelectAllClick}
                                 />
                                 <TableBody>
-                                    {
-                                        filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                            const { id, title, publishedAt, isPublished, princCategorie, subCategories, image, dateOfBirth } = row;
+                                    {filtered
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((row) => {
+                                            const { id, title, publishedAt, isPublished, princCategorie, subCategories } =
+                                                row;
                                             // const isEditing = editedUser && editedUser.id === row.id;
 
                                             const selectedUser = selected.indexOf(title) !== -1;
 
                                             return (
-                                                <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                                                <TableRow
+                                                    hover
+                                                    key={id}
+                                                    tabIndex={-1}
+                                                    role="checkbox"
+                                                    selected={selectedUser}
+                                                >
                                                     <TableCell padding="checkbox">
                                                         <Checkbox
                                                             checked={selected.indexOf(id) !== -1}
-                                                            onChange={(event) => handleClick(event, id)} />
+                                                            onChange={(event) => handleClick(event, id)}
+                                                        />
                                                     </TableCell>
                                                     <TableCell width={'15%'}>
-
                                                         <Typography variant="subtitle2" noWrap>
                                                             {title}
                                                         </Typography>
-
-                                                    </TableCell>
-                                                    <TableCell align="left" >
-                                                        <Label color={!isPublished ? 'error' : 'success'}>
-                                                            {isPublished ? "Publier" : "Non-Publier"}
-                                                        </Label>
                                                     </TableCell>
                                                     <TableCell align="left">
-                                                        {publishedAt}
+                                                        <Label color={!isPublished ? 'error' : 'success'}>
+                                                            {isPublished ? 'Publier' : 'Non-Publier'}
+                                                        </Label>
                                                     </TableCell>
-                                                    <TableCell align="left" >
-                                                        {princCategorie?.title}
-                                                    </TableCell>
+                                                    <TableCell align="left">{publishedAt}</TableCell>
+                                                    <TableCell align="left">{princCategorie?.title}</TableCell>
                                                     <TableCell align="center">
                                                         {subCategories?.length !== 0 ? (
-                                                            <Button variant="light" onClick={() => handleSubCatClick(subCategories, title)} startIcon={<Iconify icon={'ep:list'} sx={{ mr: 2 }} />}>
+                                                            <Button
+                                                                variant="light"
+                                                                onClick={() => handleSubCatClick(subCategories, title)}
+                                                                startIcon={<Iconify icon={'ep:list'} sx={{ mr: 2 }} />}
+                                                            >
                                                                 Lister
                                                             </Button>
-
                                                         ) : (
                                                             <></>
                                                         )}
                                                     </TableCell>
 
                                                     <TableCell align="right">
-                                                        <IconButton size="small" onClick={(e) => {
-                                                            handleOpenMenu(e);
-                                                            setMenuTargetRow(row);
-                                                            setSelectedForUpdate(selectList.filter(option => option.id !== row.id))
-                                                        }}>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={(e) => {
+                                                                handleOpenMenu(e);
+                                                                setMenuTargetRow(row);
+                                                                setSelectedForUpdate(
+                                                                    selectList.filter((option) => option.id !== row.id)
+                                                                );
+                                                            }}
+                                                        >
                                                             <Iconify icon={'eva:more-vertical-fill'} />
                                                         </IconButton>
                                                     </TableCell>
@@ -486,7 +574,6 @@ export default function CategoriePage() {
                                 )}
                             </Table>
                         </TableContainer>
-
                     </Scrollbar>
 
                     <TablePagination
@@ -498,7 +585,6 @@ export default function CategoriePage() {
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
-
                 </Card>
             </Container>
 
@@ -520,36 +606,45 @@ export default function CategoriePage() {
                     },
                 }}
             >
-                <MenuItem onClick={() => {
-                    setIsUpdateDialogOpen(true);
-                    setTitle(menuTargetRow.title);
-                    setIsChecked(menuTargetRow.isPublished);
-                    setSelectedCategory({ "id": menuTargetRow.princCategorie.id, "label": menuTargetRow.princCategorie.title })
-                    handleCloseMenu();
-                }}>
+                <MenuItem
+                    onClick={() => {
+                        setIsUpdateDialogOpen(true);
+                        setTitle(menuTargetRow.title);
+                        setIsChecked(menuTargetRow.isPublished);
+                        setSelectedIcon(menuTargetRow.icon);
+                        setSelectedCategory({
+                            id: menuTargetRow.princCategorie.id,
+                            label: menuTargetRow.princCategorie.title,
+                        });
+                        handleCloseMenu();
+                    }}
+                >
                     <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
                     Modifier
                 </MenuItem>
 
-                <MenuItem sx={{ color: 'error.main' }} onClick={() => {
-                    handleDeleteClick(menuTargetRow);
-                    handleCloseMenu();
-                }}>
+                <MenuItem
+                    sx={{ color: 'error.main' }}
+                    onClick={() => {
+                        handleDeleteClick(menuTargetRow);
+                        handleCloseMenu();
+                    }}
+                >
                     <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
                     Supprimer
                 </MenuItem>
             </Popover>
             {/* dialog for adding a new Categorie */}
-            <Dialog open={isAddDialogOpen} onClose={handleCancelAddDialogClick}
-                aria-labelledby="form-dialog-title">
-                <DialogContent >
+            <Dialog
+                open={isAddDialogOpen}
+                onClose={handleCancelAddDialogClick}
+                aria-labelledby="form-dialog-title"
+            >
+                <DialogContent>
                     <DialogTitle paddingBottom={2}> Ajouter Catégorie.</DialogTitle>
-                    <form
-                        onSubmit={onSubmitAdd}
-                    >
+                    <form onSubmit={onSubmitAdd}>
                         <Grid container spacing={3}>
-
-                            <Grid item xs={12} >
+                            <Grid item xs={12}>
                                 <TextField
                                     name="title"
                                     label="Titre"
@@ -559,8 +654,7 @@ export default function CategoriePage() {
                                     fullWidth
                                 />
                             </Grid>
-                            <Grid item xs={12}
-                                sx={{ position: 'relative' }}>
+                            <Grid item xs={12} sx={{ position: 'relative' }}>
                                 <Autocomplete
                                     disablePortal
                                     id="combo-box-demo"
@@ -569,18 +663,84 @@ export default function CategoriePage() {
                                     PopperComponent={(props) => (
                                         <Popper {...props} placement="top" sx={{ maxHeight: 150 }}>
                                             {props.children}
-
                                         </Popper>
-
                                     )}
                                     renderInput={(params) => <TextField {...params} label="Catécorie principale" />}
                                     value={selectedCategory} // Set the value prop
                                     onChange={handleAutocompleteChange} // Handle change event
-
                                 />
-
                             </Grid>
-                            <Grid item xs={12} >
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Search Icon"
+                                    variant="outlined"
+                                    value={searchText}
+                                    onChange={handleSearch}
+                                    fullWidth
+                                />
+                                <List style={{ display: 'flex', alignItems: 'center' }}>
+                                    {selectedIcon !== '' && (
+                                        <>
+                                            <p style={{ color: 'black' }}>Icône sélectionnée:</p>
+                                            <ListItem
+                                                button
+                                                key={selectedIcon}
+                                                onClick={() => handleMenuItemClick('')}
+                                                selected={selectedIcon}
+                                                style={{
+                                                    width: '60%',
+                                                    backgroundColor: 'white',
+                                                    alignItems: 'center',
+                                                    marginLeft: '10px',
+                                                }}
+                                            >
+                                                <ListItemIcon>
+                                                    <InlineIcon
+                                                        style={{
+                                                            width: '50px',
+                                                            height: '50px',
+                                                            padding: '10px',
+                                                            backgroundColor: '#d0d0d0',
+                                                            borderRadius: '10px',
+                                                        }}
+                                                        icon={selectedIcon}
+                                                    />
+                                                </ListItemIcon>
+                                            </ListItem>
+                                        </>
+                                    )}
+                                </List>
+
+                                <List
+                                    style={{
+                                        padding: '10px',
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(50px, 1fr))',
+                                        backgroundColor: 'white',
+                                    }}
+                                >
+                                    {iconsList?.map((icon, index) => (
+                                        <ListItem
+                                            button
+                                            key={index}
+                                            onClick={() => handleMenuItemClick(icon)}
+                                            selected={selectedIcon === icon}
+                                            style={{
+                                                backgroundColor: selectedIcon === icon ? '#d0d0d0' : '',
+                                                borderRadius: '10px',
+                                                paddingLeft: '10px',
+                                                paddingRight: '15px',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <ListItemIcon>
+                                                <InlineIcon style={{ width: '30px', height: '30px' }} icon={icon} />
+                                            </ListItemIcon>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <FormGroup>
                                     <FormControlLabel
                                         control={<Checkbox checked={isChecked} onChange={handleCheckboxChange} />}
@@ -593,29 +753,28 @@ export default function CategoriePage() {
                                     <Button
                                         type="submit"
                                         variant="contained"
-                                        style={{ backgroundColor: 'blue', color: 'white' }}>
+                                        style={{ backgroundColor: 'blue', color: 'white' }}
+                                    >
                                         Ajouter
                                     </Button>
                                 </Box>
                             </Grid>
                         </Grid>
-
-
                     </form>
                 </DialogContent>
             </Dialog>
             {/* end */}
             {/* dialog for updating a new Categorie */}
-            <Dialog open={isUpdateDialogOpen} onClose={handleCancelUpdateDialogClick}
-                aria-labelledby="form-dialog-title">
-                <DialogContent >
+            <Dialog
+                open={isUpdateDialogOpen}
+                onClose={handleCancelUpdateDialogClick}
+                aria-labelledby="form-dialog-title"
+            >
+                <DialogContent>
                     <DialogTitle paddingBottom={2}> Update Catégorie.</DialogTitle>
-                    <form
-                        onSubmit={onSubmitUpdate}
-                    >
+                    <form onSubmit={onSubmitUpdate}>
                         <Grid container spacing={3}>
-
-                            <Grid item xs={12} >
+                            <Grid item xs={12}>
                                 <TextField
                                     name="title"
                                     label="Titre"
@@ -625,8 +784,7 @@ export default function CategoriePage() {
                                     fullWidth
                                 />
                             </Grid>
-                            <Grid item xs={12}
-                                sx={{ position: 'relative' }}>
+                            <Grid item xs={12} sx={{ position: 'relative' }}>
                                 <Autocomplete
                                     disablePortal
                                     id="combo-box-demo"
@@ -635,17 +793,84 @@ export default function CategoriePage() {
                                     PopperComponent={(props) => (
                                         <Popper {...props} placement="top" sx={{ maxHeight: 150 }}>
                                             {props.children}
-
                                         </Popper>
-
                                     )}
                                     renderInput={(params) => <TextField {...params} label="Catécorie principale" />}
                                     value={selectedCategory} // Set the value prop
                                     onChange={handleAutocompleteChange} // Handle change event
                                 />
-
                             </Grid>
-                            <Grid item xs={12} >
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Search Icon"
+                                    variant="outlined"
+                                    value={searchText}
+                                    onChange={handleSearch}
+                                    fullWidth
+                                />
+                                <List style={{ display: 'flex', alignItems: 'center' }}>
+                                    {selectedIcon !== '' && (
+                                        <>
+                                            <p style={{ color: 'black' }}>Icône sélectionnée:</p>
+                                            <ListItem
+                                                button
+                                                key={selectedIcon}
+                                                onClick={() => handleMenuItemClick('')}
+                                                selected={selectedIcon}
+                                                style={{
+                                                    width: '60%',
+                                                    backgroundColor: 'white',
+                                                    alignItems: 'center',
+                                                    marginLeft: '10px',
+                                                }}
+                                            >
+                                                <ListItemIcon>
+                                                    <InlineIcon
+                                                        style={{
+                                                            width: '50px',
+                                                            height: '50px',
+                                                            padding: '10px',
+                                                            backgroundColor: '#d0d0d0',
+                                                            borderRadius: '10px',
+                                                        }}
+                                                        icon={selectedIcon}
+                                                    />
+                                                </ListItemIcon>
+                                            </ListItem>
+                                        </>
+                                    )}
+                                </List>
+
+                                <List
+                                    style={{
+                                        padding: '10px',
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(50px, 1fr))',
+                                        backgroundColor: 'white',
+                                    }}
+                                >
+                                    {iconsList?.map((icon, index) => (
+                                        <ListItem
+                                            button
+                                            key={index}
+                                            onClick={() => handleMenuItemClick(icon)}
+                                            selected={selectedIcon === icon}
+                                            style={{
+                                                backgroundColor: selectedIcon === icon ? '#d0d0d0' : '',
+                                                borderRadius: '10px',
+                                                paddingLeft: '10px',
+                                                paddingRight: '15px',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <ListItemIcon>
+                                                <InlineIcon style={{ width: '30px', height: '30px' }} icon={icon} />
+                                            </ListItemIcon>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <FormGroup>
                                     <FormControlLabel
                                         control={<Checkbox checked={isChecked} onChange={handleCheckboxChange} />}
@@ -658,14 +883,13 @@ export default function CategoriePage() {
                                     <Button
                                         type="submit"
                                         variant="contained"
-                                        style={{ backgroundColor: 'blue', color: 'white' }}>
+                                        style={{ backgroundColor: 'blue', color: 'white' }}
+                                    >
                                         Modifier
                                     </Button>
                                 </Box>
                             </Grid>
                         </Grid>
-
-
                     </form>
                 </DialogContent>
             </Dialog>
@@ -673,10 +897,8 @@ export default function CategoriePage() {
             {/* dialog for deleting one item */}
             <Dialog open={isDialogOpen} onClose={handleCancelClick}>
                 <DialogContent>
-                    <DialogTitle>Êtes-vous sûr de vouloir supprimer cet élément ?
-                    </DialogTitle>
+                    <DialogTitle>Êtes-vous sûr de vouloir supprimer cet élément ?</DialogTitle>
                     La suppression de cette catégorie doit également supprimer toutes les sous-catégories.
-
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCancelClick} color="primary">
@@ -692,8 +914,8 @@ export default function CategoriePage() {
             <Dialog open={isDialogOpen2} onClose={handleCancelClick2}>
                 <DialogContent>
                     <DialogTitle>Êtes-vous sûr de vouloir supprimer ces éléments ?</DialogTitle>
-                    La suppression de ces catégories doit également supprimer toutes les sous-catégories associées.
-
+                    La suppression de ces catégories doit également supprimer toutes les sous-catégories
+                    associées.
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCancelClick2} color="primary">

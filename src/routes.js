@@ -16,9 +16,16 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import AddUser from './pages/Users/AddUser';
-import Home from './site-web/home';
+
+
+import Home from "./pages/webSitePages/home"
+import CategoryList from "./pages/webSitePages/menuCategoriesProgramme"
+import MenuProgrammes from "./pages/webSitePages/menuProgrammes"
+import ProgrammeProfileHome from "./pages/webSitePages/profileProgramme"
+
 import AddStudent from './pages/Students/addStudent';
 import AddTeacher from './pages/Teachers/addTeacher';
+import StudentProfile from './pages/Students/ProfileStudent';
 // categorie 
 import CategoriePage from './pages/Categorie/CategoriesList';
 // class
@@ -59,26 +66,31 @@ export default function Router() {
         { path: 'registration', element: <RegistrationList /> },
         { path: 'schooledit', element: <SchooolinfoupdatePage /> },
         { path: 'passwordedit', element: <Updatepassword /> },
-
+        { path: 'StudentProfile/:id', element: <StudentProfile /> },
 
       ],
     },
     {
       path: 'login',
-      element: <LoginPage />,
+      element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <LoginPage />,
     },
     {
-      path: 'home',
-      element: <Home />,
+      path: '/home',
+      // element: <Home />,
+      children: [
+        { path: '', element: <Home /> },
+        { path: 'Categories/:catId', element: <CategoryList /> }, // 'Categories' changed to 'categories'
+        { path: 'Programmes', element: <MenuProgrammes /> }, // 'Categories' changed to 'categories'
+        { path: 'ProgrammeProfile/:progId', element: <ProgrammeProfileHome /> }, // 'Categories' changed to 'categories'
+
+
+      ]
     },
     {
       path: '404',
       element: <Page404 />,
     },
-    // {
-    //   path: 'profileEcole',
-    //   element: <SchoolProfilePage />,
-    // },
+
     { path: '*', element: <Navigate to="/404" /> },
     {
       element: <SimpleLayout />,

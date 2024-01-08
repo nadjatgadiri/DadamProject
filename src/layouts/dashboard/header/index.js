@@ -18,14 +18,14 @@ const NAV_WIDTH = 280;
 
 const HEADER_MOBILE = 64;
 
-const HEADER_DESKTOP = 92;
+const HEADER_DESKTOP = 70;
 
 const StyledRoot = styled(AppBar)(({ theme }) => ({
   ...bgBlur({ color: theme.palette.background.default }),
   boxShadow: 'none',
-  [theme.breakpoints.up('lg')]: {
-    width: `calc(100% - ${NAV_WIDTH + 1}px)`,
-  },
+  // [theme.breakpoints.up('lg')]: {
+  //   width: `calc(100% - ${NAV_WIDTH + 1}px)`,
+  // },
 }));
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
@@ -46,7 +46,7 @@ export default function Header({ onOpenNav }) {
   return (
     <StyledRoot>
       <StyledToolbar>
-        {/* <IconButton
+        <IconButton
           onClick={onOpenNav}
           sx={{
             mr: 1,
@@ -55,7 +55,7 @@ export default function Header({ onOpenNav }) {
           }}
         >
           <Iconify icon="eva:menu-2-fill" />
-        </IconButton> */}
+        </IconButton>
 
         {/* <Searchbar /> */}
         <Box sx={{ flexGrow: 1 }} />
@@ -64,7 +64,7 @@ export default function Header({ onOpenNav }) {
           direction="row"
           alignItems="center"
           spacing={{
-            xs: 0.5,
+            xs: 1,
             sm: 1,
           }}
         >

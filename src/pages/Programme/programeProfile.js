@@ -302,7 +302,7 @@ const ProgrameProfile = () => {
         <>
 
             <Helmet>
-                <title> Utilisateurs | Minimal UI </title>
+                <title> Utilisateurs</title>
             </Helmet>
 
             <Container className="app-content-area">
@@ -314,11 +314,12 @@ const ProgrameProfile = () => {
                         <div className="col-lg-12 col-md-12 col-12">
                             <div className="d-flex justify-content-between align-items-center mb-5">
                                 <div className="mb-2 mb-lg-0">
-                                    <h3 className="mb-0 text-white">
+
+                                    <Typography variant="h4" className="mb-0 text-white">
                                         {type === "cour" ? "Cour De " : null}
                                         {type === "formation" ? "Formation De " : null}
                                         {title}
-                                    </h3>
+                                    </Typography>
                                 </div>
                                 <div>
                                     <a href="#!" className="btn btn-white" onClick={handleOpenPaymentDialog}>
@@ -340,7 +341,7 @@ const ProgrameProfile = () => {
                                     {/* <!-- heading --> */}
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <div>
-                                            <h4 className="mb-0">Etudiant</h4>
+                                            <Typography className="mb-0 " variant="h6">Etudiant</Typography>
                                         </div>
                                         <div className="icon-shape icon-md bg-primary-soft text-primary rounded-2">
                                             <Iconify icon="ph:student" width="40px" />
@@ -361,7 +362,7 @@ const ProgrameProfile = () => {
                                     {/* <!-- heading --> */}
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <div>
-                                            <h4 className="mb-0">Professeur</h4>
+                                            <Typography className="mb-0 " variant="h6">Professeur</Typography>
                                         </div>
                                         <div className="icon-shape icon-md bg-primary-soft text-primary rounded-2">
                                             <Iconify icon="la:chalkboard-teacher" width="40px" />                                        </div>
@@ -381,7 +382,7 @@ const ProgrameProfile = () => {
                                     {/* <!-- heading --> */}
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <div>
-                                            <h4 className="mb-0">Group</h4>
+                                            <Typography className="mb-0 " variant="h6">Group</Typography>
                                         </div>
                                         <div className="icon-shape icon-md bg-primary-soft text-primary rounded-2">
                                             <Iconify icon="material-symbols:group-outline" width="40px" />
@@ -406,7 +407,7 @@ const ProgrameProfile = () => {
                                     <div className="card-header ">
                                         <div className="d-flex justify-content-betweenalign-items-center">
                                             <div>
-                                                <h4 className="mb-0">Description</h4>
+                                                <Typography className="mb-0 " variant="h6">Description</Typography>
                                             </div>
 
                                         </div>
@@ -427,7 +428,7 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Date De Commencement</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Date De Commencement</Typography>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -442,7 +443,7 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Date D'Expiration</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Date D'Expiration</Typography>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -457,7 +458,8 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Date D'Expiration D'Inscription</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Date D'Expiration D'Inscription</Typography>
+
                                                             </div>
                                                         </div>
                                                         <div>
@@ -472,7 +474,7 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Prix {typeOfPaiment}</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Prix {typeOfPaiment}</Typography>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -491,7 +493,7 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Nombre Des Séance</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Nombre Des Séance</Typography>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -506,7 +508,7 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Durée Par Séance</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Durée Par Séance</Typography>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -521,7 +523,7 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Date D'Expiration D'Inscription</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Date D'Expiration D'Inscription</Typography>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -536,7 +538,7 @@ const ProgrameProfile = () => {
                                                         <div className="d-flex align-items-center">
 
                                                             <div>
-                                                                <h5 className="mb-0 ">Prix {typeOfPaiment}</h5>
+                                                                <Typography className="mb-0" variant="subtitle1">Prix {typeOfPaiment}</Typography>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -558,8 +560,7 @@ const ProgrameProfile = () => {
                             {/* <!-- Card header --> */}
                             <div className="card-header d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4 className="mb-0">Bénéfices De Programme
-                                    </h4>
+                                    <Typography className="mb-0 " variant="h6">Bénéfices De Programme</Typography>
                                 </div>
                             </div>
                             {/* <!-- Card body --> */}

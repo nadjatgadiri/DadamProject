@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
-import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
+import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover, Button } from '@mui/material';
 // mocks_
 import { useNavigate, Link } from 'react-router-dom';
 import { Buffer } from "buffer";
@@ -11,11 +11,7 @@ import { getUser } from '../../../RequestManagement/userManagement'
 const MENU_OPTIONS = [
   {
     label: 'Home',
-    icon: 'eva:home-fill',
-  },
-  {
-    label: 'Profile',
-    icon: 'eva:person-fill',
+    path: '/dashboard/app',
   },
   {
     label: 'Settings',
@@ -43,7 +39,7 @@ export default function AccountPopover() {
         const usersData = usersData1.userData;
         const image = usersData.personProfile.imagePath !== null && usersData.personProfile.imagePath !== '' ?
           `data:image/jpeg;base64,${Buffer.from(
-            usersData.personProfile.imagePath).toString("base64")}` : '';
+            usersData.personProfile.imagePath).toString("base64")}` : '../../../../assets/images/avatars/avatar_10.jpg';
 
         const user = {
           id: usersData.ID_ROWID,
@@ -113,8 +109,9 @@ export default function AccountPopover() {
         open={Boolean(open)}
         anchorEl={open}
         onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         PaperProps={{
           sx: {
             p: 0,
@@ -158,6 +155,7 @@ export default function AccountPopover() {
           Logout
         </MenuItem>
       </Popover>
+
     </>
   );
 }
