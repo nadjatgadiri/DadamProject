@@ -180,6 +180,22 @@ export default function CategoriePage() {
         }
     };
 
+    const fetchIcons = async () => {
+        try {
+            const response = await fetch(`https://api.iconify.design/search?query=home`);
+            const data = await response.json();
+            console.log(data);
+            setIconsList(data.icons);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching icons:', error);
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
+        fetchData();
+        // fetchIcons();
+    }, []); // Empty dependency array means this effect runs once when component mounts
 
     const handleSearch = async (event) => {
         const inputText = event.target.value.toLowerCase();
