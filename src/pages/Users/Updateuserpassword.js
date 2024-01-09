@@ -7,9 +7,8 @@ import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie'; // Import the js-cookie library
-import { Cookie } from "@mui/icons-material";
 import { updatePassword } from '../../RequestManagement/userManagement';
 import Iconify from '../../components/iconify';
 
@@ -23,7 +22,6 @@ const StyledContent = styled('div')(({ theme }) => ({
 }));
 
 function UpdatePassword() {
-  const navigate = useNavigate();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');

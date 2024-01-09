@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Icon, InlineIcon, } from '@iconify/react';
+import {  InlineIcon, } from '@iconify/react';
 import { getPrincipaleCategories } from '../../RequestManagement/webSiteManagement';
 
 function CategoriesSection() {

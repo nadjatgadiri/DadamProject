@@ -5,15 +5,12 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 // @mui
 import {
-    Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
+  Card, Table, Stack, Paper, Button, Popover, Checkbox, TableRow, MenuItem,
     TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
-    TextField, Grid, Box, Popper, Autocomplete, DialogTitle, FormGroup, FormControlLabel
+    TextField, Grid, Box,  DialogTitle, 
 } from '@mui/material';
 
-import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 // components
@@ -98,7 +95,6 @@ export default function ClassPage() {
     const [allCat, setAllCat] = useState(null);
     const [isSub, setIsSub] = useState(false);
     const [catTitle, setCatTitle] = useState(false);
-    const [selectList, setSelectList] = useState([]);
 
     /*--------------------------*/
     /** dialogs */

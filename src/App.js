@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter} from 'react-router-dom';
 import { useEffect } from 'react';
 
 import { HelmetProvider } from 'react-helmet-async';
@@ -10,7 +10,6 @@ import ThemeProvider from './theme';
 // components
 import { StyledChart } from './components/chart';
 import ScrollToTop from './components/scroll-to-top';
-import UserPage from './pages/Users/UsersList';
 // import Home from './site-web/home';
 
 // ----------------------------------------------------------------------

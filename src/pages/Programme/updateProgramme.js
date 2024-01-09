@@ -8,9 +8,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { styled } from '@mui/material/styles';
 import { ToastContainer, toast } from "react-toastify";
 import {
-    Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
-    TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
-    TextField, Grid, Popper, Autocomplete, Select, FormControl, InputLabel, label, FormControlLabel, FormGroup
+    Card,  Stack,Button,  Checkbox,  MenuItem,
+   Container, Typography,
+    TextField, Grid,  Autocomplete, Select, FormControl, InputLabel, FormControlLabel, FormGroup
 } from '@mui/material';
 import {
     Unstable_NumberInput as NumberInput,
@@ -321,9 +321,7 @@ const UpdateProgramme = () => {
         setIsSkip(true);
     };
 
-    const handleReset = () => {
-        setActiveStep(0);
-    };
+  
     // api
     const fetchData = async () => {
         console.log(id);

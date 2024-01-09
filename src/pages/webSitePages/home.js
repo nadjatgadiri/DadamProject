@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import "./css/animate.min.css"
 import "./css/owl.carousel.min.css"
 import "./css/owl.theme.default.min.css"
@@ -51,5 +51,5 @@ function home() {
         </>
     );
 }
-;
+
 export default home;

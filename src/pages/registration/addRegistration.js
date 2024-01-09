@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 import {
-   Select, Card, Table, Paper, Stack,Button, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, TableContainer, TablePagination,
+   Card, Table, Paper, Stack,Button, Checkbox, TableRow,TableBody, TableCell, Container, Typography, TableContainer, TablePagination,
    Autocomplete, TextField 
 } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
@@ -35,7 +35,6 @@ export default function ProgramPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [error, setError] = useState(null);
   const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
   const [dialogReason, setDialogReason] = useState(''); // can be 'add' or 'select'
   const [selectedProgramId, setSelectedProgramId] = useState('');
   const storedSelectedStudents = localStorage.getItem('selectedStudents');

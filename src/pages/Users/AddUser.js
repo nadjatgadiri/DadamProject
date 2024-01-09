@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 
 import { styled, FormControl, InputLabel, MenuItem, Select, Button, Avatar, TextField, Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { useNavigate, Link } from 'react-router-dom';
+import {  Link } from 'react-router-dom';
 import { addNewUser } from '../../RequestManagement/userManagement';
 import Iconify from '../../components/iconify';
 
@@ -22,7 +22,6 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 function AddUser() {
-  const navigate = useNavigate();
   const [mail, setMail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');

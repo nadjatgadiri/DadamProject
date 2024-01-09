@@ -5,12 +5,10 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 // @mui
 import {
-    Badge,
     Card,
     Table,
     Stack,
     Paper,
-    Avatar,
     Button,
     Popover,
     Checkbox,
@@ -182,22 +180,6 @@ export default function CategoriePage() {
         }
     };
 
-    const fetchIcons = async () => {
-        try {
-            const response = await fetch(`https://api.iconify.design/search?query=home`);
-            const data = await response.json();
-            console.log(data);
-            setIconsList(data.icons);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching icons:', error);
-            setLoading(false);
-        }
-    };
-    useEffect(() => {
-        fetchData();
-        // fetchIcons();
-    }, []); // Empty dependency array means this effect runs once when component mounts
 
     const handleSearch = async (event) => {
         const inputText = event.target.value.toLowerCase();

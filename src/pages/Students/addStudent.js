@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { useNavigate, Link ,useLocation} from 'react-router-dom';
+import { useNavigate,useLocation} from 'react-router-dom';
 import { addNewStudent } from '../../RequestManagement/studentManagement';
 import Iconify from '../../components/iconify';
 

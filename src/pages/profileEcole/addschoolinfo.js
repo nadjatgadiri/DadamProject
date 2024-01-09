@@ -10,7 +10,7 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import { updateGeneralSchoolData, getGeneralSchoolData } from '../../RequestManagement/schoolManagement'; // Update the import paths
 
 const VisuallyHiddenInput = styled('input')({
@@ -35,10 +35,8 @@ function ManageSchool() {
   const [schoolAddress, setSchoolAddress] = useState('');
   const [schoolInst, setSchoolInst] = useState('');
   const [schoolLib, setSchoolLib] = useState('');
-  const [schoolFax, setSchoolFax] = useState('');
   const [schoolLogo, setSchoolLogo] = useState('');
   const [feedback, setFeedback] = useState('');
-  const location = useLocation();
   const [phoneNumberError, setPhoneNumberError] = useState('');
 
 

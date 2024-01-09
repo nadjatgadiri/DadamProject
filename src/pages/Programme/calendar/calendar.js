@@ -36,7 +36,7 @@ const MyCalendar = (props) => {
 
 
 
-  const eventStyleGetter = (event, start, end, isSelected) => {
+  const eventStyleGetter = (event) => {
     return {
       style: {
         backgroundColor: colorMap[event.groupID],

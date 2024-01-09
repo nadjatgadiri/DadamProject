@@ -23,7 +23,7 @@ import {
     TablePagination,
     DialogTitle,
 } from '@mui/material';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useNavigate, Link} from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';

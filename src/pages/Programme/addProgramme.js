@@ -8,9 +8,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { styled } from '@mui/material/styles';
 import { ToastContainer, toast } from "react-toastify";
 import {
-    Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
-    TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
-    TextField, Grid, Popper, Autocomplete, Select, FormControl, InputLabel, label, FormControlLabel, FormGroup
+     Card,  Stack,  Button, Checkbox,  MenuItem,
+    Container, Typography,
+    TextField, Grid, Autocomplete, Select, FormControl, InputLabel, FormControlLabel, FormGroup
 } from '@mui/material';
 import {
     Unstable_NumberInput as NumberInput,
@@ -182,7 +182,6 @@ export default function AddProgramme() {
     const [finSubDate2, setFinSubDate2] = useState(null);
     // skip
     const [isSkip, setIsSkip] = useState(false);
-    const [total, setTotal] = useState(false);
     const handleAutocompleteChange = (event, newValue) => {
         console.log(newValue);
         setSelectedCategory(newValue);

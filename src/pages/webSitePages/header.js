@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 
 // import "./js/jquery-3.4.1.min.js"
 // import "./js/popper.min.js"

@@ -1,17 +1,16 @@
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Helmet } from 'react-helmet-async';
-import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 // @mui
 import {
-    Autocomplete, Dialog, DialogActions, DialogContent, DialogContentText, Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, TableContainer, TablePagination, TextField, Select,
+    Autocomplete, Dialog, DialogActions, DialogContent, DialogContentText, Paper, Button, Container, Typography,  TextField, 
 } from '@mui/material';
 import './theme.css';
 import { Buffer } from "buffer";
 
-import { addDays, subDays, isAfter } from 'date-fns';
+import { subDays, isAfter } from 'date-fns';
 import { getProgramme } from "../../RequestManagement/programManagement"
 import Iconify from '../../components/iconify';
 import SubscribersComponnent from './programeComponnent/subscribersComponnent';
@@ -25,21 +24,9 @@ import { getStatistiqueDataForProgProfile } from '../../RequestManagement/dataMa
 
 // ----------------------------------------------------------------------
 
-function descendingComparator(a, b, orderBy) {
-    if (b[orderBy] < a[orderBy]) {
-        return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-        return 1;
-    }
-    return 0;
-}
 
-function getComparator(order, orderBy) {
-    return order === 'desc'
-        ? (a, b) => descendingComparator(a, b, orderBy)
-        : (a, b) => -descendingComparator(a, b, orderBy);
-}
+
+
 
 
 const ProgrameProfile = () => {

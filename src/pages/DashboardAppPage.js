@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Cookies from 'js-cookie';
 // @mui
-import { useTheme } from '@mui/material/styles';
 import { Buffer } from "buffer";
 import { Grid, Container, Typography, Card, Avatar, List, ListItem, ListItemAvatar, ListItemText, Divider } from '@mui/material';
 // sections
@@ -20,7 +19,6 @@ import useResponsive from '../hooks/useResponsive';
 
 export default function DashboardAppPage() {
   const isDesktop = useResponsive('up', 'sm');
-  const theme = useTheme();
   const [dataStatistique, setDataStatistique] = useState({
     "nmbStudents": 0,
     "nmbTeachers": 0,
