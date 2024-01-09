@@ -16,6 +16,10 @@ function formatDate(inputDate) {
 const MyCalendar = (props) => {
   const { colorMap } = props;
   const [events, setEvents] = useState([]);
+  const [selectedView, setSelectedView] = useState('month'); // State to track selected view
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+
   useEffect(() => {
     if (Array.isArray(props.events)) {
       const data = props.events.map(option => {
@@ -31,34 +35,6 @@ const MyCalendar = (props) => {
   }, [props.events]);
 
 
-  // const [events, setEvents] = useState([
-  //   {
-  //     id: 1,
-  //     title: 'Meeting',
-  //     start: new Date(2023, 11, 15, 10, 0),
-  //     end: new Date(2023, 11, 15, 12, 0),
-  //     groupID: '22'
-  //   },
-  //   {
-  //     id: 3,
-  //     title: 'Conference',
-  //     start: new Date(2023, 11, 18, 15, 0),
-  //     end: new Date(2023, 11, 18, 16, 0),
-  //     groupID: '23'
-  //   },
-
-  //   {
-  //     id: 2,
-  //     title: 'Conference',
-  //     start: new Date(2023, 11, 18, 14, 0),
-  //     end: new Date(2023, 11, 18, 16, 0),
-  //     groupID: '22'
-  //   },
-  // Add more events as needed
-  // ]);
-  const [selectedView, setSelectedView] = useState('month'); // State to track selected view
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
 
   const eventStyleGetter = (event, start, end, isSelected) => {
     return {
@@ -199,51 +175,3 @@ const MyCalendar = (props) => {
 };
 
 export default MyCalendar;
-
-
-/**
- *  <div className="custom-toolbar" style={{ margin: '30px' }}>
-        <div className="toolbar-left">
-          <ButtonGroup className="custom-button-group">
-            <Button onClick={goToBack}>Back</Button>
-            <Button onClick={goToToday}>Today</Button>
-            <Button onClick={goToNext}>Next</Button>
-          </ButtonGroup>
-
-        </div>
-        <div className="toolbar-center">
-          <Typography variant="h4">{toolbar.label}</Typography>
-        </div>
-        <div className="toolbar-right">
-          <ButtonGroup className="custom-button-group">
-            <Button
-              onClick={() => {
-                handleViewChange('month');
-                toolbar.onView('month');
-              }}
-              className={selectedView === 'month' ? 'selected' : ''}
-            >
-              Month
-            </Button>
-            <Button
-              onClick={() => {
-                handleViewChange('week');
-                toolbar.onView('week');
-              }}
-              className={selectedView === 'week' ? 'selected' : ''}
-            >
-              Week
-            </Button>
-            <Button
-              onClick={() => {
-                handleViewChange('day');
-                toolbar.onView('day');
-              }}
-              className={selectedView === 'day' ? 'selected' : ''}
-            >
-              Day
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
- */

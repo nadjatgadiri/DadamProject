@@ -1,33 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { faker } from '@faker-js/faker';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography, Card, Avatar, List, ListItem, ListItemAvatar, ListItemText, Divider } from '@mui/material';
 // components
-import Iconify from '../components/iconify';
 // sections
-import {
-  AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
-  AppCurrentVisits,
-  AppWebsiteVisits,
-  AppTrafficBySite,
-  AppWidgetSummary,
-  AppCurrentSubject,
-  AppConversionRates,
-} from '../sections/@dashboard/app';
+import { AppWidgetSummary } from '../sections/@dashboard/app';
 import MyCalendar from './Programme/calendar/calendar'
 import { getStatistiqueDataForDashbaord1 } from "../RequestManagement/dataManagment"
 import { getGroups } from "../RequestManagement/groupManagement"
 import { getAllSessions } from "../RequestManagement/sessionsManagement"
 import { getUser } from '../RequestManagement/userManagement'
 import { getGeneralSchoolData } from '../RequestManagement/schoolManagement'; // Update the import paths
-
+import useResponsive from '../hooks/useResponsive';
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
+  const isDesktop = useResponsive('up', 'sm');
   const theme = useTheme();
   const [dataStatistique, setDataStatistique] = useState({
     "nmbStudents": 0,
@@ -209,7 +198,7 @@ export default function DashboardAppPage() {
             </div>
           </Grid>
           <Grid item xs={12} md={12} lg={12}>
-            <Card style={{ height: '650px' }}>
+            <Card style={{ height: isDesktop ? '650px' : '750px' }}>
               <div style={{ textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
                 <MyCalendar colorMap={groups} events={events} fetchEvents={fetchData} />
               </div>

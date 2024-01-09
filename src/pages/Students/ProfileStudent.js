@@ -1,31 +1,21 @@
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Helmet } from 'react-helmet-async';
-import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 // @mui
 import {
-    Typography, Button, Container, Paper, Table, Link, TableBody, TableCell, TableRow, TableContainer
+    Typography, Container, Paper, Table, Link, TableBody, TableCell, TableRow, TableContainer
 } from '@mui/material';
 import '../Programme/theme.css';
 import { Buffer } from "buffer";
-
-import { addDays, subDays, isAfter } from 'date-fns';
-import Iconify from '../../components/iconify';
 import { getGroups } from "../../RequestManagement/groupManagement"
 import { getAllSessionsForStudent } from "../../RequestManagement/sessionsManagement"
-import { getUser } from '../../RequestManagement/userManagement'
 import { getStudentHistory, getStudent } from '../../RequestManagement/studentManagement'
 import MyCalendar from '../Programme/calendar/calendar'
+import useResponsive from '../../hooks/useResponsive';
 
-const data = [
-    { label: 'Phone', value: '+32112345689' },
-    { label: 'Email', value: 'Dashui@gmail.com' },
-    { label: 'Date of Birth', value: '01.10.1997' }
-    // Add more data as needed
-];
 const StudentProfile = () => {
+    const isDesktop = useResponsive('up', 'sm');
     const { id } = useParams();
     const [userData, setUserData] = useState('');
     const [historyData, setHistoryData] = useState([]);
@@ -37,6 +27,20 @@ const StudentProfile = () => {
         { label: 'Date of Birth', value: '' }
         // Add more data as needed
     ])
+    function formatDate(inputDate) {
+        const date = new Date(inputDate);
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            hour12: false // Use 24-hour format
+        };
+        return date.toLocaleDateString('fr-FR', options);
+    }
+
     /** api */
     const fetchData = async () => {
 
@@ -109,7 +113,6 @@ const StudentProfile = () => {
             </Helmet>
 
             <Container className="app-content-area">
-                <ToastContainer />
                 <div className="col-xl-12 col-lg-12 col-md-12 col-12">
                     {/* <!-- Bg --> */}
                     <div className="pt-20 rounded-top" style={{
@@ -186,7 +189,12 @@ const StudentProfile = () => {
                                                             <Typography variant="subtitle2" noWrap>
                                                                 {data.title}
                                                             </Typography>
-                                                        </Link>) : data.title}</TableCell>
+                                                        </Link>) :
+                                                        data.title
+                                                }</TableCell>
+                                                <TableCell>
+                                                    {formatDate(data.date)}
+                                                </TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -199,7 +207,7 @@ const StudentProfile = () => {
                 <div className="row">
                     <div className="col-xl-12 col-lg-12 col-md-12 col-12 mb-12">
                         {/* <!-- card --> */}
-                        <div className="card">
+                        <div className="card" style={{ height: isDesktop ? '650px' : '750px' }}>
                             <MyCalendar colorMap={groups} events={events} fetchEvents={fetchData} />
                         </div>
                     </div>

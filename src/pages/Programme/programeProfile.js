@@ -23,7 +23,6 @@ import { addNewPayment, getPaymentsInfoForProgram } from '../../RequestManagemen
 import { getProgRegistrations } from '../../RequestManagement/registrationManagement';
 import { getStatistiqueDataForProgProfile } from '../../RequestManagement/dataManagment';
 
-
 // ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
