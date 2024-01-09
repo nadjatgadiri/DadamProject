@@ -1,4 +1,5 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+import Cookies from 'js-cookie';
 // layouts
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
@@ -38,8 +39,8 @@ import ProgrameProfile from './pages/Programme/programeProfile';
 
 // ----------------------------------------------------------------------
 export default function Router() {
-  const isAuthenticated =
-    localStorage.getItem("userID") !== null;
+  const isAuthenticated = Cookies.get('userID') !== undefined && Cookies.get('userID') !== '';
+  
   const routes = useRoutes([
     {
       path: '/dashboard',

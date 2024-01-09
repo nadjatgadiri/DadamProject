@@ -5,6 +5,7 @@ import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover,
 // mocks_
 import { useNavigate, Link } from 'react-router-dom';
 import { Buffer } from "buffer";
+import Cookies from 'js-cookie'; // Import the js-cookie library
 import { getUser } from '../../../RequestManagement/userManagement'
 // ----------------------------------------------------------------------
 
@@ -35,7 +36,7 @@ export default function AccountPopover() {
   useEffect(() => {
     async function fetchUserData() {
       try {
-        const usersData1 = await getUser(localStorage.getItem("userID"));
+        const usersData1 = await getUser(Cookies.get('userID'));
         const usersData = usersData1.userData;
         const image = usersData.personProfile.imagePath !== null && usersData.personProfile.imagePath !== '' ?
           `data:image/jpeg;base64,${Buffer.from(
@@ -77,7 +78,7 @@ export default function AccountPopover() {
   };
   const handleLogout = () => {
     // Clear session
-    localStorage.clear();
+Cookies.remove('userID');
 
     // Reload the page
     window.location.reload();

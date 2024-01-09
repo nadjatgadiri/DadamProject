@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import Cookies from 'js-cookie';
 // @mui
 import { useTheme } from '@mui/material/styles';
+import { Buffer } from "buffer";
 import { Grid, Container, Typography, Card, Avatar, List, ListItem, ListItemAvatar, ListItemText, Divider } from '@mui/material';
-// components
 // sections
-import { AppWidgetSummary } from '../sections/@dashboard/app';
+import {
+  AppWidgetSummary,
+} from '../sections/@dashboard/app';
 import MyCalendar from './Programme/calendar/calendar'
 import { getStatistiqueDataForDashbaord1 } from "../RequestManagement/dataManagment"
 import { getGroups } from "../RequestManagement/groupManagement"
@@ -47,12 +50,11 @@ export default function DashboardAppPage() {
       setEvents(result3.events);
     }
     // user Data 
-    const usersData1 = await getUser(localStorage.getItem("userID"));
+    const usersData1 = await getUser(Cookies.get('userID'));
     const usersData = usersData1.userData;
     const image = usersData.personProfile.imagePath !== null && usersData.personProfile.imagePath !== '' ?
-      `data:image/jpeg;base64,${Buffer.from(
-        usersData.personProfile.imagePath).toString("base64")}` : "../assets/images/avatars/avatar_10.jpg";
-
+    `data:image/jpeg;base64,${Buffer.from(
+     usersData.personProfile.imagePath).toString("base64")}` : '../../../../assets/images/avatars/avatar_10.jpg';
     const user = {
       id: usersData.ID_ROWID,
       name: `${usersData.personProfile.firstName} ${usersData.personProfile.lastName}`,
@@ -63,6 +65,7 @@ export default function DashboardAppPage() {
       dateOfBirth: usersData.personProfile.dateOfBirth,
       image, // shorthand notation for image: image
     };
+    console.log(user);
     setUserData(user); // Putting user in an array, assuming setUserData expects an array
     // school 
 

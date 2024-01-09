@@ -8,6 +8,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
 import { useNavigate, Link } from 'react-router-dom';
+import Cookies from 'js-cookie'; // Import the js-cookie library
+import { Cookie } from "@mui/icons-material";
 import { updatePassword } from '../../RequestManagement/userManagement';
 import Iconify from '../../components/iconify';
 
@@ -52,7 +54,7 @@ function UpdatePassword() {
     if (!passwordMatchError) {
       try {
         // Add a call to your API method here
-        const userId = localStorage.getItem("userID");
+        const userId = Cookies.get("userID");
         const data = {
           userID: userId,
           oldPSW: oldPassword,

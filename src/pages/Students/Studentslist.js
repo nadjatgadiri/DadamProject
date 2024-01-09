@@ -16,6 +16,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
+import { jsPDF as JsPDF } from "jspdf";
+import "jspdf-autotable";
 
 // components
 import { Buffer } from "buffer";
@@ -237,6 +239,7 @@ export default function StudentPage() {
     setSelected(newSelected);
   };
 
+  
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -317,6 +320,71 @@ export default function StudentPage() {
     handleDeleteMultiple();
     setIsDialogOpen2(false); // close the dialog after deleting
   };
+
+
+const generatePDF = (students) => {
+  // Create a new JsPDF instance
+  const pdf = new JsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  // Set font
+  pdf.setFont("Helvetica", "normal");
+
+ // Add title to the PDF
+pdf.setTextColor("#3498db"); // Title text color
+pdf.setFontSize(26);
+pdf.setFont("Helvetica", "bold"); // Use bold font for the title
+pdf.text("Liste des Étudiants", pdf.internal.pageSize.width / 2, 15, { align: "center" });
+
+// Add "Dadam School" on the left
+pdf.setFont("Helvetica", "normal"); // Use normal font for the school name
+pdf.setFontSize(16);
+pdf.text("Dadam School", 20, 30, { textColor: "#2ecc71" }); // School name text color
+
+// Add the year on the right
+pdf.setFontSize(12);
+pdf.text(`Année: ${new Date().getFullYear()}`, pdf.internal.pageSize.width - 30, 30, { align: "right", textColor: "#e74c3c" }); // Year text color
+  // Create an array of data for the table
+  const tableData = students.map((student) => [
+    student.name,
+    student.email,
+    student.dateOfBirth,
+    student.phone,
+  ]);
+
+  // Set columns for the table
+  const columns = ["Nom et Prenom", "Email", "Date de Naissance", "Numéro de Téléphone"];
+
+  // Add the table to the PDF
+  pdf.autoTable({
+    head: [columns],
+    body: tableData,
+    startY: 35, // Adjust the starting position of the table
+    margin: { top: 35 }, // Adjust the margin from the top
+    theme: "grid", // Use the "grid" theme for better visual separation
+    styles: {
+      fontSize: 10,
+      cellPadding: 2,
+      overflow: "linebreak",
+    },
+    headStyles: {
+      fillColor: "#3498db", // Header background color
+      textColor: "#ffffff", // Header text color
+    },
+    columnStyles: {
+      0: { cellWidth: 40 }, // Adjust the width of the first column
+    },
+    alternateRowStyles: {
+      fillColor: "#f2f2f2", // Alternate row background color
+    },
+ });
+
+  // Save the PDF file with a name (e.g., student_list.pdf)
+  pdf.save("liste_des_etudiants.pdf");
+};
   return (
     <>
 
@@ -335,6 +403,9 @@ export default function StudentPage() {
               Nouveau Étudiant
             </Button>
           </Link>
+          <Button onClick={() => generatePDF(data)}>
+  Générer PDF
+</Button>
         </Stack>
 
         <Card>
