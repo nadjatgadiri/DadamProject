@@ -120,6 +120,16 @@ export default function UserPage() {
   const [editedUser, setEditedUser] = useState(null);
   const [menuTargetRow, setMenuTargetRow] = useState(null);
 
+  const validatePhoneNumber = (value) => {
+    const phoneNumberError = /^(0|\+213)[567]\d{8}$/.test(value)
+      ? ''
+      : 'Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits';
+    return /^(0|\+213)[567]\d{8}$/.test(value);
+  };
+  function isValidGmailFormat(email) {
+    const gmailRegex = /^[a-zA-Z0-9_.+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  }
   useEffect(() => {
     const fetchData = async () => {
       const result = await getAllUsers();
@@ -221,26 +231,40 @@ export default function UserPage() {
         role: editedUser.role,
         image: editedUser.image
       };
-      const response = await updateUserData(updatedData);
+      if (validatePhoneNumber(editedUser.phone) && isValidGmailFormat(editedUser.email)) {
+        const response = await updateUserData(updatedData);
 
-      if (response.code === 200) {
-        toast.success(`Les données d'utilisateur ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        // Refresh the data or manipulate the local state to reflect the changes
-        // For example, if you just want to update the local state:
-        const updatedUsers = data.map(user =>
-          user.id === userId
-            ? { ...user, ...editedUser }
-            : user
-        );
-        setData(updatedUsers);
-        setEditedUser(null); // Resetting the edited user state
-      } else {
-        toast.error(`Error! + ${response.message}`, {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        console.error("Error updating user:", response.message);
+        if (response.code === 200) {
+          toast.success(`Les données d'utilisateur ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+          // Refresh the data or manipulate the local state to reflect the changes
+          // For example, if you just want to update the local state:
+          const updatedUsers = data.map(user =>
+            user.id === userId
+              ? { ...user, ...editedUser }
+              : user
+          );
+          setData(updatedUsers);
+          setEditedUser(null); // Resetting the edited user state
+        } else {
+          toast.error(`Error! + ${response.message}`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+          console.error("Error updating user:", response.message);
+        }
+      }
+      else {
+        if (!validatePhoneNumber(editedUser.phone)) {
+          toast.error(`Erreur! Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits`, {
+            position: toast.POSITION.TOP_RIGHT,
+          })
+        }
+        if (!isValidGmailFormat(editedUser.email)) {
+          toast.error(`Erreur! Please enter a valid Email`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
       }
     } catch (error) {
       console.error("Error:", error.message);

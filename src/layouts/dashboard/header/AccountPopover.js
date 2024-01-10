@@ -78,7 +78,7 @@ export default function AccountPopover() {
   };
   const handleLogout = () => {
     // Clear session
-Cookies.remove('userID');
+    Cookies.remove('userID');
 
     // Reload the page
     window.location.reload();

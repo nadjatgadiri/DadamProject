@@ -61,13 +61,13 @@ function AddUser() {
       ? ''
       : 'Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits';
     setPhoneNumberError(phoneNumberError);
+    return /^(0|\+213)[567]\d{8}$/.test(value);
   };
 
   const handleSubmit = async (e) => {
     setFeedback('');
     e.preventDefault(); // Prevents the default form submission behavior
-    validatePhoneNumber(phoneNumber);
-    if (phoneNumberError === '') {
+    if (validatePhoneNumber(phoneNumber)) {
       const data = {
         "firstName": firstName,
         "lastName": lastName,
