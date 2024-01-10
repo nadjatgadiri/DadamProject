@@ -124,7 +124,7 @@ export default function TeacherPage() {
   };
 
   const handleUpdateClick = async (teacherId) => {
-    console.log(teacherId);
+
     try {
       const updatedData = {
         firstName: editedTeacher.name.split(' ')[0],
@@ -135,25 +135,37 @@ export default function TeacherPage() {
         subject: editedTeacher.subject, // assuming teachers also have status like students
         image: editedTeacher.image
       };
-      console.log(updatedData);
-      const response = await updateTeacherData(teacherId, updatedData);
-
-      if (response.code === 200) {
-        toast.success(`Les données d'enseignant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        const updatedTeachers = data.map(teacher =>
-          teacher.id === teacherId
-            ? { ...teacher, ...editedTeacher }
-            : teacher
-        );
-        setData(updatedTeachers);
-        setEditedTeacher(null);
-      } else {
-        toast.error(`Error! + ${response.message}`, {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        console.error("Error updating teacher:", response.message);
+      if (validatePhoneNumber(updatedData.phoneNumber) && isValidGmailFormat(updatedData.mail)) {
+        const response = await updateTeacherData(teacherId, updatedData);
+        if (response.code === 200) {
+          toast.success(`Les données d'enseignant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+          const updatedTeachers = data.map(teacher =>
+            teacher.id === teacherId
+              ? { ...teacher, ...editedTeacher }
+              : teacher
+          );
+          setData(updatedTeachers);
+          setEditedTeacher(null);
+        } else {
+          toast.error(`Error! + ${response.message}`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+          console.error("Error updating teacher:", response.message);
+        }
+      }
+      else {
+        if (!validatePhoneNumber(updatedData.phoneNumber)) {
+          toast.error(`Erreur! Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits`, {
+            position: toast.POSITION.TOP_RIGHT,
+          })
+        }
+        if (!isValidGmailFormat(updatedData.mail)) {
+          toast.error(`Erreur! Please enter a valid Email`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
       }
     } catch (error) {
       console.error("Error:", error.message);
@@ -217,6 +229,13 @@ export default function TeacherPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogOpen2, setIsDialogOpen2] = useState(false);
 
+  const validatePhoneNumber = (value) => {
+    return /^(0|\+213)[567]\d{8}$/.test(value);
+  };
+  function isValidGmailFormat(email) {
+    const gmailRegex = /^[a-zA-Z0-9_.+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  }
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -230,9 +249,8 @@ export default function TeacherPage() {
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
-      console.log(teacherId);
-      const response = await deleteTeacher(teacherId);
 
+      const response = await deleteTeacher(teacherId);
       if (response.code === 200) {
         toast.success(`L'enseignat a été bien supprimer.`, {
           position: toast.POSITION.TOP_RIGHT,

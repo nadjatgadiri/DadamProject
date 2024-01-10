@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { Grid, Stack, Card, Container, Typography, Box } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { useNavigate,useLocation} from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { addNewStudent } from '../../RequestManagement/studentManagement';
 import Iconify from '../../components/iconify';
 
@@ -54,29 +54,29 @@ function AddStudent() {
     if (referrer === "addRegistration") {
       if (newStudentId) {
         navigate("/dashboard/addRegistration", {
-          state: { newStudentId}
+          state: { newStudentId }
         });
       } else {
         navigate("/dashboard/addRegistration"
         );
       }
     } else {
-        navigate("/dashboard/student");
+      navigate("/dashboard/student");
     }
-};
+  };
 
   const validatePhoneNumber = (value) => {
     const phoneNumberError = /^(0|\+213)[567]\d{8}$/.test(value)
       ? ''
       : 'Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits';
     setPhoneNumberError(phoneNumberError);
+    return /^(0|\+213)[567]\d{8}$/.test(value);
   };
 
   const handleSubmit = async (e) => {
     setFeedback('');
     e.preventDefault();
-    validatePhoneNumber(phoneNumber);
-    if (phoneNumberError === '') {
+    if (validatePhoneNumber(phoneNumber)) {
       const data = {
         "firstName": firstName,
         "lastName": lastName,
@@ -91,7 +91,7 @@ function AddStudent() {
           toast.success(`L'étudiant est ajouté avec succès!`, {
             position: toast.POSITION.TOP_RIGHT,
           });
-          setNewStudentId(response.studentId); 
+          setNewStudentId(response.studentId);
           // Optionally reset form fields here
         } else if (response && response.code === 409) {
           setFeedback('Erreur: L\'email est déjà utilisé.');
@@ -113,13 +113,13 @@ function AddStudent() {
         <Typography variant="h4" gutterBottom>
           Nouveau Étudiant
         </Typography>
-        <Button 
-    variant="contained" 
-    startIcon={<Iconify icon="ri:arrow-go-back-fill" />} 
-    onClick={handleGoBack}
->
-    Return
-</Button>
+        <Button
+          variant="contained"
+          startIcon={<Iconify icon="ri:arrow-go-back-fill" />}
+          onClick={handleGoBack}
+        >
+          Return
+        </Button>
       </Stack>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
         <Card style={{ padding: '20px' }}>

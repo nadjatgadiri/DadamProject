@@ -56,13 +56,13 @@ function AddTeacher() {
       ? ''
       : 'Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits';
     setPhoneNumberError(phoneNumberError);
+    return /^(0|\+213)[567]\d{8}$/.test(value);
   };
 
   const handleSubmit = async (e) => {
     setFeedback('');
     e.preventDefault();
-    validatePhoneNumber(phoneNumber);
-    if (phoneNumberError === '') {
+    if (validatePhoneNumber(phoneNumber)) {
       const data = {
         "firstName": firstName,
         "lastName": lastName,
@@ -94,7 +94,7 @@ function AddTeacher() {
 
   return (
     <Container>
-            <ToastContainer />
+      <ToastContainer />
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4" gutterBottom>
           Nouveau Enseignant
@@ -201,15 +201,15 @@ function AddTeacher() {
               <Typography variant="body2" color="error">{feedback}</Typography>
             </Grid>
             <Grid item xs={12}>
-                  <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2} marginTop={2}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      style={{ backgroundColor: 'blue', color: 'white' }}>
-                      Ajouter
-                    </Button>
-                  </Box>
-                </Grid>
+              <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2} marginTop={2}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  style={{ backgroundColor: 'blue', color: 'white' }}>
+                  Ajouter
+                </Button>
+              </Box>
+            </Grid>
           </form>
         </Card>
       </div>

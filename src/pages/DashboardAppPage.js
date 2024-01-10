@@ -51,8 +51,8 @@ export default function DashboardAppPage() {
     const usersData1 = await getUser(Cookies.get('userID'));
     const usersData = usersData1.userData;
     const image = usersData.personProfile.imagePath !== null && usersData.personProfile.imagePath !== '' ?
-    `data:image/jpeg;base64,${Buffer.from(
-     usersData.personProfile.imagePath).toString("base64")}` : '../../../../assets/images/avatars/avatar_10.jpg';
+      `data:image/jpeg;base64,${Buffer.from(
+        usersData.personProfile.imagePath).toString("base64")}` : '../../../../assets/images/avatars/avatar_10.jpg';
     const user = {
       id: usersData.ID_ROWID,
       name: `${usersData.personProfile.firstName} ${usersData.personProfile.lastName}`,

@@ -1,3 +1,5 @@
+import { jsPDF as JsPDF } from "jspdf";
+import "jspdf-autotable";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import { Helmet } from 'react-helmet-async';
@@ -16,8 +18,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
-import { jsPDF as JsPDF } from "jspdf";
-import "jspdf-autotable";
+
 
 // components
 import { Buffer } from "buffer";
@@ -81,34 +82,6 @@ export default function StudentPage() {
     border: `2px solid ${theme.palette.background.paper}`,
 
   }));
-  const StyledBadge = styled(Badge)(({ theme }) => ({
-    '& .MuiBadge-badge': {
-      backgroundColor: '#44b700',
-      color: '#44b700',
-      boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-      '&::after': {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        borderRadius: '50%',
-        animation: 'ripple 1.2s infinite ease-in-out',
-        border: '1px solid currentColor',
-        content: '""',
-      },
-    },
-    '@keyframes ripple': {
-      '0%': {
-        transform: 'scale(.8)',
-        opacity: 1,
-      },
-      '100%': {
-        transform: 'scale(2.4)',
-        opacity: 0,
-      },
-    },
-  }));
 
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
@@ -121,10 +94,18 @@ export default function StudentPage() {
   const [editedStudent, setEditedStudent] = useState(null);
   const [menuTargetRow, setMenuTargetRow] = useState(null);
 
-
   /* start load data */
   const [data, setData] = useState([]);
-
+  const validatePhoneNumber = (value) => {
+    const phoneNumberError = /^(0|\+213)[567]\d{8}$/.test(value)
+      ? ''
+      : 'Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits';
+    return /^(0|\+213)[567]\d{8}$/.test(value);
+  };
+  function isValidGmailFormat(email) {
+    const gmailRegex = /^[a-zA-Z0-9_.+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  }
   useEffect(() => {
     const fetchData = async () => {
       const result = await getAllStudents();
@@ -135,7 +116,7 @@ export default function StudentPage() {
           phone: student.personProfile2.phoneNumber,
           email: student.personProfile2.mail,
           dateOfBirth: student.personProfile2.dateOfBirth,
-          status: student.isActive ? 'Active' : 'Inactive',
+          status: student.isActive,
           image: student.personProfile2.imagePath !== null && student.personProfile2.imagePath !== '' ?
             `data:image/jpeg;base64,${Buffer.from(
               student.personProfile2.imagePath.data).toString("base64")}` : ''
@@ -143,7 +124,7 @@ export default function StudentPage() {
         setData(students);
       } else {
         setError(result.message);
-        toast.error(`Error! + ${result.message}`, {
+        toast.error(`Erreur! + ${result.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
@@ -159,7 +140,6 @@ export default function StudentPage() {
   const handleUpdateClick = async (studentId) => {
     try {
       // Call the function to update the student's information
-      console.log(studentId);
       const updatedData = {
         firstName: editedStudent.name.split(' ')[0], // assuming the name format is "FirstName LastName"
         lastName: editedStudent.name.split(' ')[1],
@@ -169,26 +149,38 @@ export default function StudentPage() {
         status: editedStudent.status,
         image: editedStudent.image
       };
-      const response = await updateStudentData(studentId, updatedData);
-
-      if (response.code === 200) {
-        // Refresh the data or manipulate the local state to reflect the changes
-        // For example, if you just want to update the local state:
-        toast.success(`Les données d'étudiant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        const updatedStudents = data.map(student =>
-          student.id === studentId
-            ? { ...student, ...editedStudent }
-            : student
-        );
-        setData(updatedStudents);
-        setEditedStudent(null); // Resetting the edited student state
-      } else {
-        toast.error(`Error! + ${response.message}`, {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        console.error("Error updating student:", response.message);
+      if (validatePhoneNumber(editedStudent.phone) && isValidGmailFormat(editedStudent.email)) {
+        const response = await updateStudentData(studentId, updatedData);
+        if (response.code === 200) {
+          // Refresh the data or manipulate the local state to reflect the changes
+          // For example, if you just want to update the local state:
+          toast.success(`Les données d'étudiant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+          const updatedStudents = data.map(student =>
+            student.id === studentId
+              ? { ...student, ...editedStudent }
+              : student
+          );
+          setData(updatedStudents);
+          setEditedStudent(null); // Resetting the edited student state
+        } else {
+          toast.error(response.message, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+      }
+      else {
+        if (!validatePhoneNumber(editedStudent.phone)) {
+          toast.error(`Erreur! Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits`, {
+            position: toast.POSITION.TOP_RIGHT,
+          })
+        }
+        if (!isValidGmailFormat(editedStudent.email)) {
+          toast.error(`Erreur! Please enter a valid Email`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
       }
     } catch (error) {
       console.error("Error:", error.message);
@@ -239,7 +231,7 @@ export default function StudentPage() {
     setSelected(newSelected);
   };
 
-  
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -281,7 +273,7 @@ export default function StudentPage() {
         const updatedStudents = data.filter(student => student.id !== studentId);
         setData(updatedStudents);
       } else {
-        toast.error(`Error! + ${response.message}`, {
+        toast.error(`Erreur! + ${response.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
         console.error("Error deleting student:", response.message);
@@ -322,69 +314,69 @@ export default function StudentPage() {
   };
 
 
-const generatePDF = (students) => {
-  // Create a new JsPDF instance
-  const pdf = new JsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4",
-  });
+  const generatePDF = (students) => {
+    // Create a new JsPDF instance
+    const pdf = new JsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
-  // Set font
-  pdf.setFont("Helvetica", "normal");
+    // Set font
+    pdf.setFont("Helvetica", "normal");
 
- // Add title to the PDF
-pdf.setTextColor("#3498db"); // Title text color
-pdf.setFontSize(26);
-pdf.setFont("Helvetica", "bold"); // Use bold font for the title
-pdf.text("Liste des Étudiants", pdf.internal.pageSize.width / 2, 15, { align: "center" });
+    // Add title to the PDF
+    pdf.setTextColor("#3498db"); // Title text color
+    pdf.setFontSize(26);
+    pdf.setFont("Helvetica", "bold"); // Use bold font for the title
+    pdf.text("Liste des Étudiants", pdf.internal.pageSize.width / 2, 15, { align: "center" });
 
-// Add "Dadam School" on the left
-pdf.setFont("Helvetica", "normal"); // Use normal font for the school name
-pdf.setFontSize(16);
-pdf.text("Dadam School", 20, 30, { textColor: "#2ecc71" }); // School name text color
+    // Add "Dadam School" on the left
+    pdf.setFont("Helvetica", "normal"); // Use normal font for the school name
+    pdf.setFontSize(16);
+    pdf.text("Dadam School", 20, 30, { textColor: "#2ecc71" }); // School name text color
 
-// Add the year on the right
-pdf.setFontSize(12);
-pdf.text(`Année: ${new Date().getFullYear()}`, pdf.internal.pageSize.width - 30, 30, { align: "right", textColor: "#e74c3c" }); // Year text color
-  // Create an array of data for the table
-  const tableData = students.map((student) => [
-    student.name,
-    student.email,
-    student.dateOfBirth,
-    student.phone,
-  ]);
+    // Add the year on the right
+    pdf.setFontSize(12);
+    pdf.text(`Année: ${new Date().getFullYear()}`, pdf.internal.pageSize.width - 30, 30, { align: "right", textColor: "#e74c3c" }); // Year text color
+    // Create an array of data for the table
+    const tableData = students.map((student) => [
+      student.name,
+      student.email,
+      student.dateOfBirth,
+      student.phone,
+    ]);
 
-  // Set columns for the table
-  const columns = ["Nom et Prenom", "Email", "Date de Naissance", "Numéro de Téléphone"];
+    // Set columns for the table
+    const columns = ["Nom et Prenom", "Email", "Date de Naissance", "Numéro de Téléphone"];
 
-  // Add the table to the PDF
-  pdf.autoTable({
-    head: [columns],
-    body: tableData,
-    startY: 35, // Adjust the starting position of the table
-    margin: { top: 35 }, // Adjust the margin from the top
-    theme: "grid", // Use the "grid" theme for better visual separation
-    styles: {
-      fontSize: 10,
-      cellPadding: 2,
-      overflow: "linebreak",
-    },
-    headStyles: {
-      fillColor: "#3498db", // Header background color
-      textColor: "#ffffff", // Header text color
-    },
-    columnStyles: {
-      0: { cellWidth: 40 }, // Adjust the width of the first column
-    },
-    alternateRowStyles: {
-      fillColor: "#f2f2f2", // Alternate row background color
-    },
- });
+    // Add the table to the PDF
+    pdf.autoTable({
+      head: [columns],
+      body: tableData,
+      startY: 35, // Adjust the starting position of the table
+      margin: { top: 35 }, // Adjust the margin from the top
+      theme: "grid", // Use the "grid" theme for better visual separation
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: "#3498db", // Header background color
+        textColor: "#ffffff", // Header text color
+      },
+      columnStyles: {
+        0: { cellWidth: 40 }, // Adjust the width of the first column
+      },
+      alternateRowStyles: {
+        fillColor: "#f2f2f2", // Alternate row background color
+      },
+    });
 
-  // Save the PDF file with a name (e.g., student_list.pdf)
-  pdf.save("liste_des_etudiants.pdf");
-};
+    // Save the PDF file with a name (e.g., student_list.pdf)
+    pdf.save("liste_des_etudiants.pdf");
+  };
   return (
     <>
 
@@ -404,8 +396,8 @@ pdf.text(`Année: ${new Date().getFullYear()}`, pdf.internal.pageSize.width - 30
             </Button>
           </Link>
           <Button onClick={() => generatePDF(data)}>
-  Générer PDF
-</Button>
+            Générer PDF
+          </Button>
         </Stack>
 
         <Card>
@@ -506,9 +498,11 @@ pdf.text(`Année: ${new Date().getFullYear()}`, pdf.internal.pageSize.width - 30
                                       onChange={(e) => setEditedStudent({ ...editedStudent, name: e.target.value })}
                                     />
                                   ) : (
-                                    <Typography variant="subtitle2" noWrap>
+                                    <Link to={`/dashboard/studentProfile/${id}`}><Typography variant="subtitle2" noWrap>
                                       {name}
+                                      <Iconify icon={'mingcute:link-fill'} sx={{ mr: 1 }} style={{ margin: "5px" }} />
                                     </Typography>
+                                    </Link>
                                   )}
                                 </Stack>
                               </TableCell>
@@ -564,7 +558,6 @@ pdf.text(`Année: ${new Date().getFullYear()}`, pdf.internal.pageSize.width - 30
                                     <MenuItem value="Inactive">Inactive</MenuItem>
                                   </Select>
                                 ) : (
-
                                   <Label color={status === 'Inactive' ? 'error' : 'success'}>
                                     {status}
                                   </Label>

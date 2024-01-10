@@ -237,10 +237,11 @@ export default function AddProgramme() {
         }
         else if (activeStep === 1) {
             if (type === "formation") {
-                if (startDate && endDate) {
+                if (startDate && endDate && finSubDate1) {
                     setErrorsFormation({
                         "sDate": false,
-                        "fDate": false
+                        "fDate": false,
+                        "eDate": false
                     });
                     let newSkipped = skipped;
                     if (isStepSkipped(activeStep)) {
@@ -253,21 +254,26 @@ export default function AddProgramme() {
                 else {
                     const er = {
                         "sDate": false,
-                        "fDate": false
+                        "fDate": false,
+                        "eDate": false
                     };
                     if (!startDate) {
                         er.sDate = true;
                     } if (!endDate) {
                         er.fDate = true;
                     }
+                    if (!finSubDate1) {
+                        er.eDate = true;
+                    }
                     setErrorsFormation(er);
                 }
             }
             else if (type === "cour") {
-                if (nmbSession && duree) {
+                if (nmbSession && duree && finSubDate2) {
                     setErrorsCour({
                         "nmbSession": false,
-                        "duree": false
+                        "duree": false,
+                        "eDate": false
                     });
                     let newSkipped = skipped;
                     if (isStepSkipped(activeStep)) {
@@ -280,12 +286,15 @@ export default function AddProgramme() {
                 else {
                     const er = {
                         "nmbSession": false,
-                        "duree": false
+                        "duree": false,
+                        "eDate": false
                     };
                     if (!nmbSession) {
                         er.nmbSession = true;
                     } if (!duree) {
                         er.duree = true;
+                    } if (!finSubDate2) {
+                        er.eDate = true;
                     }
                     setErrorsCour(er);
                 }
@@ -471,7 +480,6 @@ export default function AddProgramme() {
                                                 >
                                                     <MenuItem value="formation">Formation</MenuItem>
                                                     <MenuItem value="cour">Cours</MenuItem>
-                                                    <MenuItem value="activité">Activité</MenuItem>
                                                 </Select>
                                             </FormControl>
                                         </Grid>
@@ -585,6 +593,7 @@ export default function AddProgramme() {
                                                     onChange={(e) => setFinSubDate1(e.target.value)}
                                                     fullWidth
                                                     required
+                                                    error={errorsFormation.eDate}
                                                 />
                                             </Grid>
                                             <Grid item xs={6}>
@@ -607,7 +616,7 @@ export default function AddProgramme() {
                                                     />
                                                 </Grid>
                                                 : null}
-                                            {(errorsFormation.fDate || errorsFormation.sDate) ?
+                                            {(errorsFormation.fDate || errorsFormation.sDate || errorsFormation.eDate) ?
                                                 (<Grid paddingLeft={3} xs={12}>
                                                     <Typography variant="body2" color="error">Il existe des zones vides obligatoires.</Typography>
                                                 </Grid>) : null}
@@ -647,10 +656,11 @@ export default function AddProgramme() {
                                                     onChange={(e) => setFinSubDate2(e.target.value)}
                                                     fullWidth
                                                     required
+                                                    error={errorsCour.eDate}
                                                 />
                                             </Grid>
                                             <Grid item xs={6}><></></Grid>
-                                            {(errorsCour.duree || errorsCour.nmbSession) ?
+                                            {(errorsCour.duree || errorsCour.nmbSession || errorsCour.eDate) ?
                                                 (<Grid paddingLeft={3} xs={12}>
                                                     <Typography variant="body2" color="error">Il existe des zones vides obligatoires.</Typography>
                                                 </Grid>) : null}

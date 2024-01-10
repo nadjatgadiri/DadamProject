@@ -1,5 +1,5 @@
-import axios from 'axios';
 import Cookies from 'js-cookie';
+import axios from 'axios';
 
 const setReqHeader = () => {
   const token = Cookies.get('token');

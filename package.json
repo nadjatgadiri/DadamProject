@@ -1,7 +1,7 @@
 {
-  "name": "@minimal/material-kit-react",
-  "author": "minimals.cc",
-  "licence": "MIT",
+  "name": "CLassFlow Project",
+  "author": "GuennounWissem, Kamel Nadjib, ",
+  "licence": "CLassFlow",
   "version": "1.7.0",
   "private": false,
   "proxy": "http://127.0.0.1:8323/DADAM_Backend",
