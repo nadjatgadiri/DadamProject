@@ -276,12 +276,40 @@ export default function TeacherPage() {
     setIsDialogOpen2(false);
   };
   const handleDeleteMultiple = async () => {
-    await Promise.all(selected.map(id => handleDeleteTeacher(id)));
-
-    const remainingTeachers = data.filter(teacher => !selected.includes(teacher.id));
-
-    setData(remainingTeachers);
-    setSelected([]);
+    try {
+      let isError = false;
+  
+      await Promise.all(selected.map(async (id) => {
+        try {
+          const response = await deleteTeacher(id);
+          if (response.code !== 200) {
+            isError = true;
+            const teacherName = data.find(teacher => teacher.id === id)?.name || 'Unknown Teacher';
+            toast.error(`Erreur lors de la suppression de l'enseignant ${teacherName}: ${response.message}`, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+          }
+        } catch (error) {
+          isError = true;
+          console.error(`Error deleting teacher with ID ${id}: ${error.message}`);
+          toast.error(`Erreur lors de la suppression de l'enseignant.`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+      }));
+  
+      if (!isError) {
+        toast.success('Les enseignants sélectionnés ont été supprimés avec succès.', {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+  
+      const remainingTeachers = data.filter(teacher => !selected.includes(teacher.id));
+      setData(remainingTeachers);
+      setSelected([]);
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
   };
   const handleDeleteClick = (teacher) => {
     setMenuTargetRow(teacher);

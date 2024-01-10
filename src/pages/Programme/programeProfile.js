@@ -21,7 +21,6 @@ import { getProgGroups } from '../../RequestManagement/groupManagement';
 import { addNewPayment, getPaymentsInfoForProgram } from '../../RequestManagement/paymentManagement';
 import { getProgRegistrations } from '../../RequestManagement/registrationManagement';
 import { getStatistiqueDataForProgProfile } from '../../RequestManagement/dataManagment';
-
 // ----------------------------------------------------------------------
 
 
@@ -263,27 +262,7 @@ const ProgrameProfile = () => {
         }
     };
 
-    const today = new Date(); // Current date
-
-    // Calculate the "Mois Dernier" date (30 days ago)
-    const lastMonthDate = subDays(today, 30);
-
-    // Calculate the "Total" and "Mois Dernier" amounts
-    let totalAmount = 0;
-    let lastMonthAmount = 0;
-
-    students.forEach((student) => {
-        const paymentDate = new Date(student.subDate);
-
-        // Calculate the total amount
-        totalAmount += student.montant;
-
-        // Check if the payment date is within the last 30 days
-        if (isAfter(paymentDate, lastMonthDate)) {
-            lastMonthAmount += student.montant;
-        }
-    });
-
+   
     return (
         <>
 

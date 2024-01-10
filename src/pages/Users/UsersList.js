@@ -312,15 +312,41 @@ export default function UserPage() {
     }
   };
 
-  const handleDeleteMultiple = async () => {
-    // Using Promise.all to make simultaneous delete requests for each selected User
-    await Promise.all(selected.map(id => handleDeleteUser(id)));
-
-    // After all delete requests have been made, filter out the deleted Users from local data
-    const remainingUsers = data.filter(user => !selected.includes(user.id));
-
-    setData(remainingUsers);
-    setSelected([]);  // Clear the selection after deleting
+  const handleDeleteMultiple= async () => {
+    try {
+      let isError = false;
+  
+      await Promise.all(selected.map(async (id) => {
+        try {
+          const response = await deleteUser(id);
+          if (response.code !== 200) {
+            isError = true;
+            const userName = data.find(user => user.id === id)?.name || 'Unknown User';
+            toast.error(`Erreur lors de la suppression de l'utilisateur ${userName}: ${response.message}`, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+          }
+        } catch (error) {
+          isError = true;
+          console.error(`Error deleting user with ID ${id}: ${error.message}`);
+          toast.error(`Erreur lors de la suppression de l'utilisateur.`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+      }));
+  
+      if (!isError) {
+        toast.success('Les utilisateurs sélectionnés ont été supprimés avec succès.', {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+  
+      const remainingUsers = data.filter(user => !selected.includes(user.id));
+      setData(remainingUsers);
+      setSelected([]);
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
   };
   /** end delete */
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;

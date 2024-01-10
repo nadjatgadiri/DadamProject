@@ -1,16 +1,13 @@
-import { ToastContainer, toast } from 'react-toastify';
+import {  toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import {
   OutlinedInput,
-  InputAdornment,
   Avatar,
-  Select,
   Table,
   Stack,
-  Paper,
   Button,
   Popover,
   Checkbox,
@@ -26,13 +23,10 @@ import {
   DialogTitle,
 } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { PieChart } from '@mui/x-charts/PieChart';
 import { Buffer } from 'buffer';
-import { Link } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import Label from '../../../components/label';
 // components
 import Iconify from '../../../components/iconify'; // You need to provide the correct path to the Iconify component
 import Scrollbar from '../../../components/scrollbar'; // You need to provide the correct path to the Scrollbar component
@@ -240,6 +234,7 @@ const PaymentComponent = (props) => {
           paymentDate: payment.createdAt,
           montant: payment.montant,
         }));
+        console.log(payments);
         setData(payments);
         // Convert paymentDate to a Date object and filter data for the last few days (e.g., 7 days)
         const aggregatedPayments = {};

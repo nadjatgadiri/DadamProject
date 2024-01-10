@@ -290,16 +290,46 @@ export default function StudentPage() {
     setIsDialogOpen2(false);
   };
   const handleDeleteMultiple = async () => {
-    // Using Promise.all to make simultaneous delete requests for each selected student
-    await Promise.all(selected.map(id => handleDeleteStudent(id)));
-
-    // After all delete requests have been made, filter out the deleted students from local data
-    const remainingStudents = data.filter(student => !selected.includes(student.id));
-
-    setData(remainingStudents);
-    setSelected([]);  // Clear the selection after deleting
+    try {
+      let isError = false;
+  
+      // Using Promise.all to make simultaneous delete requests for each selected student
+      await Promise.all(selected.map(async (id) => {
+        try {
+          const response = await deleteStudent(id);
+          if (response.code !== 200) {
+            // Set the flag if there is an error during deletion
+            isError = true;
+            const studentName = data.find(student => student.id === id)?.name || 'Unknown Student';
+            toast.error(`Erreur lors de la suppression de ${studentName}: ${response.message}`, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+          }
+        } catch (error) {
+          isError = true;
+          console.error(`Error deleting student with ID ${id}: ${error.message}`);
+          toast.error(`Erreur lors de la suppression de l'étudiant.`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+      }));
+  
+      // Display a single success toast if there is no error
+      if (!isError) {
+        toast.success('Les étudiants sélectionnés ont été supprimés avec succès.', {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+  
+      // After all delete requests have been made, filter out the deleted students from local data
+      const remainingStudents = data.filter(student => !selected.includes(student.id));
+  
+      setData(remainingStudents);
+      setSelected([]); // Clear the selection after deleting
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
   };
-
   const handleConfirmClick = () => {
     if (menuTargetRow && menuTargetRow.id) {
       handleDeleteStudent(menuTargetRow.id);
