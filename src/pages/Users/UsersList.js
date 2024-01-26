@@ -3,6 +3,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
 // @mui
 import {
   Badge, Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem,
@@ -24,7 +25,7 @@ import Scrollbar from '../../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // to load data 
-import { getAllUsers, updateUserData, deleteUser } from '../../RequestManagement/userManagement'
+import { getAllUsers, updateUserData, deleteUser, getUserRole } from '../../RequestManagement/userManagement'
 
 // ----------------------------------------------------------------------
 
@@ -119,6 +120,7 @@ export default function UserPage() {
   /** update and delete */
   const [editedUser, setEditedUser] = useState(null);
   const [menuTargetRow, setMenuTargetRow] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const validatePhoneNumber = (value) => {
     const phoneNumberError = /^(0|\+213)[567]\d{8}$/.test(value)
@@ -159,7 +161,10 @@ export default function UserPage() {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
-
+      const result2 = await getUserRole(Cookies.get('userID'));
+      if (result2.code === 200) {
+        setIsAdmin(result2.userData.role === "Admin");
+      }
     };
 
     fetchData();
@@ -312,10 +317,10 @@ export default function UserPage() {
     }
   };
 
-  const handleDeleteMultiple= async () => {
+  const handleDeleteMultiple = async () => {
     try {
       let isError = false;
-  
+
       await Promise.all(selected.map(async (id) => {
         try {
           const response = await deleteUser(id);
@@ -334,13 +339,13 @@ export default function UserPage() {
           });
         }
       }));
-  
+
       if (!isError) {
         toast.success('Les utilisateurs sélectionnés ont été supprimés avec succès.', {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
-  
+
       const remainingUsers = data.filter(user => !selected.includes(user.id));
       setData(remainingUsers);
       setSelected([]);
@@ -389,11 +394,13 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             Utilisateurs
           </Typography>
-          <Link to="/dashboard/addUser">
-            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-              Nouveau Utilisateur
-            </Button>
-          </Link>
+          {isAdmin &&
+            (<Link to="/dashboard/addUser">
+              <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+                Nouveau Utilisateur
+              </Button>
+            </Link>)
+          }
         </Stack>
 
         <Card>
@@ -566,28 +573,30 @@ export default function UserPage() {
 
                                   )}
                                 </TableCell>
+                                {isAdmin && (
+                                  <TableCell>
+                                    {isEditing ? (
+                                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <IconButton size="small" onClick={() => handleUpdateClick(row.id)} >
+                                          <Iconify icon="icon-park-solid:correct" style={{ color: 'blue', margin: '2px' }} />
+                                        </IconButton>
+                                        <IconButton size="small" onClick={() => setEditedUser(null)} >
+                                          <Iconify icon="foundation:x" style={{ color: 'red', margin: '2px' }} />
+                                        </IconButton>
+                                      </div>
 
-                                <TableCell>
-                                  {isEditing ? (
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      <IconButton size="small" onClick={() => handleUpdateClick(row.id)} >
-                                        <Iconify icon="icon-park-solid:correct" style={{ color: 'blue', margin: '2px' }} />
+                                    ) : (
+                                      <IconButton size="small" onClick={(e) => {
+                                        handleOpenMenu(e);
+                                        setMenuTargetRow(row);
+                                      }}>
+                                        <Iconify icon={'eva:more-vertical-fill'} />
                                       </IconButton>
-                                      <IconButton size="small" onClick={() => setEditedUser(null)} >
-                                        <Iconify icon="foundation:x" style={{ color: 'red', margin: '2px' }} />
-                                      </IconButton>
-                                    </div>
 
-                                  ) : (
-                                    <IconButton size="small" onClick={(e) => {
-                                      handleOpenMenu(e);
-                                      setMenuTargetRow(row);
-                                    }}>
-                                      <Iconify icon={'eva:more-vertical-fill'} />
-                                    </IconButton>
+                                    )}
+                                  </TableCell>
+                                )}
 
-                                  )}
-                                </TableCell>
                                 {/* <TableCell align="right">
                                   <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
                                     <Iconify icon={'eva:more-vertical-fill'} />

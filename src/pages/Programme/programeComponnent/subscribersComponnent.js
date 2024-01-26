@@ -674,8 +674,8 @@ const SubscribersComponnent = (props) => {
                             {/* <!-- Card header --> */}
                             <div className="card-header d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4 className="mb-0">Répartition des Abonnés par Groupe
-                                    </h4>
+                                    <Typography className="mb-0 " variant="h6">Répartition Des Abonnés
+                                    </Typography>
                                 </div>
                             </div>
                             {/* <!-- Card body --> */}
@@ -684,16 +684,27 @@ const SubscribersComponnent = (props) => {
                                     <PieChart
                                         series={[
                                             {
-                                                paddingAngle: 2,
-                                                innerRadius: 50,
+                                                paddingAngle: 1,
                                                 outerRadius: 90,
                                                 data: groupPie1,
                                             },
                                         ]}
-                                        width={350}
+                                        width={300}
                                         height={265}
-                                        margin={{ right: 150 }}
-                                    // legend={{ hidden: true }}
+                                        margin={{ top: 80, bottom: 10, }}
+                                        slotProps={{
+                                            legend: {
+                                                direction: 'row',
+                                                position: { vertical: 'top', horizontal: 'middle' },
+                                                itemMarkWidth: 20,
+                                                itemMarkHeight: 2,
+                                                markGap: 5,
+                                                itemGap: 10,
+                                                labelStyle: {
+                                                    fontSize: 14,
+                                                },
+                                            },
+                                        }}
                                     /> : null}
                                 <Button className="" variant="contained" disabled={isDesabled} style={{ width: "100%" }} startIcon={<Iconify icon="eva:plus-fill" />}
                                     onClick={() => { setIsFormOpen(true) }}

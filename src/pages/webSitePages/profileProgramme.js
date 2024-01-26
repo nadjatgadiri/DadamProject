@@ -133,7 +133,7 @@ export default function ProgrammeProfileHome() {
                                             </div>
                                         </div>
                                         <div className="card-body">
-                                            <div style={{ height: '125px', overflow: 'auto' }}>
+                                            <div style={{ minHeight: '125px', overflow: 'auto' }}>
                                                 <p>{lib}
                                                 </p>
                                             </div>

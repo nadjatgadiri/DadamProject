@@ -82,9 +82,20 @@ export const updatePassword = async (data) => {
         throw error;
     }
 };
-
-
-
+export const getUserRole = async (userID) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/user/getUserPosition', {
+            "userID": userID
+        });
+        const data2 = response.data;
+        reloadOn501(data2);
+        return data2;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
 export const getUser = async (userId) => {
     try {
         setReqHeader();

@@ -23,7 +23,7 @@ import {
     TablePagination,
     DialogTitle,
 } from '@mui/material';
-import { useNavigate, Link} from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -111,6 +111,7 @@ export default function ProgrammePage() {
         const result = await getAllProgrammes();
         if (result.code === 200) {
             setData(result.programs);
+            console.log(result.programs)
         } else {
             // when we got an error
             console.log(result);

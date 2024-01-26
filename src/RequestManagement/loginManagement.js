@@ -17,7 +17,6 @@ export const logIn = async (username, password) => {
             Cookies.set('token', data.token, { expires: 15 }); // Set an expiration date (in days)
             Cookies.set('is-active', true, { expires: 15 });
             Cookies.set('userID', data.userID, { expires: 15 });
-            Cookies.set('role', data.userRole, { expires: 15 });
         };
         return data
     } catch (error) {

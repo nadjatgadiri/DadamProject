@@ -7,8 +7,9 @@ import StepLabel from '@mui/material/StepLabel';
 import "react-toastify/dist/ReactToastify.css";
 import { styled } from '@mui/material/styles';
 import { ToastContainer, toast } from "react-toastify";
-import { FormHelperText,
-     Card,  Stack,  Button, Checkbox,  MenuItem,
+import {
+    FormHelperText,
+    Card, Stack, Button, Checkbox, MenuItem,
     Container, Typography,
     TextField, Grid, Autocomplete, Select, FormControl, InputLabel, FormControlLabel, FormGroup
 } from '@mui/material';
@@ -403,15 +404,21 @@ export default function AddProgramme() {
 
     const handleDateChange = (e) => {
         const selectedDate = e.target.value;
-        console.log(1+1);
-
         setFinSubDate1(selectedDate);
-    
+
         const currentDate = new Date().toISOString().split('T')[0];
         const isValid = selectedDate >= currentDate;
         console.log(isValid);
         setErrorsFormation2({ eDate: !isValid });
-      };
+    };
+    const handleDateChange2 = (e) => {
+        const selectedDate = e.target.value;
+        setFinSubDate2(selectedDate);
+
+        const currentDate = new Date().toISOString().split('T')[0];
+        const isValid = selectedDate >= currentDate;
+        setErrorsFormation2({ eDate: !isValid });
+    };
     return (
         <>
 
@@ -466,13 +473,15 @@ export default function AddProgramme() {
                                         <Grid item xs={12}>
                                             <TextField
                                                 name="lib"
-                                                label="Déscription"
+                                                label="Description"
                                                 value={lib}
                                                 onChange={(e) => setLib(e.target.value)}
-                                                rows={3}
+                                                minRows={3}
+                                                maxRows={10}
                                                 multiline
                                                 fullWidth
                                             />
+
                                         </Grid>
                                         <Grid item xs={6}>
                                             <FormControl fullWidth
@@ -506,7 +515,7 @@ export default function AddProgramme() {
                                                     {...params} label="Catégorie De Programme" />}
                                                 value={selectedCategory} // Set the value prop
                                                 onChange={handleAutocompleteChange} // Handle change event
-
+                                                ListboxProps={{ style: { maxHeight: 200, overflow: 'auto' } }} // Set the maxHeight for scrollability
                                             />
 
                                         </Grid>
@@ -599,17 +608,17 @@ export default function AddProgramme() {
                                             <Grid item xs={6}>
                                                 <InputLabel htmlFor="role">Date D'Expiration D'Inscription</InputLabel>
                                                 <TextField
-                                                     type="date"
-                                                     value={finSubDate1}
-                                                     onChange={handleDateChange}
-                                                     fullWidth
-                                                     required
-                                                     error={errorsFormation2.eDate}
-                                               />
-                                               {errorsFormation2.eDate && (
-        <FormHelperText error>
-          La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
-        </FormHelperText>)}
+                                                    type="date"
+                                                    value={finSubDate1}
+                                                    onChange={handleDateChange}
+                                                    fullWidth
+                                                    required
+                                                    error={errorsFormation2.eDate}
+                                                />
+                                                {errorsFormation2.eDate && (
+                                                    <FormHelperText error>
+                                                        La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
+                                                    </FormHelperText>)}
                                             </Grid>
                                             <Grid item xs={6}>
                                                 <></>
@@ -666,17 +675,17 @@ export default function AddProgramme() {
                                                 <InputLabel htmlFor="role">Date D'Expiration D'Inscription</InputLabel>
 
                                                 <TextField
-                                                     type="date"
-                                                     value={finSubDate2}
-                                                     onChange={handleDateChange}
-                                                     fullWidth
-                                                     required
-                                                     error={errorsFormation2.eDate}
-                                               />
-                                               {errorsFormation2.eDate && (
-        <FormHelperText error>
-          La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
-        </FormHelperText>)}
+                                                    type="date"
+                                                    value={finSubDate2}
+                                                    onChange={handleDateChange2}
+                                                    fullWidth
+                                                    required
+                                                    error={errorsFormation2.eDate}
+                                                />
+                                                {errorsFormation2.eDate && (
+                                                    <FormHelperText error>
+                                                        La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
+                                                    </FormHelperText>)}
                                             </Grid>
                                             <Grid item xs={6}><></></Grid>
                                             {(errorsCour.duree || errorsCour.nmbSession || errorsCour.eDate) ?

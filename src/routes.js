@@ -1,4 +1,5 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 // layouts
 import DashboardLayout from './layouts/dashboard';
@@ -37,10 +38,25 @@ import ProgrammePage from './pages/Programme/ProgrammeList';
 import UpdateProgramme from './pages/Programme/updateProgramme';
 import ProgrameProfile from './pages/Programme/programeProfile';
 
+import { getUserRole } from './RequestManagement/userManagement'
+
+
 // ----------------------------------------------------------------------
 export default function Router() {
   const isAuthenticated = Cookies.get('userID') !== undefined && Cookies.get('userID') !== '';
-
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(async () => {
+    try {
+      const result = await getUserRole(Cookies.get('userID'));
+      if (result.code === 200) {
+        setIsAdmin(result.userData.role === "Admin");
+        console.log(isAdmin);
+      }
+    } catch (error) {
+      console.error('Error fetching payment data:', error);
+      // Handle the error appropriately
+    }
+  }, []);
   const routes = useRoutes([
     {
       path: '/dashboard',
@@ -53,7 +69,7 @@ export default function Router() {
         { path: 'teacher', element: <TeacherPage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
-        { path: 'addUser', element: <AddUser /> },
+        { path: 'addUser', element: isAdmin ? <AddUser /> : <Navigate to="/dashboard/user" /> },
         { path: 'addStudent', element: <AddStudent /> },
         { path: 'addTeacher', element: <AddTeacher /> },
         { path: 'Class', element: <ClassPage /> },

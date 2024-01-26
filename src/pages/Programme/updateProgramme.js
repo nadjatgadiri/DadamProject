@@ -7,10 +7,11 @@ import StepLabel from '@mui/material/StepLabel';
 import "react-toastify/dist/ReactToastify.css";
 import { styled } from '@mui/material/styles';
 import { ToastContainer, toast } from "react-toastify";
-import {FormHelperText,
-    Card,  Stack,Button,  Checkbox,  MenuItem,
-   Container, Typography,
-    TextField, Grid,  Autocomplete, Select, FormControl, InputLabel, FormControlLabel, FormGroup
+import {
+    FormHelperText,
+    Card, Stack, Button, Checkbox, MenuItem,
+    Container, Typography,
+    TextField, Grid, Autocomplete, Select, FormControl, InputLabel, FormControlLabel, FormGroup
 } from '@mui/material';
 import {
     Unstable_NumberInput as NumberInput,
@@ -315,15 +316,20 @@ const UpdateProgramme = () => {
     };
     const handleDateChange = (e) => {
         const selectedDate = e.target.value;
-        console.log(1+1);
-
         setFinSubDate1(selectedDate);
-    
+
         const currentDate = new Date().toISOString().split('T')[0];
         const isValid = selectedDate >= currentDate;
-        console.log(isValid);
         setErrorsFormation2({ eDate: !isValid });
-      };
+    };
+    const handleDateChange2 = (e) => {
+        const selectedDate = e.target.value;
+        setFinSubDate2(selectedDate);
+
+        const currentDate = new Date().toISOString().split('T')[0];
+        const isValid = selectedDate >= currentDate;
+        setErrorsFormation2({ eDate: !isValid });
+    };
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
         setIsSkip(false);
@@ -343,7 +349,7 @@ const UpdateProgramme = () => {
         setIsSkip(true);
     };
 
-  
+
     // api
     const fetchData = async () => {
         console.log(id);
@@ -513,7 +519,8 @@ const UpdateProgramme = () => {
                                                 label="Description"
                                                 value={lib}
                                                 onChange={(e) => setLib(e.target.value)}
-                                                rows={3}
+                                                minRows={3}
+                                                maxRows={10}
                                                 multiline
                                                 fullWidth
                                             />
@@ -550,6 +557,7 @@ const UpdateProgramme = () => {
                                                     {...params} label="Catécorie" />}
                                                 value={selectedCategory} // Set the value prop
                                                 onChange={handleAutocompleteChange} // Handle change event
+                                                ListboxProps={{ style: { maxHeight: 200, overflow: 'auto' } }} // Set the maxHeight for scrollability
 
                                             />
 
@@ -644,18 +652,18 @@ const UpdateProgramme = () => {
                                                 <InputLabel htmlFor="role">Date D'Expiration D'Inscription</InputLabel>
 
                                                 <TextField
-                                                     type="date"
-                                                     value={finSubDate1}
-                                                     onChange={handleDateChange}
-                                                     fullWidth
-                                                     required
-                                                     error={errorsFormation2.eDate}
-                                               />
-                                               {errorsFormation2.eDate && (
-        <FormHelperText error>
-          La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
-        </FormHelperText>
-      )}
+                                                    type="date"
+                                                    value={finSubDate1}
+                                                    onChange={handleDateChange}
+                                                    fullWidth
+                                                    required
+                                                    error={errorsFormation2.eDate}
+                                                />
+                                                {errorsFormation2.eDate && (
+                                                    <FormHelperText error>
+                                                        La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
+                                                    </FormHelperText>
+                                                )}
                                             </Grid>
                                             <Grid item xs={6}>
                                                 <></>

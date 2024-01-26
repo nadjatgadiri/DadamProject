@@ -896,8 +896,7 @@ export default function CategoriePage() {
             <Dialog open={isDialogOpen} onClose={handleCancelClick}>
                 <DialogContent>
                     <DialogTitle>Êtes-vous sûr de vouloir supprimer cet élément ?</DialogTitle>
-                    La suppression de cette catégorie doit également supprimer toutes les sous-catégories.
-                </DialogContent>
+                    La suppression de cette catégorie devrait également supprimer toutes les sous-catégories et programmes associés.                </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCancelClick} color="primary">
                         Annuler
@@ -913,7 +912,7 @@ export default function CategoriePage() {
                 <DialogContent>
                     <DialogTitle>Êtes-vous sûr de vouloir supprimer ces éléments ?</DialogTitle>
                     La suppression de ces catégories doit également supprimer toutes les sous-catégories
-                    associées.
+                    associées et programmes associés.
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCancelClick2} color="primary">

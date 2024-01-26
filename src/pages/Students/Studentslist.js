@@ -292,7 +292,7 @@ export default function StudentPage() {
   const handleDeleteMultiple = async () => {
     try {
       let isError = false;
-  
+
       // Using Promise.all to make simultaneous delete requests for each selected student
       await Promise.all(selected.map(async (id) => {
         try {
@@ -313,17 +313,17 @@ export default function StudentPage() {
           });
         }
       }));
-  
+
       // Display a single success toast if there is no error
       if (!isError) {
         toast.success('Les étudiants sélectionnés ont été supprimés avec succès.', {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
-  
+
       // After all delete requests have been made, filter out the deleted students from local data
       const remainingStudents = data.filter(student => !selected.includes(student.id));
-  
+
       setData(remainingStudents);
       setSelected([]); // Clear the selection after deleting
     } catch (error) {
@@ -419,15 +419,16 @@ export default function StudentPage() {
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
             Étudiants
+            <Button onClick={() => generatePDF(data)}>
+              Générer PDF
+            </Button>
           </Typography>
           <Link to="/dashboard/addStudent">
             <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
               Nouveau Étudiant
             </Button>
           </Link>
-          <Button onClick={() => generatePDF(data)}>
-            Générer PDF
-          </Button>
+
         </Stack>
 
         <Card>

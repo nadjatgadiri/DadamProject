@@ -223,12 +223,6 @@ const MenuProps = {
     },
 };
 
-const names = [
-    { ID_ROWID: 1, name: 'Oliver Hansen' },
-    { ID_ROWID: 2, name: 'Van Henry' },
-    { ID_ROWID: 3, name: 'April Tucker' },
-    { ID_ROWID: 4, name: 'Oliver' },
-];
 
 function getStyles(name, personName, theme) {
     return {
@@ -274,7 +268,6 @@ const GroupesComponnent = (props) => {
     /** api */
     const fetchData = async () => {
         setData(groups);
-        console.log(data);
         /** start Groups Pie */
 
         // Convert groupCounts into an array of objects
@@ -284,6 +277,9 @@ const GroupesComponnent = (props) => {
         }));
         /** end Groups Pie */
         setPieGroupData(groupData);
+
+    };
+    const fetchTeachersList = async () => {
         //  fetch teachers list
         const result = await listTeachersForGroup();
         if (result.code === 200) {
@@ -292,16 +288,16 @@ const GroupesComponnent = (props) => {
                 name: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`, // Concatenating first name and last name
             })));
             setTeachersList(teachers);
+            console.log(result);
         }
         else {
             // when we got an error 
-            console.log(result);
+
             toast.error(`Error! + ${result.message}`, {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
-
-    };
+    }
     useEffect(() => {
         // Check if groups have been received from props
         if (groups && groups.length > 0) {
@@ -309,6 +305,9 @@ const GroupesComponnent = (props) => {
         }
 
     }, [groups]);
+    useEffect(() => {
+        fetchTeachersList();
+    }, []);
     /** end api */
 
     // multiselect
@@ -851,36 +850,49 @@ const GroupesComponnent = (props) => {
                         </div>
                         <div className="col-md-12 col-xl-4 col-12">
                             <div className="card">
-                                {/* <!-- Card header --> */}
-                                <div className="card-header d-flex justify-content-between align-items-center">
+                                {/* Card header */}
+                                <div className="card-header d-flex justify-content-between align-items-center" style={{ height: "62px" }}>
                                     <div>
-                                        <Typography className="mb-0 " variant="h6" className="mb-0">Nombre Des Abonnés Pour Chaque Groupe
-                                        </Typography>
+                                        <Typography className="mb-0 " variant="h6">Les Abonnés Par Groupe</Typography>
                                     </div>
                                 </div>
-                                {/* <!-- Card body --> */}
-                                <div className="card-body">
+                                {/* Card body */}
+                                <div className="card-body" >
                                     {(pieGroupData !== null) ?
+
                                         <PieChart
                                             series={[
                                                 {
-                                                    paddingAngle: 2,
-                                                    innerRadius: 50,
+                                                    paddingAngle: 1,
                                                     outerRadius: 90,
                                                     data: pieGroupData,
                                                 },
                                             ]}
-                                            width={350}
+                                            width={300}
                                             height={265}
-                                            margin={{ right: 150 }}
-                                        // legend={{ hidden: true }}
-                                        /> : null}
+                                            margin={{ top: 80, bottom: 10, }}
+                                            slotProps={{
+                                                legend: {
+                                                    direction: 'row',
+                                                    position: { vertical: 'top', horizontal: 'middle' },
+                                                    itemMarkWidth: 20,
+                                                    itemMarkHeight: 2,
+                                                    markGap: 5,
+                                                    itemGap: 10,
+                                                    labelStyle: {
+                                                        fontSize: 14,
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                        : null}
                                     <Button className="" variant="contained" style={{ width: "100%" }} startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => { setIsFormOpen(true) }} >
                                         Ajouter Groupe
                                     </Button>
                                 </div>
                             </div>
                         </div>
+
                     </>)) : null
             }
 

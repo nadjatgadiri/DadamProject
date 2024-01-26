@@ -1,4 +1,4 @@
-import {  toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
@@ -417,7 +417,7 @@ const PaymentComponent = (props) => {
       <div className="card mb-5">
         <div className="card-header d-flex justify-content-between align-items-center">
           <div style={{ height: "40px", paddingTop: "5px" }}>
-            <h4 className="mb-0">Paiements au cours des jours</h4>
+            <Typography className="mb-0 " variant="h6">Paiements au cours des jours</Typography>
           </div>
         </div>
         <div className="card-body" style={{ display: 'flex', alignItems: 'center' }}>
