@@ -33,6 +33,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import CloseIcon from '@mui/icons-material/Close';
+import { jsPDF as JsPDF } from "jspdf";
+import 'jspdf-autotable';
 
 // components
 import Label from '../../../components/label';
@@ -162,8 +164,11 @@ const SubscribersComponnent = (props) => {
 
             const subscribe = result.registrations.map(registraion => ({
                 id: registraion.ID_ROWID,
+                progtitle:registraion.programs.title,
+                progtype:registraion.programs.type,
                 idStudent: registraion.students.ID_ROWID,
                 name: `${registraion.students.personProfile2.firstName} ${registraion.students.personProfile2.lastName}`,
+                dateOfBirth:registraion.students.personProfile2.dateOfBirth ,
                 image: registraion.students.personProfile2.imagePath !== null && registraion.students.personProfile2.imagePath !== '' ?
                     `data:image/jpeg;base64,${Buffer.from(
                         registraion.students?.personProfile2.imagePath.data).toString("base64")}` : '',
@@ -200,6 +205,7 @@ const SubscribersComponnent = (props) => {
                 console.log("b");
                 setIsDesabled(false);
             }
+            console.log(subscribe);
             setGroupPie1(groupData1);
             setSubWithOutGroup(groupData1.find(entry => entry.name === 'without Group')?.value || 0);
             setData(subscribe);
@@ -410,6 +416,85 @@ const SubscribersComponnent = (props) => {
         }
 
     };
+    const generatePDF = (subscribe) => {
+        const pdf = new JsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+        });
+      
+        // Group students by their groups
+        const groupedStudents = {};
+        subscribe.forEach((student) => {
+          const groupName = student.group ? student.group.name : 'Sans Groupe';
+          if (!groupedStudents[groupName]) {
+            groupedStudents[groupName] = [];
+          }
+          groupedStudents[groupName].push(student);
+        });
+      
+        // Extract program titles from the first student (assuming they are the same for all students)
+        const firstStudent = subscribe[0];
+        const progTitle = firstStudent.progtitle;
+        const progType = firstStudent.progtype;
+      
+        // Generate general title
+        const generalTitle = `Liste des groupes de ${progType} du ${progTitle}`;
+      
+        // Generate pages for each group
+        Object.entries(groupedStudents).forEach(([groupName, students], index) => {
+          if (index !== 0) {
+            pdf.addPage(); // Add a new page for each group except the first one
+          }
+      
+          pdf.setFont('Helvetica', 'normal');
+          pdf.setTextColor(index === 0 ? '#3498db' : '#3498db'); // Blue color for the general title and group titles
+          pdf.setFontSize(index === 0 ? 28 : 26); // Larger font size for the general title
+          pdf.setFont('Helvetica', 'bold');
+      
+          // Add some space between the general title and group titles
+          pdf.text(generalTitle, pdf.internal.pageSize.width / 2, 20, { align: 'center' });
+      
+          pdf.setFontSize(index === 0 ? 22 : 18); // Larger font size for the general title
+          pdf.text(`Liste des Abonnées - ${groupName}`, pdf.internal.pageSize.width / 2, 35, { align: 'center' });
+      
+          const tableData = students.map((student) => [
+            `${student.name}`, // Assuming 'name' is a combination of firstName and lastName
+            student.dateOfBirth,
+            '', // Coche placeholder
+          ]);
+      
+          const columns = ['Nom & Prénom', 'Date de Naissance', ' '];
+      
+          pdf.autoTable({
+            head: [columns],
+            body: tableData,
+            startY: 60,
+            margin: { top: 40 },
+            theme: 'grid',
+            styles: {
+              fontSize: 10,
+              cellPadding: 2,
+              overflow: 'linebreak',
+            },
+            headStyles: {
+              fillColor: index === 0 ? '#3498db' : '#3498db', // Blue color for the header row
+              textColor: '#ffffff',
+            },
+            columnStyles: {
+              // Add styles if needed
+            },
+            alternateRowStyles: {
+              fillColor: '#f2f2f2',
+            },
+          });
+        });
+      
+        pdf.save('liste_des_groupe.pdf');
+      };
+      
+      
+      
     return (
         <>
             {/*  form part */}
@@ -712,7 +797,14 @@ const SubscribersComponnent = (props) => {
                                 >
                                     Affecter Les Abonnée Aux Groupes
                                 </Button>
-                            </div>
+                             
+                                <Button
+  variant="contained"
+  color="primary"
+  onClick={() => generatePDF(data, subWithOutGroup)}
+  style={{ marginTop: '10px', width: '100%' }}>
+  Generate PDF
+</Button>             </div>
                         </div>
                     </div>
                 </>

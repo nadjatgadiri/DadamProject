@@ -21,6 +21,7 @@ import { getProgGroups } from '../../RequestManagement/groupManagement';
 import { addNewPayment, getPaymentsInfoForProgram } from '../../RequestManagement/paymentManagement';
 import { getProgRegistrations } from '../../RequestManagement/registrationManagement';
 import { getStatistiqueDataForProgProfile } from '../../RequestManagement/dataManagment';
+import { getAllSessionsInProg } from "../../RequestManagement/sessionsManagement"
 // ----------------------------------------------------------------------
 
 
@@ -66,6 +67,8 @@ const ProgrameProfile = () => {
     const [last30DaysPayments, setLast30DaysPayments] = useState(0);
     // Groups 
     const [groupsData, setGroupsData] = useState([]);
+    const [Sessions, setSessions] = useState([]);
+
     // api
     const fetchData = async () => {
         const dataResult = await getProgramme(id);
@@ -183,6 +186,23 @@ const ProgrameProfile = () => {
         if (headInfo.code === 200) {
             setHeadData(headInfo.staticData);
         }
+        const sessionsResponse = await getAllSessionsInProg(id);
+
+        if (sessionsResponse.code === 200) {
+            // Update your state with the fetched session data
+            const fetchedSessions = sessionsResponse.events;
+            // For example, you can set the sessions in state
+            setSessions(fetchedSessions);
+            console.log(Sessions);
+        } else {
+            // Handle the case when there's an error in the API response for sessions
+            toast.error(`Error! + ${sessionsResponse.message}`, {
+                position: toast.POSITION.TOP_RIGHT,
+            });
+        }
+
+     // Your existing code...
+    
     };
     useEffect(() => {
         fetchData();

@@ -541,10 +541,10 @@ export default function AddProgramme() {
                                             <FormControl fullWidth
                                                 error={errors.type}
                                             >
-                                                <InputLabel htmlFor="role">Type De Programme</InputLabel>
+                                                <InputLabel htmlFor="role">Type De Payment</InputLabel>
                                                 <Select
                                                     name="type"
-                                                    label="Type De Programme"
+                                                    label="Type De Payment"
                                                     value={typeOfPaiment}
                                                     onChange={(e) => setTypeOfPaiment(e.target.value)}
                                                     inputProps={{
