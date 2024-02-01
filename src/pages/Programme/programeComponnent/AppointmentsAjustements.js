@@ -712,7 +712,7 @@ const AppointmentsAjustements = (props) => {
             const response = await addSessions(selectedPlansList);
             if (response && response.code === 200) {
                 console.log(response.message);
-                await fetchData();
+                await fetchData();// add toast a wissaaaaaaam
             }
         }
     }
@@ -773,6 +773,7 @@ const AppointmentsAjustements = (props) => {
         if (plan) {
             await updatePlansResult(codeDay2, selectedPlan);
             const list = selectedPlansList;
+            console.log(list);
             if (list[selectedGroupId]) {
                 // If selectedGroupId already exists in the list
                 if (list[selectedGroupId].days[codeDay2]) {
@@ -798,7 +799,8 @@ const AppointmentsAjustements = (props) => {
                     }
                 };
             }
-            setSelectedPlansList(list);
+        
+        await setSelectedPlansList(list);
             setCodeDay2("0");
             setSelectedPlan("0");
             setSelectedGroupId("0");
@@ -1056,6 +1058,7 @@ const AppointmentsAjustements = (props) => {
                                                                                     value={dayjs(`2023-01-01T${timeStart}:00`)}
                                                                                     onChange={(newTime) => {
                                                                                         const selectedTime = newTime.format('HH:mm');
+                                                                                        console.log(selectedTime);
                                                                                         setTimeStart(selectedTime);
                                                                                     }}
                                                                                     slotProps={{ textField: { fullWidth: true } }}
