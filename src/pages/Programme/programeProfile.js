@@ -198,12 +198,11 @@ const ProgrameProfile = () => {
 // Get the current date
 const currentDate = new Date();
 // Calculate the difference between the current day and Sunday (0 index-based)
-const daysUntilSunday = ((7 - currentDate.getDay()) % 7)-1;
 
 // Find the current Sunday
 const startOfWeek = new Date(currentDate);
 startOfWeek.setHours(0, 0, 0, 0);
-startOfWeek.setDate(currentDate.getDate() - daysUntilSunday);
+startOfWeek.setDate(currentDate.getDate() -currentDate.getDay() );
 
 // Find the next Saturday
 const endOfWeek = new Date(startOfWeek);
