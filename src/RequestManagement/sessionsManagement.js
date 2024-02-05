@@ -23,8 +23,10 @@ export const addSessions = async (selectedSessions) => {
         const response = await axios.post('/protected/session/addSessions', {
             "dataSessions": selectedSessions
         });
+        console.log(selectedSessions);
         const data = response.data;
         reloadOn501(data);
+        console.log(data);
         return data
     } catch (error) {
         console.error(error);

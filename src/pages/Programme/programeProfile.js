@@ -5,10 +5,12 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 // @mui
 import {
-    Autocomplete, Dialog, DialogActions, DialogContent, DialogContentText, Paper, Button, Container, Typography, TextField,
+    Autocomplete, Dialog, MenuItem, DialogActions, DialogContent, DialogContentText, Paper, Button, Container, Typography, TextField,
 } from '@mui/material';
 import './theme.css';
 import { Buffer } from "buffer";
+import { jsPDF as JsPDF } from "jspdf";
+import { subDays, isAfter } from 'date-fns';
 import { getProgramme } from "../../RequestManagement/programManagement"
 import Iconify from '../../components/iconify';
 import SubscribersComponnent from './programeComponnent/subscribersComponnent';
@@ -19,11 +21,8 @@ import { getProgGroups } from '../../RequestManagement/groupManagement';
 import { addNewPayment, getPaymentsInfoForProgram } from '../../RequestManagement/paymentManagement';
 import { getProgRegistrations } from '../../RequestManagement/registrationManagement';
 import { getStatistiqueDataForProgProfile } from '../../RequestManagement/dataManagment';
+import { getAllSessionsInProg } from "../../RequestManagement/sessionsManagement"
 // ----------------------------------------------------------------------
-
-
-
-
 
 
 const ProgrameProfile = () => {
@@ -41,6 +40,7 @@ const ProgrameProfile = () => {
     const [type, setType] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [isPublished, setIsPublished] = useState(false);
+    const [Sessions, setSessions] = useState([]);
     // second step states
     // for formation form
     const [startDate, setStartDate] = useState(null);
@@ -54,6 +54,7 @@ const ProgrameProfile = () => {
     const [nmbSession, setNMBSession] = useState(0);
     const [duree, setDuree] = useState(null);
     const [finSubDate2, setFinSubDate2] = useState(null);
+    const [weekOptions, setWeekOptions] = useState([]);
     // skip
     const [isSkip, setIsSkip] = useState(false);
     const [students, setStudents] = useState([]);
@@ -62,8 +63,10 @@ const ProgrameProfile = () => {
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
     const [totalPayments, setTotalPayments] = useState(0);
     const [last30DaysPayments, setLast30DaysPayments] = useState(0);
+    const [weekInputValue, setWeekInputValue] = useState(weekOptions.length > 0 ? weekOptions[0].value : '');
     // Groups 
     const [groupsData, setGroupsData] = useState([]);
+
     // api
     const fetchData = async () => {
         const dataResult = await getProgramme(id);
@@ -165,27 +168,82 @@ const ProgrameProfile = () => {
         if (paymentsInfo.code === 200) {
             const { totalPayments, paymentsLast30Days } = paymentsInfo;
             // You can do something with the payment information here
-            console.log("Total Payments:", totalPayments);
-            console.log("Last 30 Days Payments:", paymentsLast30Days);
             if (totalPayments) setTotalPayments(totalPayments);
             if (paymentsLast30Days) setLast30DaysPayments(paymentsLast30Days);
         } else {
             // Handle errors
-            console.error(paymentsInfo);
             toast.error(`Error! ${paymentsInfo.message}`, {
                 position: toast.POSITION.TOP_RIGHT,
             });
         }
         const headInfo = await getStatistiqueDataForProgProfile(id);
-        console.log(headInfo);
         if (headInfo.code === 200) {
             setHeadData(headInfo.staticData);
         }
+        const sessionsResponse = await getAllSessionsInProg(id);
+
+        if (sessionsResponse.code === 200) {
+
+            // For example, you can set the sessions in state
+            setSessions(sessionsResponse.events);
+        } else {
+            // Handle the case when there's an error in the API response for sessions
+            toast.error(`Error! + ${sessionsResponse.message}`, {
+                position: toast.POSITION.TOP_RIGHT,
+            });
+        }
+
     };
     useEffect(() => {
+        // Get the current date
+        const currentDate = new Date();
+        // Calculate the difference between the current day and Sunday (0 index-based)
+
+        // Find the current Sunday
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setHours(0, 0, 0, 0);
+        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+
+        // Find the next Saturday
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        // Initialize an array to hold the week options
+        const options = [];
+
+        // Generate the last three weeks
+        for (let i = 3; i >= 1; i -= 1) {
+            const start = new Date(startOfWeek);
+            start.setDate(start.getDate() - 7 * i);
+
+            const end = new Date(endOfWeek);
+            end.setDate(end.getDate() - 7 * i);
+
+            options.push({
+                value: `${start.toLocaleDateString('en-US', { day: '2-digit' })}-${end.toLocaleDateString('en-US', { day: '2-digit' })} ${start.toLocaleDateString('en-US', { month: 'short' })} - ${end.toLocaleDateString('en-US', { month: 'short' })}`,
+            });
+        }
+        // Add the current week
+        options.push({
+            value: `${startOfWeek.toLocaleDateString('en-US', { day: '2-digit' })}-${endOfWeek.toLocaleDateString('en-US', { day: '2-digit' })} ${startOfWeek.toLocaleDateString('en-US', { month: 'short' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short' })}`,
+
+        });
+        // Generate the next four weeks
+        for (let i = 1; i <= 4; i += 1) {
+            const start = new Date(startOfWeek);
+            start.setDate(start.getDate() + 7 * i);
+
+            const end = new Date(endOfWeek);
+            end.setDate(end.getDate() + 7 * i);
+
+            options.push({
+                value: `${start.toLocaleDateString('en-US', { day: '2-digit' })}-${end.toLocaleDateString('en-US', { day: '2-digit' })} ${start.toLocaleDateString('en-US', { month: 'short' })} - ${end.toLocaleDateString('en-US', { month: 'short' })}`,
+            });
+        }
+        setWeekOptions(options);
         fetchData();
-    }, []); // Empty dependency array means this effect runs once when component mounts
-    // convert date
+    }, []);
 
 
 
@@ -219,11 +277,9 @@ const ProgrameProfile = () => {
             return addNewPayment(paymentData);
         });
 
-        console.log("Selected Students for Payment:", selectedStudents);
 
         try {
             const responses = await Promise.all(paymentPromises);
-            console.log(responses);
             // Process the responses
             let success = true; // Assuming all payments are successful
             responses.forEach((response) => {
@@ -260,7 +316,148 @@ const ProgrameProfile = () => {
         }
     };
 
+    // Add the following method to generate the schedule PDF
+    const handleGenerateSchedule = () => {
+        // Use the week input value and sessions data to generate the schedule PDF
+        generateSchedulePDF(weekInputValue, Sessions, type, title);
+    };
 
+<<<<<<< HEAD
+
+=======
+    const generateSchedulePDF = (weekInput, sessions, type, title) => {
+        const isValidWeekInput = /^(\d{1,2}-\d{1,2} [a-zA-Z]+ - [a-zA-Z]+)$/.test(weekInput);
+
+        if (!isValidWeekInput) {
+            console.error('Invalid weekInput format');
+            return;
+        }
+
+        const [startDay, endDay, startMonth, endMonth] = weekInput.match(/(\d{1,2})-(\d{1,2}) ([a-zA-Z]+) - ([a-zA-Z]+)/).slice(1);
+        const currentYear = new Date().getFullYear();
+        const startDate = new Date(`${startMonth} ${startDay}, ${currentYear} 00:00:00 GMT+00:00`);
+        const endDate = new Date(`${endMonth} ${endDay}, ${startMonth === 'Dec' ? currentYear + 1 : currentYear} 23:59:59 GMT+00:00`);
+
+        // Filter sessions for the given week
+        const weekSessions = sessions.filter(session => {
+            const sessionDate = new Date(session.start);
+            return sessionDate >= startDate && sessionDate <= endDate;
+        });
+        console.log(weekSessions);
+
+        // Group filtered sessions by their groups
+        const groupedSessions = {};
+        weekSessions.forEach((session) => {
+            const groupName = session.groupename || 'Sans Groupe';
+            if (!groupedSessions[groupName]) {
+                groupedSessions[groupName] = [];
+            }
+            groupedSessions[groupName].push(session);
+        });
+
+        const pdf = new JsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4',
+        });
+
+        // Generate pages for each group
+        Object.entries(groupedSessions).forEach(([groupName, groupSessions], index) => {
+            if (index !== 0) {
+                pdf.addPage();
+            }
+
+            pdf.setFont('Helvetica', 'normal');
+            pdf.setTextColor(index === 0 ? '#3498db' : '#3498db');
+            pdf.setFontSize(index === 0 ? 32 : 28);
+            pdf.setFont('Helvetica', 'bold');
+            pdf.text(`Emplois du temps de ${type} du ${title} \n groupe ${groupName} `, pdf.internal.pageSize.width / 2, 20, { align: 'center' });
+            const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            pdf.setFontSize(index === 0 ? 24 : 20);
+
+            pdf.setFillColor(220, 220, 220);
+            const tableHeaders = [['Heures', ...days]];
+            // For header section
+            pdf.autoTable({
+                head: tableHeaders,
+                startY: 40,
+                margin: { top: 40 },
+                theme: 'grid',
+                styles: {
+                    fontSize: 10, // Increase header font size
+                    cellPadding: 10, // Increase cell padding
+                    overflow: 'linebreak',
+                    valign: 'middle',
+                    cellWidth: 40, // Set absolute cell width
+                },
+                headStyles: {
+                    fillColor: '#3498db',
+                    textColor: '#ffffff',
+                    halign: 'center',
+                },
+                columnStyles: {
+                    0: { halign: 'center' },
+                },
+            });
+
+            for (let hour = 8; hour <= 20; hour += 2) {
+                const rowData = [`${hour}:00 - ${hour + 2}:00`];
+
+                days.forEach((day) => {
+                    const sessionAtHour = groupSessions.find(session => {
+                        const sessionStartDate = new Date(session.start);
+                        const sessionEndDate = new Date(session.end);
+                        const sessionDay = sessionStartDate.toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, (c) => c.toUpperCase());
+                        const sessionStartHour = sessionStartDate.getHours();
+                        const sessionEndHour = sessionEndDate.getHours();
+                        return (
+                            sessionStartHour <= hour && sessionEndHour >= hour + 2 &&
+                            sessionDay === day
+                        );
+                    });
+
+                    console.log('Found Session:', sessionAtHour);
+
+                    if (sessionAtHour) {
+                        const salleName = sessionAtHour.title.split(' - ')[1] || 'No Salle';
+
+                        // Parse the string dates into Date objects
+                        const startTime = new Date(sessionAtHour.start);
+                        const endTime = new Date(sessionAtHour.end);
+
+                        // Check if parsing was successful
+                        const timing = `${startTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+                        rowData.push(`${salleName}\n${timing}`);
+                    } else {
+                        rowData.push('');
+                    }
+                });
+
+                // For body section
+                pdf.autoTable({
+                    body: [rowData],
+                    startY: pdf.autoTable.previous.finalY,
+                    margin: { top: 10 },
+                    theme: 'grid',
+                    styles: {
+                        fontSize: 10, // Increase body font size
+                        cellPadding: 6,
+                        valign: 'middle',
+                        cellWidth: 40, // Set absolute cell width
+                        overflow: 'linebreak', // Set overflow to 'linebreak' to handle long text
+                    },
+                    columnStyles: {
+                        0: { halign: 'center' },
+                    },
+                });
+            }
+        });
+
+        const filename = `Emplois_du_temps_${weekInput.replace(' ', '_')}.pdf`;
+        pdf.save(filename);
+    };
+
+>>>>>>> 3ac1db6adb574805b480b5e97ffb5389309deef5
     return (
         <>
 
@@ -274,13 +471,13 @@ const ProgrameProfile = () => {
                 <div className="bg-primary pt-10 pb-21 mt-n5 mx-n14" />
                 <div className=" mt-n22 ">
                     <div className="row">
+
                         <div className="col-lg-12 col-md-12 col-12">
                             <div className="d-flex justify-content-between align-items-center mb-5">
                                 <div className="mb-2 mb-lg-0">
-
                                     <Typography variant="h4" className="mb-0 text-white">
-                                        {type === "cour" ? "Cour De " : null}
-                                        {type === "formation" ? "Formation De " : null}
+                                        {type === 'cour' ? 'Cour De ' : null}
+                                        {type === 'formation' ? 'Formation De ' : null}
                                         {title}
                                     </Typography>
                                 </div>
@@ -290,7 +487,6 @@ const ProgrameProfile = () => {
                                     </a>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                     <div className="row">
@@ -588,8 +784,44 @@ const ProgrameProfile = () => {
                     </div>
                 ) : null}
 
-                <div className="row">
-                    <AppointmentsAjustements idProg={id} progData={data} groups={groupsData} />
+                <div>
+                    <div className="container mt-5">
+                        <div className="row mb-3">
+                            <div className="col-lg-6 col-md-6 col-12">
+                                <TextField
+                                    select
+                                    label="Selectionnez une semaine"
+                                    variant="outlined"
+                                    fullWidth
+                                    size="medium"
+                                    value={weekInputValue}
+                                    onChange={(e) => setWeekInputValue(e.target.value)}
+                                >
+                                    {weekOptions.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                            {option.value}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-12 d-flex align-items-end">
+                                <Button
+                                    color="primary"
+                                    variant="contained"
+                                    size="large"
+                                    onClick={handleGenerateSchedule}
+                                >
+                                    Generate Schedule
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="row">
+                            <div className="col-lg-12 col-md-12 col-12">
+                                <AppointmentsAjustements idProg={id} progData={data} groups={groupsData} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
 
