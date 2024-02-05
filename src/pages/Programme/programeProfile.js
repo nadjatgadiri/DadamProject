@@ -322,9 +322,6 @@ const ProgrameProfile = () => {
         generateSchedulePDF(weekInputValue, Sessions, type, title);
     };
 
-<<<<<<< HEAD
-
-=======
     const generateSchedulePDF = (weekInput, sessions, type, title) => {
         const isValidWeekInput = /^(\d{1,2}-\d{1,2} [a-zA-Z]+ - [a-zA-Z]+)$/.test(weekInput);
 
@@ -457,7 +454,6 @@ const ProgrameProfile = () => {
         pdf.save(filename);
     };
 
->>>>>>> 3ac1db6adb574805b480b5e97ffb5389309deef5
     return (
         <>
 
