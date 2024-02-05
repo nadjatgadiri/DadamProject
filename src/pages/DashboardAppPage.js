@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Cookies from 'js-cookie';
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 // @mui
 import { Buffer } from "buffer";
 import { Grid, Container, Typography, Card, Avatar, List, ListItem, ListItemAvatar, ListItemText, Divider } from '@mui/material';
@@ -103,6 +105,7 @@ export default function DashboardAppPage() {
       </Helmet>
 
       <Container maxWidth="xl">
+        <ToastContainer />
         <Typography variant="h4" sx={{ mb: 5 }}>
           Bienvenue
         </Typography>

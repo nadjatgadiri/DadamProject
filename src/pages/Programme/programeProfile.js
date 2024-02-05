@@ -5,12 +5,10 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 // @mui
 import {
-    Autocomplete, Dialog, DialogActions, DialogContent, DialogContentText, Paper, Button, Container, Typography,  TextField, 
+    Autocomplete, Dialog, DialogActions, DialogContent, DialogContentText, Paper, Button, Container, Typography, TextField,
 } from '@mui/material';
 import './theme.css';
 import { Buffer } from "buffer";
-
-import { subDays, isAfter } from 'date-fns';
 import { getProgramme } from "../../RequestManagement/programManagement"
 import Iconify from '../../components/iconify';
 import SubscribersComponnent from './programeComponnent/subscribersComponnent';
@@ -262,7 +260,7 @@ const ProgrameProfile = () => {
         }
     };
 
-   
+
     return (
         <>
 

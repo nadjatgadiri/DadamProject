@@ -38,6 +38,7 @@ const TABLE_HEAD = [
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Numéro de téléphone', alignRight: false },
   { id: 'dateOfBirth', label: 'Date de naissance', alignRight: false },
+  { id: 'niveau', label: "Niveau D'étude'", alignRight: false },
   { id: 'status', label: 'Statut', alignRight: false },
   // Add additional columns as needed
   { id: '' },
@@ -119,7 +120,8 @@ export default function StudentPage() {
           status: student.isActive,
           image: student.personProfile2.imagePath !== null && student.personProfile2.imagePath !== '' ?
             `data:image/jpeg;base64,${Buffer.from(
-              student.personProfile2.imagePath.data).toString("base64")}` : ''
+              student.personProfile2.imagePath.data).toString("base64")}` : '',
+          level: `${student.studentLevel?.educationalLevel ? student.studentLevel.educationalLevel.lib : ''}, ${student.studentLevel?.studyYear ? student.studentLevel.studyYear.lib : ''}`
         }));
         setData(students);
       } else {
@@ -147,7 +149,7 @@ export default function StudentPage() {
         phoneNumber: editedStudent.phone,
         dateOfBirth: editedStudent.dateOfBirth, // Assuming this exists in studentToEdit
         status: editedStudent.status,
-        image: editedStudent.image
+        image: editedStudent.image,
       };
       if (validatePhoneNumber(editedStudent.phone) && isValidGmailFormat(editedStudent.email)) {
         const response = await updateStudentData(studentId, updatedData);
@@ -464,18 +466,18 @@ export default function StudentPage() {
                       />
                       <TableBody>
                         {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                          const { id, name, email, phone, status, dateOfBirth, image } = row;
+                          const { id, name, email, phone, status, dateOfBirth, image, level } = row;
                           const isEditing = editedStudent && editedStudent.id === row.id;
 
                           return (
-                            <TableRow hover key={id}>
-                              <TableCell padding="checkbox">
+                            <TableRow hover key={`${id}${name}`}>
+                              <TableCell>
                                 <Checkbox
                                   checked={selected.indexOf(id) !== -1}
                                   onChange={(event) => handleClick(event, id)}
                                 />
                               </TableCell>
-                              <TableCell component="th" scope="row" padding="1">
+                              <TableCell component="th" scope="row" >
                                 <Stack direction="row" alignItems="center" spacing={2}>
                                   <>
                                     {isEditing ? (
@@ -574,6 +576,9 @@ export default function StudentPage() {
                                 )}
                               </TableCell>
                               <TableCell>
+                                {level}
+                              </TableCell>
+                              <TableCell>
                                 {isEditing ? (
 
                                   <Select
@@ -585,8 +590,8 @@ export default function StudentPage() {
                                       status: e.target.value // Stored value
                                     })}
                                   >
-                                    <MenuItem value="Active">Active</MenuItem>
-                                    <MenuItem value="Inactive">Inactive</MenuItem>
+                                    <MenuItem key="Active" value="Active">Active</MenuItem>
+                                    <MenuItem key="Inactive" value="Inactive">Inactive</MenuItem>
                                   </Select>
                                 ) : (
                                   <Label color={status === 'Inactive' ? 'error' : 'success'}>
@@ -679,16 +684,18 @@ export default function StudentPage() {
         }}
       >
 
-        <MenuItem onClick={() => {
+        <MenuItem key="Modifier" onClick={() => {
           console.log("Editing for row:", menuTargetRow); // Debugging log
-          setEditedStudent(menuTargetRow);
           handleCloseMenu();
         }}>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Modifier
+
+          <Link to={`/dashboard/updateStudent/${menuTargetRow?.id}`}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Modifier
+          </Link>
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }} onClick={() => {
+        <MenuItem key="sup" sx={{ color: 'error.main' }} onClick={() => {
           handleDeleteClick(menuTargetRow);
           handleCloseMenu();
         }}>

@@ -1,10 +1,10 @@
 import "react-toastify/dist/ReactToastify.css";
 import { Helmet } from 'react-helmet-async';
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 // @mui
 import {
-    Typography, Container, Paper, Table, Link, TableBody, TableCell, TableRow, TableContainer
+    Typography, Container, Paper, Table, TableBody, TableCell, TableRow, TableContainer, Button
 } from '@mui/material';
 import '../Programme/theme.css';
 import { Buffer } from "buffer";
@@ -21,6 +21,8 @@ const StudentProfile = () => {
     const [historyData, setHistoryData] = useState([]);
     const [groups, setGroups] = useState([]);
     const [events, setEvents] = useState([]);
+    const [files, setFiles] = useState([]);
+    const [fileUrls, setFileUrls] = useState([]);
     const [data, setData] = useState([
         { label: 'Phone', value: '' },
         { label: 'Email', value: '' },
@@ -59,8 +61,6 @@ const StudentProfile = () => {
         // user Data 
         const usersData1 = await getStudent(id);
         const usersData = usersData1.student;
-        console.log(usersData);
-
         const image = usersData.personProfile2.imagePath !== null && usersData.personProfile2.imagePath !== '' ?
             `data:image/jpeg;base64,${Buffer.from(
                 usersData.personProfile2.imagePath).toString("base64")}` : "../../assets/images/avatars/avatar_10.jpg";
@@ -72,10 +72,14 @@ const StudentProfile = () => {
             image, // shorthand notation for image: image
         };
         setData([
-            { label: 'Phone', value: usersData.personProfile2.phoneNumber },
+            { label: 'Téléphone', value: usersData.personProfile2.phoneNumber },
             { label: 'Email', value: usersData.personProfile2.mail },
-            { label: 'Date of Birth', value: usersData.personProfile2.dateOfBirth }
+            { label: 'Date de naissance', value: usersData.personProfile2.dateOfBirth },
+            { label: "Niveau d'étude", value: usersData.studentLevel?.educationalLevel?.lib },
+            { label: "Année d'étude", value: usersData.studentLevel?.studyYear?.lib }
         ])
+        setFiles(usersData1.files);
+
         setUserData(user); // Putting user in an array, assuming setUserData expects an array
         // history
         const result4 = await getStudentHistory(id);
@@ -84,6 +88,15 @@ const StudentProfile = () => {
             await history.sort((a, b) => new Date(b.date) - new Date(a.date));
             setHistoryData(history);
         }
+    };
+    const openDocument = (data) => {
+        // Create a blob from the data
+        const blob = new Blob([Buffer.from(data.data)], { type: data.type });
+
+        // Create a URL for the blob
+        const url = URL.createObjectURL(blob);
+        // Open the URL in a new tab
+        window.open(url, '_blank');
     };
     useEffect(() => {
         fetchData();
@@ -123,20 +136,39 @@ const StudentProfile = () => {
                     />
                     <div className="card rounded-bottom rounded-0 smooth-shadow-sm mb-5">
                         <div className="d-flex align-items-center justify-content-between pt-4 pb-6 px-4">
-                            <div className="d-flex align-items-center">
+                            <div className="d-flex align-items-center ">
+
                                 {/* <!-- avatar --> */}
                                 <div className="avatar-xxl  me-2 position-relative d-flex justify-content-end align-items-end mt-n10">
                                     <img src={userData.image} className="avatar-xxl rounded-circle border border-2 " alt="" />
                                 </div>
                                 {/* <!-- text --> */}
-                                <div className="lh-1">
-                                    <Typography className="mb-0 " variant="h3">
-                                        {userData.name}
-                                    </Typography>
-                                    <p className="mb-0 d-block">{userData.code}</p>
-                                </div>
-                            </div>
 
+                                <div className="row">
+                                    <div className="col-lg-12 col-md-12 col-12">
+                                        <div className="d-flex justify-content-between align-items-center mb-5">
+                                            <div className="mb-2 mb-lg-0">
+                                                <Typography className="mb-0 " variant="h3">
+                                                    {userData.name}
+
+                                                </Typography>
+                                                <p className="mb-0 d-block">{userData.code}</p>
+
+                                            </div>
+                                            {/* Button aligned to the bottom-right */}
+
+
+                                        </div>
+                                    </div></div>
+
+                            </div>
+                            <div className="lh-1 align-self-end ml-auto">
+                                <Link to={`/dashboard/updateStudent/${id}`}>
+                                    <Button variant="contained">
+                                        Modifier
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                         {/* <!-- nav --> */}
 
@@ -145,7 +177,7 @@ const StudentProfile = () => {
                 <div className="row">
                     <div className="col-xl-5 col-lg-12 col-md-12 col-12 mb-5">
                         {/* <!-- card --> */}
-                        <div className="card" style={{ height: "240px" }}>
+                        <div className="card">
                             {/* <!-- card body --> */}
                             <div className="card-header">
                                 <Typography className="mb-0 " variant="h6">À propos de moi</Typography>
@@ -169,7 +201,30 @@ const StudentProfile = () => {
                     </div>
                     <div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
                         {/* <!-- card --> */}
-                        <div className="card" style={{ height: "240px" }}>
+                        <div className="card" style={{ height: "345px" }}>
+                            {/* <!-- card body --> */}
+                            <div className="card-header">
+                                <Typography className="mb-0 " variant="h6">Document</Typography>
+                            </div>
+                            {/* <!-- row --> */}
+                            <TableContainer component={Paper} style={{ padding: "10px" }}>
+                                <Table aria-label="simple table">
+                                    <TableBody>
+                                        {files.map((row, index) => (
+                                            <TableRow key={index} onClick={() => openDocument(row)}>
+                                                <TableCell component="th" scope="row" style={{ color: "blue" }}>
+                                                    {row.name}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </div>
+                    </div>
+                    <div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
+                        {/* <!-- card --> */}
+                        <div className="card" style={{ height: "345px" }}>
                             <div className="card-header">
                                 <Typography className="mb-0 " variant="h6">Historique</Typography>
                             </div>

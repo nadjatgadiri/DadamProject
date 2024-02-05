@@ -5,23 +5,16 @@ import {
   Grid, Stack, Card, Container, Typography,
   Box, Button, Avatar, TextField, List, ListItem,
   IconButton, ListItemAvatar, Select, FormControl,
-  ListItemText, MenuItem, Dialog, DialogContent,
-  DialogContentText, TableRow, TableCell, InputLabel, DialogActions
+  ListItemText, MenuItem, InputLabel,
 } from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FolderIcon from '@mui/icons-material/Folder';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import PropTypes from 'prop-types';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { addNewStudent } from '../../RequestManagement/studentManagement';
 import {
   listLevelWYearEduc,
-  addEducationLevel, addStudyYear,
-  updateEducationLevel, updateStudyYear,
-  removeLevelEduc, removeYearEduc
 } from '../../RequestManagement/educLevelMAnagement';
 import LevelSetting from "./LevelEducationComponent";
 import Iconify from '../../components/iconify';
@@ -83,7 +76,7 @@ function AddStudent() {
         ...prevFiles,
         {
           name: originalFileName,
-          dataUrl: fileDataUrl
+          data: fileDataUrl
         }
       ]);
     };
@@ -132,7 +125,10 @@ function AddStudent() {
         "phoneNumber": phoneNumber,
         "dateOfBirth": dateOfBirth,
         "mail": mail,
-        "image": image
+        "image": image,
+        "files": files,
+        "levelID": selectedLevel,
+        "yearID": selectedYear === '' ? null : selectedYear
       };
       try {
         const response = await addNewStudent(data);
@@ -173,8 +169,15 @@ function AddStudent() {
 
     const result = await listLevelWYearEduc();
     if (result.code === 200) {
-      setLevels(result.allLevels);
-      console.log(result.allLevels);
+      await setLevels(result.allLevels);
+      if (selectedLevel) {
+        const foundElement = result.allLevels.find(item => item.ID_ROWID.toString() === selectedLevel);
+        if (foundElement) {
+          await setYearsEd(foundElement.studyYears);
+        } else {
+          await setYearsEd("");
+        }
+      }
     }
   };
   useEffect(() => {
@@ -291,15 +294,13 @@ function AddStudent() {
                     onChange={async (e) => {
                       if (e.target.value !== "") {
                         await setSelectedLevel(e.target.value);
-                        levels.map((level) => {
-                          console.log(level.ID_ROWID.toString() === e.target.value);
-                          setSelectedYear("");
-                          if (level.ID_ROWID.toString() === e.target.value) {
-                            setYearsEd(level.studyYears);
-                          }
-                          else setYearsEd(null);
-                          return null;
-                        })
+                        const foundElement = levels.find(item => item.ID_ROWID.toString() === e.target.value);
+
+                        if (foundElement) {
+                          await setYearsEd(foundElement.studyYears);
+                        } else {
+                          await setYearsEd("");
+                        }
                       }
 
                     }
@@ -315,7 +316,7 @@ function AddStudent() {
 
                     {levels.map((level) => {
                       return (
-                        <MenuItem value={`${level.ID_ROWID}`}>{level.lib}</MenuItem>
+                        <MenuItem key={level.ID_ROWID} value={`${level.ID_ROWID}`}>{level.lib}</MenuItem>
                       )
                     })}
 
@@ -333,7 +334,6 @@ function AddStudent() {
                     onChange={async (e) => {
                       if (e.target.value !== "")
                         setSelectedYear(e.target.value);
-
                     }
                     }
                     inputProps={{
@@ -348,7 +348,7 @@ function AddStudent() {
 
                     {yearsEd?.map((year) => {
                       return (
-                        <MenuItem value={`${year.ID_ROWID}`}>{year.lib}</MenuItem>
+                        <MenuItem key={year.ID_ROWID} value={`${year.ID_ROWID}`}>{year.lib}</MenuItem>
                       )
                     })}
 

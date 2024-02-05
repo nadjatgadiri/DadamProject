@@ -102,3 +102,17 @@ export const getAllSessionsForStudent = async (id) => {
         throw error;
     }
 };
+export const updateSession = async (dataEvent) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/session/updateSession', {
+            "data": dataEvent
+        });
+        const data = response.data;
+        reloadOn501(data);
+        return data
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

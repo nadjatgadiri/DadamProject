@@ -22,6 +22,7 @@ import { selectedListCategories } from "../../RequestManagement/categorieManagem
 import { addNewPrograme } from "../../RequestManagement/programManagement"
 import './style.css'; // Import the CSS file
 
+
 const steps = ['Informations Générales', 'Configuration De Temps', 'Confirmation'];
 
 const CustomNumberInput = React.forwardRef((props, ref) => {
@@ -196,6 +197,8 @@ export default function AddProgramme() {
     //     justifyContent: 'center',
     //     flexDirection: 'column',
     // }));
+
+
     const isStepOptional = (step) => {
         return step === 1;
     };
@@ -582,27 +585,26 @@ export default function AddProgramme() {
                                     {/* form for formation */}
                                     {type === "formation" ?
                                         <Grid container spacing={3}>
-                                            <Grid item xs={6}>
-                                                <InputLabel htmlFor="role">Date De Commencement</InputLabel>
 
+                                            <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <InputLabel htmlFor="role">Date De Commencement</InputLabel>
                                                 <TextField
                                                     type="date"
                                                     value={startDate}
                                                     onChange={(e) => setStartDate(e.target.value)}
                                                     fullWidth
                                                     required
-                                                    error={errorsFormation.sDate}
                                                 />
                                             </Grid>
-                                            <Grid item xs={6}>
+                                            <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
                                                 <InputLabel htmlFor="role">Date D'Expiration</InputLabel>
+
                                                 <TextField
                                                     type="date"
                                                     value={endDate}
                                                     onChange={(e) => setEndDate(e.target.value)}
                                                     fullWidth
                                                     required
-                                                    error={errorsFormation.fDate}
                                                 />
                                             </Grid>
                                             <Grid item xs={6}>

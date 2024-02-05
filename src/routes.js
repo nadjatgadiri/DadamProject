@@ -24,9 +24,11 @@ import Home from "./pages/webSitePages/home"
 import CategoryList from "./pages/webSitePages/menuCategoriesProgramme"
 import MenuProgrammes from "./pages/webSitePages/menuProgrammes"
 import ProgrammeProfileHome from "./pages/webSitePages/profileProgramme"
-
-import AddStudent from './pages/Students/addStudent';
 import AddTeacher from './pages/Teachers/addTeacher';
+
+// student
+import AddStudent from './pages/Students/addStudent';
+import UpdateStudent from './pages/Students/updateStudent';
 import StudentProfile from './pages/Students/ProfileStudent';
 // categorie 
 import CategoriePage from './pages/Categorie/CategoriesList';
@@ -71,6 +73,7 @@ export default function Router() {
         { path: 'blog', element: <BlogPage /> },
         { path: 'addUser', element: isAdmin ? <AddUser /> : <Navigate to="/dashboard/user" /> },
         { path: 'addStudent', element: <AddStudent /> },
+        { path: 'updateStudent/:id', element: <UpdateStudent /> },
         { path: 'addTeacher', element: <AddTeacher /> },
         { path: 'Class', element: <ClassPage /> },
         { path: 'addProgramme', element: <AddProgramme /> },

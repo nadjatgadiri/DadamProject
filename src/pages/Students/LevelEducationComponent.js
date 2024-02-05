@@ -86,11 +86,11 @@ function LevelSetting(props) {
                         </Typography>
                     </Grid>
                     <Grid item xs={12}>
-                        <Table aria-label="simple table">
+                        <Table aria-label="simple table" >
                             <TableBody>
                                 {levels.map((level) => {
                                     return (
-                                        <Row row={level} handelDelete={handelDelete} fetchLevelsData={fetchLevelsData} handelError={handelError} />
+                                        <Row key={`${level.ID_ROWID}Level`} row={level} handelDelete={handelDelete} fetchLevelsData={fetchLevelsData} handelError={handelError} />
                                     )
                                 })}
                             </TableBody>
@@ -140,40 +140,7 @@ function LevelSetting(props) {
     );
 }
 export default LevelSetting;
-// function Row(props) {
-//     const { row } = props;
-//     const [open, setOpen] = React.useState(false);
-//     return (
-//         <fragment>
-//             <TableRow key={`${row.ID_ROWID}`} >
-//                 <TableCell>
-//                     <IconButton
-//                         aria-label="expand row"
-//                         size="small"
-//                         onClick={() => setOpen(!open)}
-//                     >
-//                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-//                     </IconButton>
-//                 </TableCell>
-//                 <TableCell component="th" scope="row" >
-//                     {row.lib}
-//                 </TableCell>
-//                 <TableCell >
-//                     <IconButton size="small"
-//                         onClick={(e) => {
-//                             props.handelDelete(row.ID_ROWID)
-//                         }}
-//                     >
-//                         <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-//                     </IconButton>
 
-//                 </TableCell>
-
-//             </TableRow>
-
-//         </fragment >
-//     );
-// }
 function Row(props) {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
@@ -274,7 +241,7 @@ function Row(props) {
                                         }
                                     </TableRow>
                                     {row.studyYears.map((year, index) => (
-                                        <TableRow key={year.ID_ROWID}>
+                                        <TableRow key={`${year.ID_ROWID}Year`}>
                                             <TableCell component="th" scope="row">
                                                 {year.lib}
                                             </TableCell>

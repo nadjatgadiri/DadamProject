@@ -1056,6 +1056,7 @@ const AppointmentsAjustements = (props) => {
                                                                                     value={dayjs(`2023-01-01T${timeStart}:00`)}
                                                                                     onChange={(newTime) => {
                                                                                         const selectedTime = newTime.format('HH:mm');
+                                                                                        console.log(selectedTime);
                                                                                         setTimeStart(selectedTime);
                                                                                     }}
                                                                                     slotProps={{ textField: { fullWidth: true } }}
