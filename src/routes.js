@@ -12,6 +12,8 @@ import SchooolinfoupdatePage from './pages/profileEcole/addschoolinfo';
 import RegistrationList from './pages/registration/RegistrationList';
 import Updatepassword from './pages/Users/Updateuserpassword';
 import TeacherPage from './pages/Teachers/Teacherslist';
+import TeacherProfile from './pages/Teachers/ProfileTeacher';
+
 import RegistrationPage from './pages/registration/addRegistration';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
@@ -87,6 +89,8 @@ export default function Router() {
         { path: 'schooledit', element: <SchooolinfoupdatePage /> },
         { path: 'passwordedit', element: <Updatepassword /> },
         { path: 'StudentProfile/:id', element: <StudentProfile /> },
+        { path: 'teacherProfile/:id', element: <TeacherProfile /> },
+
 
       ],
     },

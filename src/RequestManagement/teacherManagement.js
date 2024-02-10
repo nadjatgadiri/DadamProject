@@ -66,3 +66,18 @@ export const listTeachersForGroup = async () => {
         throw error;
     }
 };
+
+export const getTeacherData = async (teacherId) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/teachers/getTeacher', {
+            id: teacherId
+        });
+        const data = response.data;
+        reloadOn501(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

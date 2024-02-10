@@ -447,9 +447,11 @@ export default function TeacherPage() {
                                       onChange={(e) => setEditedTeacher({ ...editedTeacher, name: e.target.value })}
                                     />
                                   ) : (
-                                    <Typography variant="subtitle2" noWrap>
-                                      {name}
-                                    </Typography>
+                                    <Link to={`/dashboard/teacherProfile/${id}`}><Typography variant="subtitle2" noWrap>
+                                    {name}
+                                    <Iconify icon={'mingcute:link-fill'} sx={{ mr: 1 }} style={{ margin: "5px" }} />
+                                  </Typography>
+                                  </Link>
                                   )}
                                 </Stack>
                               </TableCell>

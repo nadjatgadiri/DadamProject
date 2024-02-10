@@ -104,6 +104,23 @@ export const getAllSessionsForStudent = async (id) => {
         throw error;
     }
 };
+
+// Add the getAllSessionsForTeacher function
+export const getAllSessionsForTeacher = async (id) => {
+    try {
+        setReqHeader();
+        const response = await axios.post('/protected/session/getAllSessionsForTeacher', {
+            "id": id
+        });
+        const data = response.data;
+        reloadOn501(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
 export const updateSession = async (dataEvent) => {
     try {
         setReqHeader();
