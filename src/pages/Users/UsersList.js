@@ -157,7 +157,7 @@ export default function UserPage() {
       else {
         // when we got an error 
         setError(result.message);
-        toast.error(`Error! + ${result.message}`, {
+        toast.error(`Error! ${result.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
@@ -253,7 +253,7 @@ export default function UserPage() {
           setData(updatedUsers);
           setEditedUser(null); // Resetting the edited user state
         } else {
-          toast.error(`Error! + ${response.message}`, {
+          toast.error(`Error!  ${response.message}`, {
             position: toast.POSITION.TOP_RIGHT,
           });
           console.error("Error updating user:", response.message);
@@ -307,7 +307,7 @@ export default function UserPage() {
         const updatedUser = data.filter(user => user.id !== userId);
         setData(updatedUser);
       } else {
-        toast.error(`Error! + ${response.message}`, {
+        toast.error(`Error!  ${response.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
         console.error("Error deleting the user:", response.message);

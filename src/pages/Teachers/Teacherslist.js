@@ -110,7 +110,7 @@ export default function TeacherPage() {
         console.log(teachers);
       } else {
         setError(result.message);
-        toast.error(`Error! + ${result.message}`, {
+        toast.error(`Error!  ${result.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
@@ -149,7 +149,7 @@ export default function TeacherPage() {
           setData(updatedTeachers);
           setEditedTeacher(null);
         } else {
-          toast.error(`Error! + ${response.message}`, {
+          toast.error(`Error!  ${response.message}`, {
             position: toast.POSITION.TOP_RIGHT,
           });
           console.error("Error updating teacher:", response.message);
@@ -258,7 +258,7 @@ export default function TeacherPage() {
         const updatedTeachers = data.filter(teacher => teacher.id !== teacherId);
         setData(updatedTeachers);
       } else {
-        toast.error(`Error! + ${response.message}`, {
+        toast.error(`Error!  ${response.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
         console.error("Error deleting teacher:", response.message);

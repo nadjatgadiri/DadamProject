@@ -132,13 +132,6 @@ const TeacherProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="lh-1 align-self-end ml-auto">
-                                <Link to={`/dashboard/updateTeacher/${id}`}>
-                                    <Button variant="contained">
-                                        Modifier
-                                    </Button>
-                                </Link>
-                            </div>
                         </div>
                     </div>
                 </div>
