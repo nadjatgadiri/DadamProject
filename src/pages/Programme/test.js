@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
@@ -19,7 +19,7 @@ import {
 } from '@mui/base/Unstable_NumberInput';
 import Iconify from '../../components/iconify';
 import { selectedListCategories } from "../../RequestManagement/categorieManagement"
-import { updatePrograme, getProgramme } from "../../RequestManagement/programManagement"
+import { addNewPrograme } from "../../RequestManagement/programManagement"
 import './style.css'; // Import the CSS file
 
 
@@ -222,7 +222,7 @@ export default function UpdateProgramme() {
         return skipped.has(step);
     };
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (activeStep === 0) {
             if (title && selectedCategory && type) {
                 setErrors({
@@ -235,7 +235,7 @@ export default function UpdateProgramme() {
                     newSkipped = new Set(newSkipped.values());
                     newSkipped.delete(activeStep);
                 }
-                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                await setActiveStep((prevActiveStep) => prevActiveStep + 1);
                 setSkipped(newSkipped);
             }
             else {
@@ -267,7 +267,7 @@ export default function UpdateProgramme() {
                         newSkipped = new Set(newSkipped.values());
                         newSkipped.delete(activeStep);
                     }
-                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                    await setActiveStep((prevActiveStep) => prevActiveStep + 1);
                     setSkipped(newSkipped);
                 }
                 else {
@@ -408,6 +408,7 @@ export default function UpdateProgramme() {
     };
     // api
     const fetchData = async () => {
+        console.log(id);
         const result = await selectedListCategories();
         if (result.code === 200) {
             const categories = await Promise.all(result.categories.map(async cat => ({
@@ -420,7 +421,7 @@ export default function UpdateProgramme() {
         }
         else {
             // when we got an error 
-
+            console.log(result);
             toast.error(`Error! + ${result.message}`, {
                 position: toast.POSITION.TOP_RIGHT,
             });
@@ -463,7 +464,7 @@ export default function UpdateProgramme() {
                         setNMBParticipant(secondStepData.nbrStudent);
                         setMaterials(secondStepData.Materials);
                     } else if (programeData.type === "activity") {
-                        setDureeActivity(secondStepData.timing);
+                        setDureeActivity(secondStepData.sessionTiming);
                         setFinSubDate1(programeData.EndInsciptionDate);
                         setEmplacement(secondStepData.emplacement);
                     }
@@ -472,6 +473,7 @@ export default function UpdateProgramme() {
         }
         else {
             // when we got an error 
+            console.log(result);
             toast.error(`Error! + ${result.message}`, {
                 position: toast.POSITION.TOP_RIGHT,
             });
@@ -522,12 +524,11 @@ export default function UpdateProgramme() {
             }
         }
         try {
-            const response = await updatePrograme(id, dataProgram, dataType);
+            const response = await addNewPrograme(dataProgram, dataType);
             if (response && response.code === 200) {
                 toast.success(`L'utilisateur est ajouté avec succès!`, {
                     position: toast.POSITION.TOP_RIGHT,
                 });
-
                 // Optionally reset form fields here
                 navigate(`/dashboard/ProgrameProfile/${response.programId}`, { replace: true });
             }
@@ -974,26 +975,26 @@ export default function UpdateProgramme() {
                                                 <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Type</Typography>
                                                 </Grid>
-                                                <Grid item xs={9} paddingTop={2}>
+                                                <Grid xs={9} paddingTop={2}>
                                                     {type}
                                                 </Grid>
                                                 <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Catégorie</Typography>
                                                 </Grid>
-                                                <Grid item xs={9} paddingTop={2}>
+                                                <Grid xs={9} paddingTop={2}>
                                                     {selectedCategory.label}
                                                 </Grid>
                                                 <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Prix {typeOfPaiment}</Typography>
                                                 </Grid>
-                                                <Grid item xs={9} paddingTop={2}>
+                                                <Grid xs={9} paddingTop={2}>
                                                     {prix}
                                                 </Grid>
                                             </Grid>
                                         </Grid>
                                         <Grid item xs={6} style={{ paddingLeft: '50px', paddingTop: '50px', paddingBottom: '50px' }}>
                                             <Grid container spacing={3}>
-                                                <Grid item xs={12}>
+                                                <Grid xs={12}>
                                                     <InputLabel >Informations De Configuration</InputLabel>
                                                 </Grid>
                                                 {isSkip ?
@@ -1077,12 +1078,6 @@ export default function UpdateProgramme() {
                                                                         </Grid>
                                                                         <Grid item xs={6} paddingTop={2}>
                                                                             {materials}
-                                                                        </Grid>
-                                                                        <Grid item xs={6} paddingTop={2}>
-                                                                            <Typography level="body-sm" justifySelf="flex-end">Nombre Des Participant</Typography>
-                                                                        </Grid>
-                                                                        <Grid item xs={6} paddingTop={2}>
-                                                                            {isChecked ? nmbParticipant : "Ilimité"}
                                                                         </Grid>
                                                                     </> :
                                                                     type === "activity" ?

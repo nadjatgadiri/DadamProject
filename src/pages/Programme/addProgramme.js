@@ -23,7 +23,7 @@ import { addNewPrograme } from "../../RequestManagement/programManagement"
 import './style.css'; // Import the CSS file
 
 
-const steps = ['Informations Générales', 'Configuration De Temps', 'Confirmation'];
+const steps = ['Informations Générales', 'Informations Détaillées', 'Confirmation'];
 
 const CustomNumberInput = React.forwardRef((props, ref) => {
     return (
@@ -148,7 +148,6 @@ export default function AddProgramme() {
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
     const [skipped, setSkipped] = useState(new Set());
-    const [editorState, setEditorState] = useState(null);
     // first step states
     const [data, setData] = useState([]);
     const [title, setTitle] = useState("");
@@ -166,38 +165,53 @@ export default function AddProgramme() {
     const [errorsFormation, setErrorsFormation] = useState({
         "sDate": false,
         "fDate": false,
+        "eDate": false,
     });
     const [errorsCour, setErrorsCour] = useState({
         "nmbSession": false,
         "duree": false,
+        "eDate": false,
     });
+    const [errorsWorkShop, setErrorsWorkShop] = useState({
+        "sDate": false,
+        "fDate": false,
+        "eDate": false,
+    });
+    const [errorsActivity, setErrorsActivity] = useState({
+        "duree": false,
+        "eDate": false,
+    });
+
     // second step states
-    // for formation form
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
-    const [finSubDate1, setFinSubDate1] = useState(null);
-    const [errorsFormation2, setErrorsFormation2] = useState({ eDate: false });
+
+    // for formation && workshop form 
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [finSubDate1, setFinSubDate1] = useState("");
     const [isChecked, setIsChecked] = useState(false);
-    const [nmbParticipant, setNMBParticipant] = useState(null);
+    const [nmbParticipant, setNMBParticipant] = useState(0);
+    // end
+
+    // formation 
+    const [errorsFormation2, setErrorsFormation2] = useState({ eDate: false });
+
+
+    // workshop
+    const [materials, setMaterials] = useState("");
+
     // for cours form
     const [nmbSession, setNMBSession] = useState(0);
-    const [duree, setDuree] = useState(null);
-    const [finSubDate2, setFinSubDate2] = useState(null);
+    const [dureeCour, setDureeCour] = useState("01:00");
+
+    // activity form
+    const [dureeActivity, setDureeActivity] = useState("01:00");
+    const [emplacement, setEmplacement] = useState("");
+
     // skip
     const [isSkip, setIsSkip] = useState(false);
     const handleAutocompleteChange = (event, newValue) => {
-        console.log(newValue);
         setSelectedCategory(newValue);
     };
-    // const StyledContent = styled('div')(({ theme }) => ({
-    //     maxWidth: 480,
-    //     margin: 'auto',
-    //     minHeight: '10vh',
-    //     display: 'flex',
-    //     justifyContent: 'center',
-    //     flexDirection: 'column',
-    // }));
-
 
     const isStepOptional = (step) => {
         return step === 1;
@@ -215,7 +229,6 @@ export default function AddProgramme() {
                     "cat": false,
                     "type": false,
                 });
-                console.log(editorState);
                 let newSkipped = skipped;
                 if (isStepSkipped(activeStep)) {
                     newSkipped = new Set(newSkipped.values());
@@ -274,7 +287,7 @@ export default function AddProgramme() {
                 }
             }
             else if (type === "cour") {
-                if (nmbSession && duree && finSubDate2) {
+                if (nmbSession && dureeCour && finSubDate1) {
                     setErrorsCour({
                         "nmbSession": false,
                         "duree": false,
@@ -296,12 +309,72 @@ export default function AddProgramme() {
                     };
                     if (!nmbSession) {
                         er.nmbSession = true;
-                    } if (!duree) {
+                    } if (!dureeCour) {
                         er.duree = true;
-                    } if (!finSubDate2) {
+                    } if (!finSubDate1) {
                         er.eDate = true;
                     }
                     setErrorsCour(er);
+                }
+            }
+            else if (type === "workshop") {
+                if (startDate && endDate && finSubDate1) {
+                    setErrorsWorkShop({
+                        "sDate": false,
+                        "fDate": false,
+                        "eDate": false
+                    });
+                    let newSkipped = skipped;
+                    if (isStepSkipped(activeStep)) {
+                        newSkipped = new Set(newSkipped.values());
+                        newSkipped.delete(activeStep);
+                    }
+                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                    setSkipped(newSkipped);
+                }
+                else {
+                    const er = {
+                        "sDate": false,
+                        "fDate": false,
+                        "eDate": false
+                    };
+                    if (!startDate) {
+                        er.sDate = true;
+                    } if (!endDate) {
+                        er.fDate = true;
+                    }
+                    if (!finSubDate1) {
+                        er.eDate = true;
+                    }
+                    setErrorsWorkShop(er);
+                }
+            }
+            else if (type === "activity") {
+                if (dureeActivity && finSubDate1) {
+                    setErrorsActivity({
+                        "duree": false,
+                        "eDate": false,
+                    });
+                    let newSkipped = skipped;
+                    if (isStepSkipped(activeStep)) {
+                        newSkipped = new Set(newSkipped.values());
+                        newSkipped.delete(activeStep);
+                    }
+                    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+                    setSkipped(newSkipped);
+                }
+                else {
+                    const er = {
+                        "duree": false,
+                        "eDate": false,
+                    };
+                    if (!dureeActivity) {
+                        er.duree = true;
+                    }
+                    if (!finSubDate1) {
+                        er.eDate = true;
+                    }
+                    setErrorsActivity(er);
                 }
             }
         }
@@ -347,7 +420,6 @@ export default function AddProgramme() {
         }
         else {
             // when we got an error 
-            console.log(result);
             toast.error(`Error! + ${result.message}`, {
                 position: toast.POSITION.TOP_RIGHT,
             });
@@ -378,13 +450,27 @@ export default function AddProgramme() {
         }
         else if (type === "cour") {
             dataType = {
-                "inscriptionEndDay": finSubDate2,
+                "inscriptionEndDay": finSubDate1,
                 "nbrSession": nmbSession,
-                "hoursBySession": duree
+                "hoursBySession": dureeCour
+            }
+        } else if (type === "workshop") {
+            dataType = {
+                "startDay": startDate,
+                "endDay": endDate,
+                "inscriptionEndDay": finSubDate1,
+                "isLimited": isChecked,
+                "nbrParticipat": isChecked ? nmbParticipant : 0,
+                "Materials": materials
+            }
+        } else if (type === "activity") {
+            dataType = {
+                "inscriptionEndDay": finSubDate1,
+                "timing": dureeActivity,
+                "emplacement": emplacement,
             }
         }
         try {
-
             const response = await addNewPrograme(dataProgram, dataType);
             if (response && response.code === 200) {
                 toast.success(`L'utilisateur est ajouté avec succès!`, {
@@ -394,7 +480,6 @@ export default function AddProgramme() {
                 navigate(`/dashboard/ProgrameProfile/${response.programId}`, { replace: true });
             }
         } catch (error) {
-            console.log(error);
             toast.error('Erreur! Une erreur s\'est produite. Veuillez réessayer.', {
                 position: toast.POSITION.TOP_RIGHT,
             });
@@ -411,17 +496,9 @@ export default function AddProgramme() {
 
         const currentDate = new Date().toISOString().split('T')[0];
         const isValid = selectedDate >= currentDate;
-        console.log(isValid);
         setErrorsFormation2({ eDate: !isValid });
     };
-    const handleDateChange2 = (e) => {
-        const selectedDate = e.target.value;
-        setFinSubDate2(selectedDate);
 
-        const currentDate = new Date().toISOString().split('T')[0];
-        const isValid = selectedDate >= currentDate;
-        setErrorsFormation2({ eDate: !isValid });
-    };
     return (
         <>
 
@@ -493,7 +570,7 @@ export default function AddProgramme() {
                                                 <InputLabel htmlFor="role">Type De Programme</InputLabel>
                                                 <Select
                                                     name="type"
-                                                    label="Type"
+                                                    label="Type De Programme"
                                                     value={type}
                                                     onChange={(e) => setType(e.target.value)}
                                                     inputProps={{
@@ -504,6 +581,8 @@ export default function AddProgramme() {
                                                 >
                                                     <MenuItem value="formation">Formation</MenuItem>
                                                     <MenuItem value="cour">Cours</MenuItem>
+                                                    <MenuItem value="activity">Activité</MenuItem>
+                                                    <MenuItem value="workshop">Atelier</MenuItem>
                                                 </Select>
                                             </FormControl>
                                         </Grid>
@@ -514,12 +593,13 @@ export default function AddProgramme() {
                                                 id="combo-box-demo"
                                                 name="supperCat"
                                                 options={data}
-                                                renderInput={(params) => <TextField error={errors.cat}
-                                                    {...params} label="Catégorie De Programme" />}
-                                                value={selectedCategory} // Set the value prop
-                                                onChange={handleAutocompleteChange} // Handle change event
-                                                ListboxProps={{ style: { maxHeight: 200, overflow: 'auto' } }} // Set the maxHeight for scrollability
+                                                renderInput={(params) => <TextField error={errors.cat} {...params} label="Catégorie De Programme" />}
+                                                value={selectedCategory}
+                                                onChange={handleAutocompleteChange}
+                                                ListboxProps={{ style: { maxHeight: 200, overflow: 'auto' } }}
+                                                isOptionEqualToValue={(option, value) => option.id === value.id} // Customize equality test
                                             />
+
 
                                         </Grid>
                                         <Grid item xs={6}
@@ -536,13 +616,11 @@ export default function AddProgramme() {
                                                     shrink: true,
                                                 }}
                                                 fullWidth
-                                                defaultValue={0.0}
                                             />
                                         </Grid>
                                         <Grid item xs={6}
                                             sx={{ position: 'relative' }}>
                                             <FormControl fullWidth
-                                                error={errors.type}
                                             >
                                                 <InputLabel htmlFor="role">Type De Payment</InputLabel>
                                                 <Select
@@ -570,7 +648,7 @@ export default function AddProgramme() {
                                             </FormGroup>
                                         </Grid>
                                         {(errors.cat || errors.type || errors.title) ?
-                                            (<Grid paddingLeft={3} xs={12}>
+                                            (<Grid paddingLeft={3} item xs={12}>
                                                 <Typography variant="body2" color="error">Il existe des zones vides obligatoires.</Typography>
                                             </Grid>) : null}
 
@@ -597,8 +675,7 @@ export default function AddProgramme() {
                                                 />
                                             </Grid>
                                             <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <InputLabel htmlFor="role">Date D'Expiration</InputLabel>
-
+                                                <InputLabel htmlFor="role">Date De Clôture</InputLabel>
                                                 <TextField
                                                     type="date"
                                                     value={endDate}
@@ -608,18 +685,18 @@ export default function AddProgramme() {
                                                 />
                                             </Grid>
                                             <Grid item xs={6}>
-                                                <InputLabel htmlFor="role">Date D'Expiration D'Inscription</InputLabel>
+                                                <InputLabel htmlFor="role">Date De Clôture D'Inscription</InputLabel>
                                                 <TextField
                                                     type="date"
                                                     value={finSubDate1}
                                                     onChange={handleDateChange}
                                                     fullWidth
                                                     required
-                                                    error={errorsFormation2.eDate}
+                                                    error={errorsFormation2.eDate || errorsFormation.eDate}
                                                 />
                                                 {errorsFormation2.eDate && (
-                                                    <FormHelperText error>
-                                                        La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
+                                                    <FormHelperText warning>
+                                                        La date De Clôture d'inscription doit être supérieure ou égale à la date actuelle.
                                                     </FormHelperText>)}
                                             </Grid>
                                             <Grid item xs={6}>
@@ -643,7 +720,7 @@ export default function AddProgramme() {
                                                 </Grid>
                                                 : null}
                                             {(errorsFormation.fDate || errorsFormation.sDate || errorsFormation.eDate) ?
-                                                (<Grid paddingLeft={3} xs={12}>
+                                                (<Grid paddingLeft={3} item xs={12}>
                                                     <Typography variant="body2" color="error">Il existe des zones vides obligatoires.</Typography>
                                                 </Grid>) : null}
                                         </Grid>
@@ -665,8 +742,8 @@ export default function AddProgramme() {
                                                 <InputLabel htmlFor="role">Durée Par Séance</InputLabel>
                                                 <TextField
                                                     type="time"
-                                                    value={duree}
-                                                    onChange={(e) => setDuree(e.target.value)}
+                                                    value={dureeCour}
+                                                    onChange={(e) => setDureeCour(e.target.value)}
                                                     fullWidth
                                                     required
                                                     error={errorsCour.duree}
@@ -674,24 +751,146 @@ export default function AddProgramme() {
 
                                             </Grid>
                                             <Grid item xs={6}>
-                                                <InputLabel htmlFor="role">Date D'Expiration D'Inscription</InputLabel>
+                                                <InputLabel htmlFor="role">Date De Clôture D'Inscription</InputLabel>
 
                                                 <TextField
                                                     type="date"
-                                                    value={finSubDate2}
-                                                    onChange={handleDateChange2}
+                                                    value={finSubDate1}
+                                                    onChange={handleDateChange}
                                                     fullWidth
                                                     required
-                                                    error={errorsFormation2.eDate}
+                                                    error={errorsFormation2.eDate || errorsCour.eDate}
                                                 />
                                                 {errorsFormation2.eDate && (
-                                                    <FormHelperText error>
-                                                        La date d'expiration d'inscription doit être supérieure ou égale à la date actuelle.
+                                                    <FormHelperText warning>
+                                                        La date De Clôture d'inscription doit être supérieure ou égale à la date actuelle.
                                                     </FormHelperText>)}
                                             </Grid>
                                             <Grid item xs={6}><></></Grid>
                                             {(errorsCour.duree || errorsCour.nmbSession || errorsCour.eDate) ?
-                                                (<Grid paddingLeft={3} xs={12}>
+                                                (<Grid paddingLeft={3} item xs={12}>
+                                                    <Typography variant="body2" color="error">Il existe des zones vides obligatoires.</Typography>
+                                                </Grid>) : null}
+                                        </Grid>
+                                        : null}
+                                    {type === "workshop" ?
+                                        <Grid container spacing={3}>
+                                            <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <InputLabel htmlFor="role">Date De Commencement</InputLabel>
+                                                <TextField
+                                                    type="date"
+                                                    value={startDate}
+                                                    onChange={(e) => setStartDate(e.target.value)}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </Grid>
+                                            <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <InputLabel htmlFor="role">Date De Clôture</InputLabel>
+                                                <TextField
+                                                    type="date"
+                                                    value={endDate}
+                                                    onChange={(e) => setEndDate(e.target.value)}
+                                                    fullWidth
+                                                    required
+                                                />
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <InputLabel htmlFor="role">Date De Clôture D'Inscription</InputLabel>
+                                                <TextField
+                                                    type="date"
+                                                    value={finSubDate1}
+                                                    onChange={handleDateChange}
+                                                    fullWidth
+                                                    required
+                                                    error={errorsFormation2.eDate || errorsWorkShop.eDate}
+                                                />
+                                                {errorsFormation2.eDate && (
+                                                    <FormHelperText wrning>
+                                                        La date De Clôture d'inscription doit être supérieure ou égale à la date actuelle.
+                                                    </FormHelperText>)}
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <></>
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <InputLabel htmlFor="role">Matériel</InputLabel>
+                                                <TextField
+                                                    name="Matériel"
+                                                    value={materials}
+                                                    onChange={(e) => setMaterials(e.target.value)}
+                                                    minRows={3}
+                                                    maxRows={10}
+                                                    multiline
+                                                    fullWidth
+                                                />
+
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <FormGroup style={{ paddingTop: '20px' }}>
+                                                    <FormControlLabel control={<Checkbox checked={isChecked} onChange={(e) => setIsChecked(!isChecked)} />} label="Limiter le nombre des participants" />
+                                                </FormGroup>
+                                            </Grid>
+                                            {isChecked ?
+                                                <Grid item xs={6}>
+                                                    <InputLabel htmlFor="role">Nombre Des Participants</InputLabel>
+                                                    <CustomNumberInput
+                                                        aria-label="Demo number input"
+                                                        placeholder="Type a number…"
+                                                        value={nmbParticipant}
+                                                        onChange={(event, val) => setNMBParticipant(val)}
+
+                                                    />
+                                                </Grid>
+                                                : null}
+
+
+                                            {(errorsWorkShop.fDate || errorsWorkShop.sDate || errorsWorkShop.eDate) ?
+                                                (<Grid paddingLeft={3} item xs={12}>
+                                                    <Typography variant="body2" color="error">Il existe des zones vides obligatoires.</Typography>
+                                                </Grid>) : null}
+                                        </Grid>
+                                        : null}
+                                    {type === "activity" ?
+                                        <Grid container spacing={3}>
+                                            <Grid item xs={6}>
+                                                <InputLabel htmlFor="role">Durée Par Séance</InputLabel>
+                                                <TextField
+                                                    type="time"
+                                                    value={dureeActivity}
+                                                    onChange={(e) => setDureeActivity(e.target.value)}
+                                                    fullWidth
+                                                    required
+                                                    error={errorsActivity.duree}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <InputLabel htmlFor="role">Date De Clôture D'Inscription</InputLabel>
+                                                <TextField
+                                                    type="date"
+                                                    value={finSubDate1}
+                                                    onChange={handleDateChange}
+                                                    fullWidth
+                                                    required
+                                                    error={errorsFormation2.eDate || errorsActivity.eDate}
+                                                />
+                                                {errorsFormation2.eDate && (
+                                                    <FormHelperText warning>
+                                                        La date De Clôture d'inscription doit être supérieure ou égale à la date actuelle.
+                                                    </FormHelperText>)}
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <InputLabel htmlFor="role">L'emplacement D'Activité</InputLabel>
+                                                <TextField
+
+                                                    value={emplacement}
+                                                    onChange={(e) => setEmplacement(e.target.value)}
+                                                    required
+                                                    fullWidth
+                                                />
+                                            </Grid>
+                                            {(errorsActivity.duree || errorsActivity.eDate) ?
+                                                (<Grid paddingLeft={3} item xs={12}>
                                                     <Typography variant="body2" color="error">Il existe des zones vides obligatoires.</Typography>
                                                 </Grid>) : null}
                                         </Grid>
@@ -705,102 +904,157 @@ export default function AddProgramme() {
                                     <Grid container spacing={3}>
                                         <Grid item xs={6} style={{ paddingLeft: '50px', paddingTop: '50px', paddingBottom: '50px' }}>
                                             <Grid container spacing={3}>
-                                                <Grid xs={12}>
+                                                <Grid item xs={12}>
                                                     <InputLabel >Informations Géneral</InputLabel>
                                                 </Grid>
-                                                <Grid xs={3} paddingTop={2}>
+                                                <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Titre</Typography>
                                                 </Grid>
-                                                <Grid xs={9} paddingTop={2}>{title}
+                                                <Grid item xs={9} paddingTop={2}>{title}
 
                                                 </Grid>
-                                                <Grid xs={3} paddingTop={2}>
+                                                <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Description</Typography>
                                                 </Grid>
-                                                <Grid xs={9} paddingTop={2}>
+                                                <Grid item xs={9} paddingTop={2}>
                                                     {lib}
                                                 </Grid>
-                                                <Grid xs={3} paddingTop={2}>
+                                                <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Type</Typography>
                                                 </Grid>
-                                                <Grid xs={9} paddingTop={2}>
+                                                <Grid item xs={9} paddingTop={2}>
                                                     {type}
                                                 </Grid>
-                                                <Grid xs={3} paddingTop={2}>
+                                                <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Catégorie</Typography>
                                                 </Grid>
-                                                <Grid xs={9} paddingTop={2}>
+                                                <Grid item xs={9} paddingTop={2}>
                                                     {selectedCategory.label}
                                                 </Grid>
-                                                <Grid xs={3} paddingTop={2}>
+                                                <Grid item xs={3} paddingTop={2}>
                                                     <Typography level="body-sm" justifySelf="flex-end">Prix {typeOfPaiment}</Typography>
                                                 </Grid>
-                                                <Grid xs={9} paddingTop={2}>
+                                                <Grid item xs={9} paddingTop={2}>
                                                     {prix}
                                                 </Grid>
                                             </Grid>
                                         </Grid>
                                         <Grid item xs={6} style={{ paddingLeft: '50px', paddingTop: '50px', paddingBottom: '50px' }}>
                                             <Grid container spacing={3}>
-                                                <Grid xs={12}>
+                                                <Grid item xs={12}>
                                                     <InputLabel >Informations De Configuration</InputLabel>
                                                 </Grid>
                                                 {isSkip ?
-                                                    (<Grid xs={12} paddingTop={2}>
+                                                    (<Grid item xs={12} paddingTop={2}>
                                                         <Typography level="body-sm" justifySelf="flex-end">Vous avez sauté cette étape</Typography>
                                                     </Grid>)
                                                     :
                                                     (
                                                         type === "formation" ?
                                                             <>
-                                                                <Grid xs={6} paddingTop={2}>
+                                                                <Grid item xs={6} paddingTop={2}>
                                                                     <Typography level="body-sm" justifySelf="flex-end">Date De Commencement</Typography>
                                                                 </Grid>
-                                                                <Grid xs={6} paddingTop={2}>
+                                                                <Grid item xs={6} paddingTop={2}>
                                                                     {startDate}
                                                                 </Grid>
-                                                                <Grid xs={6} paddingTop={2}>
-                                                                    <Typography level="body-sm" justifySelf="flex-end">Date D'Expiration</Typography>
+                                                                <Grid item xs={6} paddingTop={2}>
+                                                                    <Typography level="body-sm" justifySelf="flex-end">Date De Clôture</Typography>
                                                                 </Grid>
-                                                                <Grid xs={6} paddingTop={2}>
+                                                                <Grid item xs={6} paddingTop={2}>
                                                                     {endDate}
                                                                 </Grid>
 
-                                                                <Grid xs={6} paddingTop={2}>
-                                                                    <Typography level="body-sm" justifySelf="flex-end">Date D'Expiration D'Inscription</Typography>
+                                                                <Grid item xs={6} paddingTop={2}>
+                                                                    <Typography level="body-sm" justifySelf="flex-end">Date De Clôture D'Inscription</Typography>
                                                                 </Grid>
-                                                                <Grid xs={6} paddingTop={2}>
+                                                                <Grid item xs={6} paddingTop={2}>
                                                                     {finSubDate1}
                                                                 </Grid>
-                                                                <Grid xs={6} paddingTop={2}>
+                                                                <Grid item xs={6} paddingTop={2}>
                                                                     <Typography level="body-sm" justifySelf="flex-end">Nombre Des Participant</Typography>
                                                                 </Grid>
-                                                                <Grid xs={6} paddingTop={2}>
+                                                                <Grid item xs={6} paddingTop={2}>
                                                                     {isChecked ? nmbParticipant : "Ilimité"}
                                                                 </Grid>
                                                             </>
                                                             : type === "cour" ?
                                                                 <>
-                                                                    <Grid xs={6} paddingTop={2}>
+                                                                    <Grid item xs={6} paddingTop={2}>
                                                                         <Typography level="body-sm" justifySelf="flex-end">Nombre Des Séance</Typography>
                                                                     </Grid>
-                                                                    <Grid xs={6} paddingTop={2}>
+                                                                    <Grid item xs={6} paddingTop={2}>
                                                                         {nmbSession}
                                                                     </Grid>
-                                                                    <Grid xs={6} paddingTop={2}>
+                                                                    <Grid item xs={6} paddingTop={2}>
                                                                         <Typography level="body-sm" justifySelf="flex-end">Durée Par Séance</Typography>
                                                                     </Grid>
-                                                                    <Grid xs={6} paddingTop={2}>
-                                                                        {duree}
+                                                                    <Grid item xs={6} paddingTop={2}>
+                                                                        {dureeCour}
                                                                     </Grid>
-                                                                    <Grid xs={6} paddingTop={2}>
-                                                                        <Typography level="body-sm" justifySelf="flex-end">Date D'Expiration D'Inscription</Typography>
+                                                                    <Grid item xs={6} paddingTop={2}>
+                                                                        <Typography level="body-sm" justifySelf="flex-end">Date De Clôture D'Inscription</Typography>
                                                                     </Grid>
-                                                                    <Grid xs={6} paddingTop={2}>
-                                                                        {finSubDate2}
+                                                                    <Grid item xs={6} paddingTop={2}>
+                                                                        {finSubDate1}
                                                                     </Grid>
                                                                 </>
-                                                                : null)}
+                                                                : type === "workshop" ?
+                                                                    <>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            <Typography level="body-sm" justifySelf="flex-end">Date De Commencement</Typography>
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            {startDate}
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            <Typography level="body-sm" justifySelf="flex-end">Date De Clôture</Typography>
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            {endDate}
+                                                                        </Grid>
+
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            <Typography level="body-sm" justifySelf="flex-end">Date De Clôture D'Inscription</Typography>
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            {finSubDate1}
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            <Typography level="body-sm" justifySelf="flex-end">Matériel</Typography>
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            {materials}
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            <Typography level="body-sm" justifySelf="flex-end">Nombre Des Participant</Typography>
+                                                                        </Grid>
+                                                                        <Grid item xs={6} paddingTop={2}>
+                                                                            {isChecked ? nmbParticipant : "Ilimité"}
+                                                                        </Grid>
+                                                                    </> :
+                                                                    type === "activity" ?
+                                                                        <>
+                                                                            <Grid item xs={6} paddingTop={2}>
+                                                                                <Typography level="body-sm" justifySelf="flex-end">Durée Par Séance</Typography>
+                                                                            </Grid>
+                                                                            <Grid item xs={6} paddingTop={2}>
+                                                                                {dureeActivity}
+                                                                            </Grid>
+                                                                            <Grid item xs={6} paddingTop={2}>
+                                                                                <Typography level="body-sm" justifySelf="flex-end">Date De Clôture D'Inscription</Typography>
+                                                                            </Grid>
+                                                                            <Grid item xs={6} paddingTop={2}>
+                                                                                {finSubDate1}
+                                                                            </Grid>
+                                                                            <Grid item xs={6} paddingTop={2}>
+                                                                                <Typography level="body-sm" justifySelf="flex-end">Emplacement D'Activité</Typography>
+                                                                            </Grid>
+                                                                            <Grid item xs={6} paddingTop={2}>
+                                                                                {emplacement}
+                                                                            </Grid>
+                                                                        </> :
+                                                                        null)}
                                             </Grid>
                                         </Grid>
                                     </Grid>
@@ -811,7 +1065,7 @@ export default function AddProgramme() {
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                         {activeStep !== 0 && (
                             <Button onClick={handleBack} sx={{ mr: 1 }}>
-                                Back
+                                Retour
                             </Button>
                         )}
                         {isStepOptional(activeStep) && (
@@ -821,7 +1075,7 @@ export default function AddProgramme() {
                                 onClick={handleSkip}
                                 sx={{ mr: 1 }}
                             >
-                                Skip
+                                Passer
                             </Button>
                         )}
                         <Button
@@ -829,7 +1083,7 @@ export default function AddProgramme() {
                             color="primary"
                             onClick={handleNext}
                         >
-                            {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                            {activeStep === steps.length - 1 ? 'Terminer' : 'Suivant'}
                         </Button>
                     </Box>
                 </Box>

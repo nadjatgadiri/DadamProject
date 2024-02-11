@@ -1,31 +1,45 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Cookies from 'js-cookie';
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 // @mui
-import { Buffer } from "buffer";
-import { Grid, Container, Typography, Card, Avatar, List, ListItem, ListItemAvatar, ListItemText, Divider } from '@mui/material';
-// sections
+import { Buffer } from 'buffer';
 import {
-  AppWidgetSummary,
-} from '../sections/@dashboard/app';
-import MyCalendar from './Programme/calendar/calendar'
-import { getStatistiqueDataForDashbaord1 } from "../RequestManagement/dataManagment"
-import { getGroups } from "../RequestManagement/groupManagement"
-import { getAllSessions } from "../RequestManagement/sessionsManagement"
-import { getUser } from '../RequestManagement/userManagement'
+  Grid,
+  Container,
+  Typography,
+  Card,
+  Avatar,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  ListItemButton,
+  Divider,
+  Box,
+} from '@mui/material';
+import ResponsiveAppBar from './appBar';
+// sections
+import { AppWidgetSummary } from '../sections/@dashboard/app';
+import MyCalendar from './Programme/calendar/calendar';
+import { getStatistiqueDataForDashbaord1 } from '../RequestManagement/dataManagment';
+import { getGroups } from '../RequestManagement/groupManagement';
+import { getAllSessions } from '../RequestManagement/sessionsManagement';
+import { getUser } from '../RequestManagement/userManagement';
 import { getGeneralSchoolData } from '../RequestManagement/schoolManagement'; // Update the import paths
 import useResponsive from '../hooks/useResponsive';
+import './Programme/theme.css';
+
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const isDesktop = useResponsive('up', 'sm');
   const [dataStatistique, setDataStatistique] = useState({
-    "nmbStudents": 0,
-    "nmbTeachers": 0,
-    "nmbPrograms": 0,
-    "nmbClasses": 0
+    nmbStudents: 0,
+    nmbTeachers: 0,
+    nmbPrograms: 0,
+    nmbClasses: 0,
   });
   const [userData, setUserData] = useState('');
   const [schoolData, setSchoolData] = useState('');
@@ -39,9 +53,9 @@ export default function DashboardAppPage() {
     }
     const result2 = await getGroups();
     if (result2.code === 200) {
-      const data = await result2.groups.map(group => ({
+      const data = await result2.groups.map((group) => ({
         id: group.ID_ROWID,
-        name: group.GroupeName
+        name: group.GroupeName,
       }));
       setGroups(ColorGenerator(data));
     }
@@ -49,12 +63,15 @@ export default function DashboardAppPage() {
     if (result3.code === 200) {
       setEvents(result3.events);
     }
-    // user Data 
+    // user Data
     const usersData1 = await getUser(Cookies.get('userID'));
     const usersData = usersData1.userData;
-    const image = usersData.personProfile.imagePath !== null && usersData.personProfile.imagePath !== '' ?
-      `data:image/jpeg;base64,${Buffer.from(
-        usersData.personProfile.imagePath).toString("base64")}` : '../../../../assets/images/avatars/avatar_10.jpg';
+    const image =
+      usersData.personProfile.imagePath !== null && usersData.personProfile.imagePath !== ''
+        ? `data:image/jpeg;base64,${Buffer.from(usersData.personProfile.imagePath).toString(
+            'base64'
+          )}`
+        : '../../../../assets/images/avatars/avatar_10.jpg';
     const user = {
       id: usersData.ID_ROWID,
       name: `${usersData.personProfile.firstName} ${usersData.personProfile.lastName}`,
@@ -67,25 +84,28 @@ export default function DashboardAppPage() {
     };
     console.log(user);
     setUserData(user); // Putting user in an array, assuming setUserData expects an array
-    // school 
+    // school
 
     const dataSchool = await getGeneralSchoolData();
     const school = {
       name: dataSchool.data.name || '',
       email: dataSchool.data.contacts?.mail || '',
       phone: dataSchool.data.contacts?.phone || '',
-      logo: dataSchool.data.logo || ''
-    }
+      logo: dataSchool.data.logo || '',
+    };
     setSchoolData(school);
   };
   useEffect(() => {
     fetchData();
   }, []); // Empty dependency array means this effect runs once when component mounts
   const stringToColor = (name) => {
-    const hashCode = name.toString().split('').reduce((acc, char) => {
-      acc = (acc * 31) + char.charCodeAt(0) + 100;
-      return acc;
-    }, 0);
+    const hashCode = name
+      .toString()
+      .split('')
+      .reduce((acc, char) => {
+        acc = acc * 31 + char.charCodeAt(0) + 100;
+        return acc;
+      }, 0);
     const color = `#${((hashCode & 0xffffff) << 0).toString(16).padStart(6, '0')}`; // eslint-disable-line no-bitwise
     return color;
   };
@@ -112,25 +132,43 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-
-            <AppWidgetSummary title="Étudiants" total={dataStatistique.nmbStudents} icon={'ph:student-fill'} />
+            <AppWidgetSummary
+              title="Étudiants"
+              total={dataStatistique.nmbStudents}
+              icon={'ph:student-fill'}
+            />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Professeurs" total={dataStatistique.nmbTeachers} color="info" icon={'ph:chalkboard-teacher-fill'} />
+            <AppWidgetSummary
+              title="Professeurs"
+              total={dataStatistique.nmbTeachers}
+              color="info"
+              icon={'ph:chalkboard-teacher-fill'}
+            />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Programmes" total={dataStatistique.nmbPrograms} color="warning" icon={'solar:programming-bold'} />
+            <AppWidgetSummary
+              title="Programmes"
+              total={dataStatistique.nmbPrograms}
+              color="warning"
+              icon={'solar:programming-bold'}
+            />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Salles" total={dataStatistique.nmbClasses} color="error" icon={'mdi:dining-room'} />
+            <AppWidgetSummary
+              title="Salles"
+              total={dataStatistique.nmbClasses}
+              color="error"
+              icon={'mdi:dining-room'}
+            />
           </Grid>
           <Grid item xs={12} md={6} lg={7}>
             <div className="card">
               {/* <!-- card body --> */}
-              <div style={{ marginLeft: "20px", marginRight: "20px" }}>
+              <div style={{ marginLeft: '20px', marginRight: '20px' }}>
                 {/* <!-- card title --> */}
                 <List
                   sx={{
@@ -141,33 +179,43 @@ export default function DashboardAppPage() {
                   <ListItem>
                     <ListItemAvatar>
                       <Avatar
-                        src={userData?.image} alt={userData?.name}
+                        src={userData?.image}
+                        alt={userData?.name}
                         className="avatar-xl mr-3" // Increase size with the class
                       />
-
                     </ListItemAvatar>
-                    <ListItemText style={{ paddingLeft: '16px' }} primary={<Typography variant="h5">{userData.name}</Typography>}
-                      secondary={<Typography variant="body1">{userData.role}</Typography>} />
+                    <ListItemText
+                      style={{ paddingLeft: '16px' }}
+                      primary={<Typography variant="h5">{userData.name}</Typography>}
+                      secondary={<Typography variant="body1">{userData.role}</Typography>}
+                    />
                   </ListItem>
-                  <Divider component="li" style={{ marginBottom: "10px" }} />
+                  <Divider component="li" style={{ marginBottom: '10px' }} />
                   <ListItem>
-                    <ListItemText primary={<Typography variant="subtitle2">Téléphone</Typography>}
-                      secondary={<Typography variant="body1">{userData?.phone}</Typography>} />
-                    <ListItemText style={{ paddingLeft: '10px' }} primary={<Typography variant="subtitle2">Mail</Typography>}
-                      secondary={<Typography variant="body1">{userData?.email}</Typography>} />
+                    <ListItemText
+                      primary={<Typography variant="subtitle2">Téléphone</Typography>}
+                      secondary={<Typography variant="body1">{userData?.phone}</Typography>}
+                    />
+                    <ListItemText
+                      style={{ paddingLeft: '10px' }}
+                      primary={<Typography variant="subtitle2">Mail</Typography>}
+                      secondary={<Typography variant="body1">{userData?.email}</Typography>}
+                    />
 
-                    <ListItemText style={{ paddingLeft: '10px' }} primary={<Typography variant="subtitle2">Date De Naissance</Typography>}
-                      secondary={<Typography variant="body1">{userData?.dateOfBirth}</Typography>} />
+                    <ListItemText
+                      style={{ paddingLeft: '10px' }}
+                      primary={<Typography variant="subtitle2">Date De Naissance</Typography>}
+                      secondary={<Typography variant="body1">{userData?.dateOfBirth}</Typography>}
+                    />
                   </ListItem>
                 </List>
-
               </div>
             </div>
           </Grid>
           <Grid item xs={12} md={6} lg={5}>
             <div className="card">
               {/* <!-- card body --> */}
-              <div style={{ marginLeft: "20px", marginRight: "20px" }}>
+              <div style={{ marginLeft: '20px', marginRight: '20px' }}>
                 {/* <!-- card title --> */}
                 <List
                   sx={{
@@ -182,25 +230,37 @@ export default function DashboardAppPage() {
                         alt="logo"
                         width={100}
                         height={79}
-                      // Increase size with the class
+                        // Increase size with the class
                       />
-
                     </ListItemAvatar>
-                    <ListItemText style={{ paddingLeft: '16px' }} primary={<Typography variant="h5">École : {schoolData.name}</Typography>} />
+                    <ListItemText
+                      style={{ paddingLeft: '16px' }}
+                      primary={<Typography variant="h5">École : {schoolData.name}</Typography>}
+                    />
                   </ListItem>
-                  <Divider component="li" style={{ marginBottom: "10px" }} />
+                  <Divider component="li" style={{ marginBottom: '10px' }} />
                   <ListItem>
-                    <ListItemText primary={<Typography variant="subtitle2">Téléphone</Typography>}
-                      secondary={<Typography variant="body1">{schoolData.phone}</Typography>} />
-                    <ListItemText style={{ paddingLeft: '10px' }} primary={<Typography variant="subtitle2">Mail</Typography>}
-                      secondary={<Typography variant="body1">{schoolData.email}</Typography>} />
-
+                    <ListItemText
+                      primary={<Typography variant="subtitle2">Téléphone</Typography>}
+                      secondary={<Typography variant="body1">{schoolData.phone}</Typography>}
+                    />
+                    <ListItemText
+                      style={{ paddingLeft: '10px' }}
+                      primary={<Typography variant="subtitle2">Mail</Typography>}
+                      secondary={<Typography variant="body1">{schoolData.email}</Typography>}
+                    />
                   </ListItem>
                 </List>
-
               </div>
             </div>
           </Grid>
+          <Grid item xs={12} md={6} lg={6}>
+            <ResponsiveAppBar />
+
+            {/* <div className="card-body" style={{ display: 'flex', alignItems: 'center' }}></div> */}
+          </Grid>
+          {/* <DashboardSessionComponent /> */}
+
           <Grid item xs={12} md={12} lg={12}>
             <Card style={{ height: isDesktop ? '650px' : '750px' }}>
               <div style={{ textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
@@ -331,7 +391,7 @@ export default function DashboardAppPage() {
             />
           </Grid> */}
         </Grid>
-      </Container >
+      </Container>
     </>
   );
 }
