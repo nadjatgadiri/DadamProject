@@ -64,6 +64,11 @@ function UpdateStudent() {
         // Read the file as a data URL
         reader.readAsDataURL(file);
     };
+    function isValidGmailFormat(email) {
+        const gmailRegex = /^[a-zA-Z0-9_.+-]+@gmail\.com$/;
+        return gmailRegex.test(email);
+      }
+      
     const handleFilesUpload = async (e) => {
         const file = e.target.files[0];
         // Create a FileReader object to read the file

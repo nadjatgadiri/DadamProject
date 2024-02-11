@@ -110,7 +110,7 @@ export default function TeacherPage() {
         console.log(teachers);
       } else {
         setError(result.message);
-        toast.error(`Error! + ${result.message}`, {
+        toast.error(`Error!  ${result.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
@@ -149,7 +149,7 @@ export default function TeacherPage() {
           setData(updatedTeachers);
           setEditedTeacher(null);
         } else {
-          toast.error(`Error! + ${response.message}`, {
+          toast.error(`Error!  ${response.message}`, {
             position: toast.POSITION.TOP_RIGHT,
           });
           console.error("Error updating teacher:", response.message);
@@ -258,7 +258,7 @@ export default function TeacherPage() {
         const updatedTeachers = data.filter(teacher => teacher.id !== teacherId);
         setData(updatedTeachers);
       } else {
-        toast.error(`Error! + ${response.message}`, {
+        toast.error(`Error!  ${response.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
         console.error("Error deleting teacher:", response.message);
@@ -447,9 +447,11 @@ export default function TeacherPage() {
                                       onChange={(e) => setEditedTeacher({ ...editedTeacher, name: e.target.value })}
                                     />
                                   ) : (
-                                    <Typography variant="subtitle2" noWrap>
-                                      {name}
-                                    </Typography>
+                                    <Link to={`/dashboard/teacherProfile/${id}`}><Typography variant="subtitle2" noWrap>
+                                    {name}
+                                    <Iconify icon={'mingcute:link-fill'} sx={{ mr: 1 }} style={{ margin: "5px" }} />
+                                  </Typography>
+                                  </Link>
                                   )}
                                 </Stack>
                               </TableCell>
