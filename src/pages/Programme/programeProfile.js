@@ -382,11 +382,11 @@ const ProgrameProfile = () => {
     }
   };
 
-  // Add the following method to generate the schedule PDF
-  const handleGenerateSchedule = () => {
+  const handleGenerateSchedule = async () => {
+    await fetchData(); // Wait for fetchData() to complete
     // Use the week input value and sessions data to generate the schedule PDF
     generateSchedulePDF(weekInputValue, Sessions, type, title);
-  };
+};
 
   const generateSchedulePDF = (weekInput, sessions, type, title) => {
     const isValidWeekInput = /^(\d{1,2}-\d{1,2} [a-zA-Z]+ - [a-zA-Z]+)$/.test(weekInput);
@@ -482,11 +482,15 @@ const ProgrameProfile = () => {
             const sessionDay = sessionStartDate
               .toLocaleDateString('fr-FR', { weekday: 'long' })
               .replace(/^\w/, (c) => c.toUpperCase());
-            const sessionStartHour = sessionStartDate.getHours();
-            const sessionEndHour = sessionEndDate.getHours();
-            return sessionStartHour <= hour && sessionEndHour >= hour + 2 && sessionDay === day;
+              const sessionStartTime = sessionStartDate.getHours(); // Get session start hour
+              const sessionEndTime = sessionEndDate.getHours(); // Get session end hour
+              
+              // Check if the session overlaps with the hour range
+              return sessionStartTime>= 8 && (sessionStartTime < hour + 2) && (sessionEndTime >= hour) && sessionEndTime<=20 && sessionDay === day;
+              
           });
           if (sessionAtHour) {
+            console.log(sessionAtHour);
             const salleName = sessionAtHour.title.split(' - ')[1] || 'No Salle';
 
             // Parse the string dates into Date objects
