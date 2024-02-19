@@ -1,11 +1,28 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from 'react-toastify';
 // @mui
 import {
-  Badge,Card, Table, Stack, Paper, Avatar, Button, Popover, Checkbox, TableRow, MenuItem, TableBody, TableCell, Container, Typography, IconButton, TableContainer, TablePagination,
-  TextField
+  Badge,
+  Card,
+  Table,
+  Stack,
+  Paper,
+  Avatar,
+  Button,
+  Popover,
+  Checkbox,
+  TableRow,
+  MenuItem,
+  TableBody,
+  TableCell,
+  Container,
+  Typography,
+  IconButton,
+  TableContainer,
+  TablePagination,
+  TextField,
 } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import { styled } from '@mui/material/styles';
@@ -17,16 +34,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from 'react-router-dom';
 
 // components
-import { Buffer } from "buffer";
+import { Buffer } from 'buffer';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
 
 // sections
-import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user'; // 
+import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user'; //
 
-// to load data 
-import { getAllTeachers, updateTeacherData, deleteTeacher } from '../../RequestManagement/teacherManagement';
-
+// to load data
+import {
+  getAllTeachers,
+  updateTeacherData,
+  deleteTeacher,
+} from '../../RequestManagement/teacherManagement';
 
 const TABLE_HEAD = [
   { id: '' },
@@ -75,7 +95,6 @@ export default function TeacherPage() {
     height: 23,
     backgroundColor: theme.palette.background.paper,
     border: `2px solid ${theme.palette.background.paper}`,
-
   }));
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
@@ -95,16 +114,19 @@ export default function TeacherPage() {
     const fetchData = async () => {
       const result = await getAllTeachers();
       if (result.code === 200) {
-        const teachers = result.teachers.map(teacher => ({
+        const teachers = result.teachers.map((teacher) => ({
           id: teacher.ID_ROWID,
           name: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`,
           phone: teacher.personProfile2.phoneNumber,
           email: teacher.personProfile2.mail,
           dateOfBirth: teacher.personProfile2.dateOfBirth,
           subject: teacher.subject,
-          image: teacher.personProfile2.imagePath !== null && teacher.personProfile2.imagePath !== '' ?
-            `data:image/jpeg;base64,${Buffer.from(
-              teacher.personProfile2.imagePath.data).toString("base64")}` : ''
+          image:
+            teacher.personProfile2.imagePath !== null && teacher.personProfile2.imagePath !== ''
+              ? `data:image/jpeg;base64,${Buffer.from(
+                  teacher.personProfile2.imagePath.data
+                ).toString('base64')}`
+              : '',
         }));
         setData(teachers);
         console.log(teachers);
@@ -124,7 +146,6 @@ export default function TeacherPage() {
   };
 
   const handleUpdateClick = async (teacherId) => {
-
     try {
       const updatedData = {
         firstName: editedTeacher.name.split(' ')[0],
@@ -133,18 +154,19 @@ export default function TeacherPage() {
         phoneNumber: editedTeacher.phone,
         dateOfBirth: editedTeacher.dateOfBirth,
         subject: editedTeacher.subject, // assuming teachers also have status like students
-        image: editedTeacher.image
+        image: editedTeacher.image,
       };
       if (validatePhoneNumber(updatedData.phoneNumber) && isValidGmailFormat(updatedData.mail)) {
         const response = await updateTeacherData(teacherId, updatedData);
         if (response.code === 200) {
-          toast.success(`Les données d'enseignant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`, {
-            position: toast.POSITION.TOP_RIGHT,
-          });
-          const updatedTeachers = data.map(teacher =>
-            teacher.id === teacherId
-              ? { ...teacher, ...editedTeacher }
-              : teacher
+          toast.success(
+            `Les données d'enseignant ${updatedData.firstName} ${updatedData.lastName} sont actualisées avec succès.`,
+            {
+              position: toast.POSITION.TOP_RIGHT,
+            }
+          );
+          const updatedTeachers = data.map((teacher) =>
+            teacher.id === teacherId ? { ...teacher, ...editedTeacher } : teacher
           );
           setData(updatedTeachers);
           setEditedTeacher(null);
@@ -152,14 +174,16 @@ export default function TeacherPage() {
           toast.error(`Error!  ${response.message}`, {
             position: toast.POSITION.TOP_RIGHT,
           });
-          console.error("Error updating teacher:", response.message);
+          console.error('Error updating teacher:', response.message);
         }
-      }
-      else {
+      } else {
         if (!validatePhoneNumber(updatedData.phoneNumber)) {
-          toast.error(`Erreur! Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits`, {
-            position: toast.POSITION.TOP_RIGHT,
-          })
+          toast.error(
+            `Erreur! Please enter a valid phone number starting with 5, 6, or 7 and containing 8 digits`,
+            {
+              position: toast.POSITION.TOP_RIGHT,
+            }
+          );
         }
         if (!isValidGmailFormat(updatedData.mail)) {
           toast.error(`Erreur! Please enter a valid Email`, {
@@ -168,7 +192,7 @@ export default function TeacherPage() {
         }
       }
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error('Error:', error.message);
     }
   };
 
@@ -191,7 +215,6 @@ export default function TeacherPage() {
     setSelected([]);
   };
 
-
   const handleClick = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -202,7 +225,10 @@ export default function TeacherPage() {
     } else if (selectedIndex === selected.length - 1) {
       newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
     }
     setSelected(newSelected);
   };
@@ -241,7 +267,7 @@ export default function TeacherPage() {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setEditedTeacher({ ...editedTeacher, image: reader.result })
+        setEditedTeacher({ ...editedTeacher, image: reader.result });
       };
       reader.readAsDataURL(file);
     }
@@ -249,25 +275,23 @@ export default function TeacherPage() {
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
-
       const response = await deleteTeacher(teacherId);
       if (response.code === 200) {
         toast.success(`L'enseignat a été bien supprimer.`, {
           position: toast.POSITION.TOP_RIGHT,
         });
-        const updatedTeachers = data.filter(teacher => teacher.id !== teacherId);
+        const updatedTeachers = data.filter((teacher) => teacher.id !== teacherId);
         setData(updatedTeachers);
       } else {
         toast.error(`Error!  ${response.message}`, {
           position: toast.POSITION.TOP_RIGHT,
         });
-        console.error("Error deleting teacher:", response.message);
+        console.error('Error deleting teacher:', response.message);
       }
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error('Error:', error.message);
     }
   };
-
 
   const handleCancelClick = () => {
     setIsDialogOpen(false);
@@ -278,33 +302,39 @@ export default function TeacherPage() {
   const handleDeleteMultiple = async () => {
     try {
       let isError = false;
-  
-      await Promise.all(selected.map(async (id) => {
-        try {
-          const response = await deleteTeacher(id);
-          if (response.code !== 200) {
+
+      await Promise.all(
+        selected.map(async (id) => {
+          try {
+            const response = await deleteTeacher(id);
+            if (response.code !== 200) {
+              isError = true;
+              const teacherName =
+                data.find((teacher) => teacher.id === id)?.name || 'Unknown Teacher';
+              toast.error(
+                `Erreur lors de la suppression de l'enseignant ${teacherName}: ${response.message}`,
+                {
+                  position: toast.POSITION.TOP_RIGHT,
+                }
+              );
+            }
+          } catch (error) {
             isError = true;
-            const teacherName = data.find(teacher => teacher.id === id)?.name || 'Unknown Teacher';
-            toast.error(`Erreur lors de la suppression de l'enseignant ${teacherName}: ${response.message}`, {
+            console.error(`Error deleting teacher with ID ${id}: ${error.message}`);
+            toast.error(`Erreur lors de la suppression de l'enseignant.`, {
               position: toast.POSITION.TOP_RIGHT,
             });
           }
-        } catch (error) {
-          isError = true;
-          console.error(`Error deleting teacher with ID ${id}: ${error.message}`);
-          toast.error(`Erreur lors de la suppression de l'enseignant.`, {
-            position: toast.POSITION.TOP_RIGHT,
-          });
-        }
-      }));
-  
+        })
+      );
+
       if (!isError) {
         toast.success('Les enseignants sélectionnés ont été supprimés avec succès.', {
           position: toast.POSITION.TOP_RIGHT,
         });
       }
-  
-      const remainingTeachers = data.filter(teacher => !selected.includes(teacher.id));
+
+      const remainingTeachers = data.filter((teacher) => !selected.includes(teacher.id));
       setData(remainingTeachers);
       setSelected([]);
     } catch (error) {
@@ -316,7 +346,6 @@ export default function TeacherPage() {
     setIsDialogOpen(true);
   };
   const handleConfirmClick = () => {
-
     if (menuTargetRow && menuTargetRow.id) {
       handleDeleteTeacher(menuTargetRow.id);
     }
@@ -331,7 +360,6 @@ export default function TeacherPage() {
     setIsDialogOpen2(false);
   };
   return (
-
     <>
       <Helmet>
         <title> Enseignants</title>
@@ -354,34 +382,37 @@ export default function TeacherPage() {
             <Typography variant="h6" paragraph style={{ padding: '20px' }}>
               {error}
             </Typography>
+          ) : data.length === 0 ? (
+            <Typography style={{ padding: '20px' }} variant="h6" paragraph>
+              Aucun résultat n'a été trouvé.
+            </Typography>
           ) : (
-            data.length === 0 ? (
-              <Typography style={{ padding: '20px' }} variant="h6" paragraph>
-                Aucun résultat n'a été trouvé.
-              </Typography>
-            ) : (
-              <>
-                <UserListToolbar
-                  numSelected={selected.length}
-                  filterName={filterName}
-                  onFilterName={handleFilterByName}
-                  // onDeleteSelected={handleDeleteMultiple}
-                  onDeleteSelected={() => { handleDeleteClick2() }}
-                />
-                <Scrollbar>
-                  <TableContainer sx={{ minWidth: 800 }}>
-                    <Table>
-                      <UserListHead
-                        order={order}
-                        orderBy={orderBy}
-                        headLabel={TABLE_HEAD}
-                        rowCount={data.length}
-                        numSelected={selected.length}
-                        onRequestSort={handleRequestSort}
-                        onSelectAllClick={handleSelectAllClick}
-                      />
-                      <TableBody>
-                        {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+            <>
+              <UserListToolbar
+                numSelected={selected.length}
+                filterName={filterName}
+                onFilterName={handleFilterByName}
+                // onDeleteSelected={handleDeleteMultiple}
+                onDeleteSelected={() => {
+                  handleDeleteClick2();
+                }}
+              />
+              <Scrollbar>
+                <TableContainer sx={{ minWidth: 800 }}>
+                  <Table>
+                    <UserListHead
+                      order={order}
+                      orderBy={orderBy}
+                      headLabel={TABLE_HEAD}
+                      rowCount={data.length}
+                      numSelected={selected.length}
+                      onRequestSort={handleRequestSort}
+                      onSelectAllClick={handleSelectAllClick}
+                    />
+                    <TableBody>
+                      {filteredUsers
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((row) => {
                           const { id, name, email, phone, subject, dateOfBirth, image } = row;
                           const isEditing = editedTeacher && editedTeacher.id === row.id;
 
@@ -401,11 +432,17 @@ export default function TeacherPage() {
                                         overlap="circular"
                                         badgeContent={
                                           <>
-                                            <div style={{ position: 'absolute', top: 40, right: -3 }}>
+                                            <div
+                                              style={{ position: 'absolute', top: 40, right: -3 }}
+                                            >
                                               <SmallAvatar>
-                                                <Button component="label" variant="text" >
+                                                <Button component="label" variant="text">
                                                   <EditIcon
-                                                    style={{ color: 'blue', width: '17px', height: '17px' }}
+                                                    style={{
+                                                      color: 'blue',
+                                                      width: '17px',
+                                                      height: '17px',
+                                                    }}
                                                   />
                                                   <input
                                                     type="file"
@@ -417,23 +454,40 @@ export default function TeacherPage() {
                                                 </Button>
                                               </SmallAvatar>
                                             </div>
-                                            <div style={{ position: 'absolute', bottom: 0, right: -3 }}>
+                                            <div
+                                              style={{ position: 'absolute', bottom: 0, right: -3 }}
+                                            >
                                               <SmallAvatar>
                                                 <DeleteIcon
-                                                  onClick={() => setEditedTeacher({ ...editedTeacher, image: null })}
-                                                  style={{ color: 'red', width: '17px', height: '17px' }}
+                                                  onClick={() =>
+                                                    setEditedTeacher({
+                                                      ...editedTeacher,
+                                                      image: null,
+                                                    })
+                                                  }
+                                                  style={{
+                                                    color: 'red',
+                                                    width: '17px',
+                                                    height: '17px',
+                                                  }}
                                                 />
                                               </SmallAvatar>
                                             </div>
                                           </>
                                         }
                                       >
-                                        <Avatar alt={name} src={editedTeacher.image} style={{ width: '60px', height: '60px' }} />
+                                        <Avatar
+                                          alt={name}
+                                          src={editedTeacher.image}
+                                          style={{ width: '60px', height: '60px' }}
+                                        />
                                       </Badge>
                                     ) : (
-
-                                      <Avatar alt={name} src={image} style={{ width: '60px', height: '60px' }} />
-
+                                      <Avatar
+                                        alt={name}
+                                        src={image}
+                                        style={{ width: '60px', height: '60px' }}
+                                      />
                                     )}
                                   </>
                                 </Stack>
@@ -444,14 +498,21 @@ export default function TeacherPage() {
                                     <TextField
                                       size="small"
                                       defaultValue={name}
-                                      onChange={(e) => setEditedTeacher({ ...editedTeacher, name: e.target.value })}
+                                      onChange={(e) =>
+                                        setEditedTeacher({ ...editedTeacher, name: e.target.value })
+                                      }
                                     />
                                   ) : (
-                                    <Link to={`/dashboard/teacherProfile/${id}`}><Typography variant="subtitle2" noWrap>
-                                    {name}
-                                    <Iconify icon={'mingcute:link-fill'} sx={{ mr: 1 }} style={{ margin: "5px" }} />
-                                  </Typography>
-                                  </Link>
+                                    <Link to={`/dashboard/teacherProfile/${id}`}>
+                                      <Typography variant="subtitle2" noWrap>
+                                        {name}
+                                        <Iconify
+                                          icon={'akar-icons:link-out'}
+                                          sx={{ mr: 1 }}
+                                          style={{ margin: '5px' }}
+                                        />
+                                      </Typography>
+                                    </Link>
                                   )}
                                 </Stack>
                               </TableCell>
@@ -460,7 +521,9 @@ export default function TeacherPage() {
                                   <TextField
                                     size="small"
                                     defaultValue={email}
-                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, email: e.target.value })}
+                                    onChange={(e) =>
+                                      setEditedTeacher({ ...editedTeacher, email: e.target.value })
+                                    }
                                   />
                                 ) : (
                                   email
@@ -471,7 +534,9 @@ export default function TeacherPage() {
                                   <TextField
                                     size="small"
                                     defaultValue={phone}
-                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, phone: e.target.value })}
+                                    onChange={(e) =>
+                                      setEditedTeacher({ ...editedTeacher, phone: e.target.value })
+                                    }
                                   />
                                 ) : (
                                   phone
@@ -483,7 +548,12 @@ export default function TeacherPage() {
                                     size="small"
                                     type="date"
                                     defaultValue={dateOfBirth}
-                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, dateOfBirth: e.target.value })}
+                                    onChange={(e) =>
+                                      setEditedTeacher({
+                                        ...editedTeacher,
+                                        dateOfBirth: e.target.value,
+                                      })
+                                    }
                                   />
                                 ) : (
                                   new Date(dateOfBirth).toLocaleDateString()
@@ -494,7 +564,12 @@ export default function TeacherPage() {
                                   <TextField
                                     size="small"
                                     defaultValue={subject}
-                                    onChange={(e) => setEditedTeacher({ ...editedTeacher, subject: e.target.value })}
+                                    onChange={(e) =>
+                                      setEditedTeacher({
+                                        ...editedTeacher,
+                                        subject: e.target.value,
+                                      })
+                                    }
                                   />
                                 ) : (
                                   subject
@@ -503,65 +578,73 @@ export default function TeacherPage() {
                               <TableCell>
                                 {isEditing ? (
                                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <IconButton size="small" onClick={() => handleUpdateClick(row.id)} >
-                                      <Iconify icon="icon-park-solid:correct" style={{ color: 'blue', margin: '2px' }} />
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => handleUpdateClick(row.id)}
+                                    >
+                                      <Iconify
+                                        icon="icon-park-solid:correct"
+                                        style={{ color: 'blue', margin: '2px' }}
+                                      />
                                     </IconButton>
-                                    <IconButton size="small" onClick={() => setEditedTeacher(null)} >
-                                      <Iconify icon="foundation:x" style={{ color: 'red', margin: '2px' }} />
+                                    <IconButton size="small" onClick={() => setEditedTeacher(null)}>
+                                      <Iconify
+                                        icon="foundation:x"
+                                        style={{ color: 'red', margin: '2px' }}
+                                      />
                                     </IconButton>
                                   </div>
-
                                 ) : (
-                                  <IconButton size="small" onClick={(e) => {
-                                    handleOpenMenu(e);
-                                    setMenuTargetRow(row);
-                                  }}>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      handleOpenMenu(e);
+                                      setMenuTargetRow(row);
+                                    }}
+                                  >
                                     <Iconify icon={'eva:more-vertical-fill'} />
                                   </IconButton>
-
                                 )}
                               </TableCell>
                             </TableRow>
                           );
                         })}
-                        {emptyRows > 0 && (
-                          <TableRow style={{ height: 53 * emptyRows }}>
-                            <TableCell colSpan={6} />
-                          </TableRow>
-                        )}
-                        {isNotFound && (
-                          <TableRow>
-                            <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                              <Paper sx={{ textAlign: 'center' }}>
-                                <Typography variant="h6" paragraph>
-                                  Résultat non trouvé
-                                </Typography>
-                                <Typography variant="body2">
-                                  aucun résultat trouvé pour &nbsp;
-                                  <strong>&quot;{filterName}&quot;</strong>.
-                                  <br /> Réssayez.
-                                </Typography>
-                              </Paper>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
+                      {emptyRows > 0 && (
+                        <TableRow style={{ height: 53 * emptyRows }}>
+                          <TableCell colSpan={6} />
+                        </TableRow>
+                      )}
+                      {isNotFound && (
+                        <TableRow>
+                          <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                            <Paper sx={{ textAlign: 'center' }}>
+                              <Typography variant="h6" paragraph>
+                                Résultat non trouvé
+                              </Typography>
+                              <Typography variant="body2">
+                                aucun résultat trouvé pour &nbsp;
+                                <strong>&quot;{filterName}&quot;</strong>.
+                                <br /> Réssayez.
+                              </Typography>
+                            </Paper>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Scrollbar>
 
-                    </Table>
-                  </TableContainer>
-                </Scrollbar>
-
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={data.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </>
-            )
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={data.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </>
           )}
         </Card>
       </Container>
@@ -584,20 +667,24 @@ export default function TeacherPage() {
           },
         }}
       >
-
-        <MenuItem onClick={() => {
-          console.log("Editing for row:", menuTargetRow); // Debugging log
-          setEditedTeacher(menuTargetRow);
-          handleCloseMenu();
-        }}>
+        <MenuItem
+          onClick={() => {
+            console.log('Editing for row:', menuTargetRow); // Debugging log
+            setEditedTeacher(menuTargetRow);
+            handleCloseMenu();
+          }}
+        >
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Modifier
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }} onClick={() => {
-          handleDeleteClick(menuTargetRow);
-          handleCloseMenu();
-        }}>
+        <MenuItem
+          sx={{ color: 'error.main' }}
+          onClick={() => {
+            handleDeleteClick(menuTargetRow);
+            handleCloseMenu();
+          }}
+        >
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Supprimer
         </MenuItem>

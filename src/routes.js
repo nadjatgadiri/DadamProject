@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
 //
+import SessionAttRecPage from './pages/sessionAttRecMore';
 import BlogPage from './pages/BlogPage';
 import UserPage from './pages/Users/UsersList';
 import StudentPage from './pages/Students/Studentslist';
@@ -21,18 +22,17 @@ import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import AddUser from './pages/Users/AddUser';
 
-
-import Home from "./pages/webSitePages/home"
-import CategoryList from "./pages/webSitePages/menuCategoriesProgramme"
-import MenuProgrammes from "./pages/webSitePages/menuProgrammes"
-import ProgrammeProfileHome from "./pages/webSitePages/profileProgramme"
+import Home from './pages/webSitePages/home';
+import CategoryList from './pages/webSitePages/menuCategoriesProgramme';
+import MenuProgrammes from './pages/webSitePages/menuProgrammes';
+import ProgrammeProfileHome from './pages/webSitePages/profileProgramme';
 import AddTeacher from './pages/Teachers/addTeacher';
 
 // student
 import AddStudent from './pages/Students/addStudent';
 import UpdateStudent from './pages/Students/updateStudent';
 import StudentProfile from './pages/Students/ProfileStudent';
-// categorie 
+// categorie
 import CategoriePage from './pages/Categorie/CategoriesList';
 // class
 import ClassPage from './pages/Salles/SallesList';
@@ -42,24 +42,26 @@ import ProgrammePage from './pages/Programme/ProgrammeList';
 import UpdateProgramme from './pages/Programme/updateProgramme';
 import ProgrameProfile from './pages/Programme/programeProfile';
 
-import { getUserRole } from './RequestManagement/userManagement'
-
+import { getUserRole } from './RequestManagement/userManagement';
 
 // ----------------------------------------------------------------------
 export default function Router() {
   const isAuthenticated = Cookies.get('userID') !== undefined && Cookies.get('userID') !== '';
   const [isAdmin, setIsAdmin] = useState(false);
-  useEffect(async () => {
-    try {
-      const result = await getUserRole(Cookies.get('userID'));
-      if (result.code === 200) {
-        setIsAdmin(result.userData.role === "Admin");
-        console.log(isAdmin);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await getUserRole(Cookies.get('userID'));
+        if (result.code === 200) {
+          setIsAdmin(result.userData.role === 'Admin');
+          console.log(isAdmin);
+        }
+      } catch (error) {
+        console.error('Error fetching payment data:', error);
+        // Handle the error appropriately
       }
-    } catch (error) {
-      console.error('Error fetching payment data:', error);
-      // Handle the error appropriately
-    }
+    };
+    fetchData();
   }, []);
   const routes = useRoutes([
     {
@@ -90,8 +92,7 @@ export default function Router() {
         { path: 'passwordedit', element: <Updatepassword /> },
         { path: 'StudentProfile/:id', element: <StudentProfile /> },
         { path: 'teacherProfile/:id', element: <TeacherProfile /> },
-
-
+        { path: 'sessionAttRecList', element: <SessionAttRecPage /> },
       ],
     },
     {
@@ -106,9 +107,7 @@ export default function Router() {
         { path: 'Categories/:catId', element: <CategoryList /> }, // 'Categories' changed to 'categories'
         { path: 'Programmes', element: <MenuProgrammes /> }, // 'Categories' changed to 'categories'
         { path: 'ProgrammeProfile/:progId', element: <ProgrammeProfileHome /> }, // 'Categories' changed to 'categories'
-
-
-      ]
+      ],
     },
     {
       path: '404',
@@ -128,7 +127,6 @@ export default function Router() {
       path: '*',
       element: <Navigate to="/404" replace />,
     },
-
   ]);
 
   return routes;

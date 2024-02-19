@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Cookies from 'js-cookie';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 // @mui
 import { Buffer } from 'buffer';
 import {
@@ -15,11 +15,9 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  ListItemButton,
   Divider,
-  Box,
 } from '@mui/material';
-import ResponsiveAppBar from './appBar';
+import SessionAttRec from './sessionAttRec';
 // sections
 import { AppWidgetSummary } from '../sections/@dashboard/app';
 import MyCalendar from './Programme/calendar/calendar';
@@ -254,8 +252,8 @@ export default function DashboardAppPage() {
               </div>
             </div>
           </Grid>
-          <Grid item xs={12} md={6} lg={6}>
-            <ResponsiveAppBar />
+          <Grid container spacing={3} item xs={12} md={12} lg={12}>
+            <SessionAttRec />
 
             {/* <div className="card-body" style={{ display: 'flex', alignItems: 'center' }}></div> */}
           </Grid>

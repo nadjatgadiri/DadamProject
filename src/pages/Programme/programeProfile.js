@@ -553,13 +553,25 @@ const ProgrameProfile = () => {
                       label={isSkip ? 'Incomplet' : 'Complet'}
                       size="small"
                       color={isSkip ? 'error' : 'success'}
-                      style={{ color: 'white', marginLeft: '20px' }}
+                      style={{
+                        color: 'white',
+                        fontSize: '14px',
+                        fontFamily: 'Arial',
+                        fontWeight: 'bold',
+                        marginLeft: '20px',
+                      }}
                     />
                     <Chip
                       label={isPublished ? 'Publier' : 'Non-Publier'}
                       size="small"
                       color={!isPublished ? 'error' : 'success'}
-                      style={{ color: 'white', marginLeft: '10px' }}
+                      style={{
+                        color: 'white',
+                        fontSize: '14px',
+                        fontFamily: 'Arial',
+                        fontWeight: 'bold',
+                        marginLeft: '10px',
+                      }}
                     />
                   </Typography>
                 </div>

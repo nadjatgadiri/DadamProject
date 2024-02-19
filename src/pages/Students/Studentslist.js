@@ -533,7 +533,7 @@ export default function StudentPage() {
                                   ) : (
                                     <Link to={`/dashboard/studentProfile/${id}`}><Typography variant="subtitle2" noWrap>
                                       {name}
-                                      <Iconify icon={'mingcute:link-fill'} sx={{ mr: 1 }} style={{ margin: "5px" }} />
+                                      <Iconify icon={'akar-icons:link-out'} sx={{ mr: 1 }} style={{ margin: "5px" }} />
                                     </Typography>
                                     </Link>
                                   )}
