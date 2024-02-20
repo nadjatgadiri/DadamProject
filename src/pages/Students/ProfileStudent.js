@@ -35,7 +35,11 @@ import { getGroups } from '../../RequestManagement/groupManagement';
 import { getAllSessionsForStudent } from '../../RequestManagement/sessionsManagement';
 import { getStudentHistory, getStudent } from '../../RequestManagement/studentManagement';
 import { getSessionAttRecForStuent } from '../../RequestManagement/sessionAttRecManagement';
-import { getStudentBills, getUnpaidBills } from '../../RequestManagement/billsManagement';
+import {
+  getStudentBills,
+  getUnpaidBills,
+  payStudentBillsMultiMode,
+} from '../../RequestManagement/billsManagement';
 
 import MyCalendar from '../Programme/calendar/calendar';
 import useResponsive from '../../hooks/useResponsive';
@@ -87,6 +91,34 @@ const StudentProfile = () => {
     const result3 = await getAllSessionsForStudent(id);
     if (result3.code === 200) {
       setEvents(result3.events);
+    }
+  };
+  const payStudentBills = async () => {
+    const data = {
+      studentID: id,
+      paimentRecord: unpaidBills,
+      total,
+    };
+    const result = await payStudentBillsMultiMode(data);
+
+    if (result.code === 200) {
+      // get student session recoreding
+      const resultSessionAttRec = await getSessionAttRecForStuent(id);
+      if (resultSessionAttRec.code === 200) {
+        setSessions(resultSessionAttRec.sessionAttRec);
+      }
+      // get student bills
+      const resultStudentBills = await getStudentBills(id);
+      if (resultStudentBills.code === 200) {
+        setBills(resultStudentBills.bills);
+      }
+      // get student unpaid bills
+      const resultStudentUnpaidBills = await getUnpaidBills(id);
+      if (resultStudentUnpaidBills.code === 200) {
+        await handleSumTotal(resultStudentUnpaidBills.unpaidBills);
+        setUnpaidBills(resultStudentUnpaidBills.unpaidBills);
+      }
+      setOpen(false);
     }
   };
   const openDocument = (data) => {
@@ -393,8 +425,11 @@ const StudentProfile = () => {
             {/* <!-- card --> */}
             <div className="card" style={{ height: '345px' }}>
               {/* <!-- card body --> */}
-              <div className="card-header">
-                <Typography className="mb-0 " variant="h6">
+              <div
+                className="card-header"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}
+              >
+                <Typography className="mb-0" variant="h6">
                   Factures
                 </Typography>
 
@@ -402,6 +437,7 @@ const StudentProfile = () => {
                   Ajouter une facture
                 </Button>
               </div>
+
               {/* <!-- row --> */}
               <TableContainer component={Paper} style={{ padding: '10px' }}>
                 {bills.length !== 0 ? (
@@ -613,10 +649,10 @@ const StudentProfile = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
-          <Button onClick={handleClose} autoFocus>
-            Agree
+          <Button onClick={payStudentBills} autoFocus>
+            Affectée
           </Button>
+          <Button onClick={handleClose}>Annuler</Button>
         </DialogActions>
       </Dialog>
     </>

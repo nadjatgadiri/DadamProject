@@ -27,3 +27,18 @@ export const getUnpaidBills = async (id) => {
     throw error;
   }
 };
+
+export const payStudentBillsMultiMode = async (records) => {
+  try {
+    setReqHeader();
+    const response = await axios.post('/protected/Bills/payStudentBillsMultiMode', {
+      data: records,
+    });
+    const data = response.data;
+    reloadOn501(data);
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
