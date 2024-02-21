@@ -99,6 +99,7 @@ const StudentProfile = () => {
       paimentRecord: unpaidBills,
       total,
     };
+    console.log(data);
     const result = await payStudentBillsMultiMode(data);
 
     if (result.code === 200) {
@@ -275,6 +276,7 @@ const StudentProfile = () => {
       const program = updatedUnpaidBills[programId];
       let montant = 0;
       let total = 0;
+      console.log(program.type);
       if (program.type === 'Total' && program.isChecked) {
         montant = program.prix;
       } else if (program.type !== 'Total') {

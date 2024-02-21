@@ -688,7 +688,7 @@ export default function UpdateProgramme() {
                                                 >
                                                     <MenuItem value="Total">Total</MenuItem>
                                                     <MenuItem value="Mensuel">Mensuel</MenuItem>
-                                                    <MenuItem value="activité">Par Séance</MenuItem>
+                                                    <MenuItem value="Par seance">Par Séance</MenuItem>
                                                 </Select> </FormControl>
                                         </Grid>
                                         <Grid item xs={12} >
