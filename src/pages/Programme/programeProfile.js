@@ -384,6 +384,7 @@ const ProgrameProfile = () => {
 
   const handleGenerateSchedule = async () => {
     await fetchData(); // Wait for fetchData() to complete
+    await fetchData(); // Wait for fetchData() to complete
     // Use the week input value and sessions data to generate the schedule PDF
     generateSchedulePDF(weekInputValue, Sessions, type, title);
 };
