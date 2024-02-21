@@ -187,6 +187,7 @@ const StudentProfile = () => {
       const resultStudentBills = await getStudentBills(id);
       if (resultStudentBills.code === 200) {
         setBills(resultStudentBills.bills);
+        console.log(resultStudentBills.bills);
       }
       // get student unpaid bills
       const resultStudentUnpaidBills = await getUnpaidBills(id);
