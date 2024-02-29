@@ -14,7 +14,7 @@ import RegistrationList from './pages/registration/RegistrationList';
 import Updatepassword from './pages/Users/Updateuserpassword';
 import TeacherPage from './pages/Teachers/Teacherslist';
 import TeacherProfile from './pages/Teachers/ProfileTeacher';
-
+import TeacherProfileForDashTeach from './pages/Teachers/ProfileTeacher2';
 import RegistrationPage from './pages/registration/addRegistration';
 import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
@@ -105,7 +105,7 @@ export default function Router() {
             ]
           : [
               { element: <Navigate to="/dashboard/app" />, index: true },
-              { path: 'app', element: <TeacherProfile /> },
+              { path: 'app', element: <TeacherProfileForDashTeach /> },
             ],
     },
     {
