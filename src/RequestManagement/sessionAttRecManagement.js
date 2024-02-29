@@ -49,3 +49,18 @@ export const getSessionAttRecForStuent = async (id) => {
     throw error;
   }
 };
+
+export const getTeacherSessionAttendance  = async (id) => {
+  try {
+    setReqHeader();
+    const response = await axios.get(
+      `/protected/sessionAttRec/getSessionAttendanceRecordingForTeacher/${id}`
+    );
+    const data = response.data;
+    reloadOn501(data);
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

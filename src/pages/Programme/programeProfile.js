@@ -487,7 +487,7 @@ const ProgrameProfile = () => {
               const sessionEndTime = sessionEndDate.getHours(); // Get session end hour
               
               // Check if the session overlaps with the hour range
-              return sessionStartTime>= 8 && (sessionStartTime < hour + 2) && (sessionEndTime >= hour) && sessionEndTime<=20 && sessionDay === day;
+              return sessionStartTime>= 8 && (sessionStartTime < hour + 2) && (sessionEndTime > hour) && sessionEndTime<=20 && sessionDay === day;
               
           });
           if (sessionAtHour) {

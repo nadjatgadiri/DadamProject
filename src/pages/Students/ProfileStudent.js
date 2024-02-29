@@ -31,6 +31,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import '../Programme/theme.css';
 import { Buffer } from 'buffer';
+import { jsPDF as JsPDF } from "jspdf";
+import 'jspdf-autotable';
 import { getGroups } from '../../RequestManagement/groupManagement';
 import { getAllSessionsForStudent } from '../../RequestManagement/sessionsManagement';
 import { getStudentHistory, getStudent } from '../../RequestManagement/studentManagement';
@@ -228,6 +230,8 @@ const StudentProfile = () => {
   const handleClose = () => {
     setOpen(false);
   };
+
+ 
   // checkBox handels
 
   const handleSelectSession = (progID, sessionIndex) => {
@@ -277,7 +281,6 @@ const StudentProfile = () => {
       const program = updatedUnpaidBills[programId];
       let montant = 0;
       let total = 0;
-      console.log(program.type);
       if (program.type === 'Total' && program.isChecked) {
         montant = program.prix;
       } else if (program.type !== 'Total') {
@@ -314,6 +317,126 @@ const StudentProfile = () => {
       setTotal(total);
     });
   };
+  const Telechargerpdf = (data) => {
+    console.log(data);
+    const pdf = new JsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+    });
+
+    // Title
+    const title = `Facture pour Abonnés ${userData.name}`;
+    pdf.setFont('Helvetica', 'bold');
+    pdf.setFontSize(20); // Increase font size for title
+    pdf.setTextColor('#3498db'); // Blue color for title
+    pdf.text(title, pdf.internal.pageSize.width / 2, 20, { align: 'center' });
+
+    // Table Headers
+    const headers = ["Program", "Session", "Prix du session", "Total amount"];
+    const tableData = [];
+
+    // Initialize an object to store payment data by program ID
+    const programData = {};
+
+    // Iterate through payment session modes and organize by program ID
+    data.paymentSessionModes.forEach(sessionMode => {
+        const programID = sessionMode?.student?.groupes[0]?.program?.ID_ROWID;
+        if (programID) {
+            if (!programData[programID]) {
+                programData[programID] = {
+                    program: sessionMode.student.groupes[0].program,
+                    paymentSessionModes: [],
+                    paymentTotalModes: []
+                };
+            }
+            programData[programID].paymentSessionModes.push(sessionMode);
+        }
+    });
+
+    // Iterate through payment total modes and organize by program ID
+    data.paymentTotalModes.forEach(totalMode => {
+        const programID = totalMode?.program?.ID_ROWID;
+        if (programID) {
+            if (!programData[programID]) {
+                programData[programID] = {
+                    program: totalMode.program,
+                    totalAmount: totalMode.program.prix,
+                    paymentSessionModes: [],
+                    paymentTotalModes: []
+                };
+            }
+            programData[programID].paymentTotalModes.push(totalMode);
+        }
+    });
+
+    // Iterate through programData object
+    Object.values(programData).forEach(program => {
+        const { program: { title }, paymentSessionModes, paymentTotalModes } = program;
+        const session = paymentSessionModes.length || "Tout";
+        let prixDuSession = 0; // Initialize prixDuSession
+
+        // Calculate prixDuSession differently for session payment and total payment
+        if (paymentSessionModes.length > 0) {
+            prixDuSession = paymentSessionModes[0].amount;
+        } else if (paymentTotalModes.length > 0) {
+            prixDuSession = "/"; // Placeholder for total payment
+        }
+
+        let totalAmount = 0; // Initialize totalAmount
+
+        // Calculate totalAmount differently for session payment and total payment
+        if (paymentSessionModes.length > 0) {
+            totalAmount = session * prixDuSession; // For session payment
+        } else if (paymentTotalModes.length > 0) {
+            totalAmount = paymentTotalModes.reduce((acc, curr) => acc + curr.program.prix, 0) || 0; // For total payment
+        }
+
+        tableData.push([title, session, prixDuSession, totalAmount]);
+    });
+
+    // Calculate total sum of total amounts
+    const totalSum = tableData.reduce((acc, row) => acc + row[3], 0);
+
+    // Merge cells for the last row
+    const totalRow = [{content: `Total: ${totalSum} DA`, colSpan: 4, styles: {halign: 'center'}}];
+
+    // Generating the table
+    pdf.autoTable({
+        head: [headers],
+        body: [...tableData, totalRow],
+        startY: 30, // Adjust as needed
+        margin: { top: 25 },
+        theme: 'grid',
+        styles: {
+            fontSize: 10,
+            cellPadding: 2,
+            overflow: 'linebreak',
+        },
+        headStyles: {
+            fillColor: '#3498db',
+            textColor: '#ffffff',
+            fontStyle: 'bold'
+        },
+        columnStyles: {
+            0: { fontStyle: 'bold' }, // Bold font for the first column
+            3: { fontStyle: 'bold' } // Bold font for the last column
+        },
+    });
+
+    // Add extraction date text below the table
+    const extractionDate = `Extrait le ${data.createdAt.split('T')[0]}`;
+    pdf.setFontSize(10); // Decrease font size for extraction date
+    pdf.text(extractionDate, 10, pdf.internal.pageSize.height - 10);
+
+    // Save the PDF
+    pdf.save('facture.pdf');
+};
+
+
+
+
+
   return (
     <>
       <Helmet>
@@ -459,7 +582,13 @@ const StudentProfile = () => {
                           </TableCell>
                           <TableCell>
                             {/* telecharger facture  */}
-                            <Button variant="contained">Télecharge</Button>
+                            {/*  infoes  i need for it  
+                            students
+                            sessions payed + programme
+                            date 
+                            */ }
+                            <Button variant="contained" onClick=
+                            {() => Telechargerpdf(row)}>Télecharger</Button>
                           </TableCell>
                         </TableRow>
                       ))}
