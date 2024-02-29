@@ -51,53 +51,75 @@ export default function Router() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await getUserRole(Cookies.get('userID'));
-        if (result.code === 200) {
-          setIsAdmin(result.userData.role === 'Admin');
-          console.log(isAdmin);
+        if (Cookies.get('role') === 'Worker') {
+          const result = await getUserRole(Cookies.get('userID'));
+          if (result.code === 200) {
+            setIsAdmin(result.userData.role === 'Admin');
+            console.log(result.userData);
+          }
         }
       } catch (error) {
         console.error('Error fetching payment data:', error);
         // Handle the error appropriately
       }
     };
+
     fetchData();
   }, []);
   const routes = useRoutes([
     {
       path: '/dashboard',
       element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />,
-      children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: 'app', element: <DashboardAppPage /> },
-        { path: 'user', element: <UserPage /> },
-        { path: 'student', element: <StudentPage /> },
-        { path: 'teacher', element: <TeacherPage /> },
-        { path: 'products', element: <ProductsPage /> },
-        { path: 'blog', element: <BlogPage /> },
-        { path: 'addUser', element: isAdmin ? <AddUser /> : <Navigate to="/dashboard/user" /> },
-        { path: 'addStudent', element: <AddStudent /> },
-        { path: 'updateStudent/:id', element: <UpdateStudent /> },
-        { path: 'addTeacher', element: <AddTeacher /> },
-        { path: 'Class', element: <ClassPage /> },
-        { path: 'addProgramme', element: <AddProgramme /> },
-        { path: 'Programme', element: <ProgrammePage /> },
-        { path: 'updateProgramme/:id', element: <UpdateProgramme /> },
-        { path: 'ProgrameProfile/:id', element: <ProgrameProfile /> },
-        { path: 'addRegistration', element: <RegistrationPage /> },
-        { path: 'Categorie', element: <CategoriePage /> },
-        { path: 'Class', element: <ClassPage /> },
-        { path: 'registration', element: <RegistrationList /> },
-        { path: 'schooledit', element: <SchooolinfoupdatePage /> },
-        { path: 'passwordedit', element: <Updatepassword /> },
-        { path: 'StudentProfile/:id', element: <StudentProfile /> },
-        { path: 'teacherProfile/:id', element: <TeacherProfile /> },
-        { path: 'sessionAttRecList', element: <SessionAttRecPage /> },
-      ],
+
+      children:
+        Cookies.get('role') === 'Worker'
+          ? [
+              { element: <Navigate to="/dashboard/app" />, index: true },
+              { path: 'app', element: <DashboardAppPage /> },
+              { path: 'user', element: <UserPage /> },
+              { path: 'student', element: <StudentPage /> },
+              { path: 'teacher', element: <TeacherPage /> },
+              { path: 'products', element: <ProductsPage /> },
+              { path: 'blog', element: <BlogPage /> },
+              {
+                path: 'addUser',
+                element: isAdmin ? <AddUser /> : <Navigate to="/dashboard/user" />,
+              },
+              { path: 'addStudent', element: <AddStudent /> },
+              { path: 'updateStudent/:id', element: <UpdateStudent /> },
+              { path: 'addTeacher', element: <AddTeacher /> },
+              { path: 'Class', element: <ClassPage /> },
+              { path: 'addProgramme', element: <AddProgramme /> },
+              { path: 'Programme', element: <ProgrammePage /> },
+              { path: 'updateProgramme/:id', element: <UpdateProgramme /> },
+              { path: 'ProgrameProfile/:id', element: <ProgrameProfile /> },
+              { path: 'addRegistration', element: <RegistrationPage /> },
+              { path: 'Categorie', element: <CategoriePage /> },
+              { path: 'Class', element: <ClassPage /> },
+              { path: 'registration', element: <RegistrationList /> },
+              { path: 'schooledit', element: <SchooolinfoupdatePage /> },
+              { path: 'passwordedit', element: <Updatepassword /> },
+              { path: 'StudentProfile/:id', element: <StudentProfile /> },
+              { path: 'teacherProfile/:id', element: <TeacherProfile /> },
+              { path: 'sessionAttRecList', element: <SessionAttRecPage /> },
+            ]
+          : [
+              { element: <Navigate to="/dashboard/app" />, index: true },
+              { path: 'app', element: <TeacherProfile /> },
+            ],
     },
     {
       path: 'login',
       element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <LoginPage />,
+    },
+    {
+      path: 'teacherDash',
+      element:
+        isAuthenticated && Cookies.get('role') === 'Enseignant' ? (
+          <TeacherProfile />
+        ) : (
+          <LoginPage />
+        ),
     },
     {
       path: '/home',

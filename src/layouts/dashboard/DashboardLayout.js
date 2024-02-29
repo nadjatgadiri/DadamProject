@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import Cookies from 'js-cookie';
+
 // @mui
 import { styled } from '@mui/material/styles';
 //
@@ -24,7 +26,7 @@ const Main = styled('div')(({ theme }) => ({
   paddingTop: APP_BAR_MOBILE + 24,
   paddingBottom: theme.spacing(10),
   [theme.breakpoints.up('lg')]: {
-    paddingTop: APP_BAR_DESKTOP + 24,
+    paddingTop: APP_BAR_DESKTOP + 23,
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
   },
@@ -39,9 +41,7 @@ export default function DashboardLayout() {
     <StyledRoot>
       <Header onOpenNav={() => setOpen(true)} />
 
-      {open &&
-        (<Nav openNav={open} onCloseNav={() => setOpen(false)} />)
-      }
+      {open && <Nav openNav={open} onCloseNav={() => setOpen(false)} />}
 
       <Main>
         <Outlet />

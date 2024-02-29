@@ -3,14 +3,16 @@ import SvgColor from '../../../components/svg-color';
 
 // ----------------------------------------------------------------------
 
-const icon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />;
+const icon = (name) => (
+  <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />
+);
 
 const navConfig = [
   {
     title: 'dashboard',
     path: '/dashboard/app',
     icon: icon('ic_analytics'),
-    subItems: []
+    subItems: [],
   },
   {
     title: 'ressources humaines',
@@ -19,7 +21,7 @@ const navConfig = [
       { title: 'Utilisateurs', path: '/dashboard/user' },
       { title: 'Professeurs', path: '/dashboard/teacher' },
       { title: 'Étudiants', path: '/dashboard/student' },
-    ]
+    ],
   },
   {
     title: 'Gestion des Programmes',
@@ -28,7 +30,7 @@ const navConfig = [
       { title: 'Programmes', path: '/dashboard/Programme' },
       { title: 'Catégories', path: '/dashboard/Categorie' },
       { title: 'Salles', path: '/dashboard/Class' },
-    ]
+    ],
   },
   {
     title: 'Gestion des Inscriptions',

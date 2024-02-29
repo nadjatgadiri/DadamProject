@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 // @mui
 import { Stack, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
 // components
 import Iconify from '../../../components/iconify';
-import { logIn } from '../../../RequestManagement/loginManagement';
+import { logIn, logInEns } from '../../../RequestManagement/loginManagement';
 
 // ----------------------------------------------------------------------
-
-export default function LoginForm() {
+LoginForm.propTypes = {
+  role: PropTypes.string,
+};
+export default function LoginForm({ role }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -34,16 +36,26 @@ export default function LoginForm() {
       setPasswordError('');
     }
     if (password && email) {
-      const responce = await logIn(email, password);
-      if (responce.code === 200) { // the connexion is validated
-        setLoginError('');
-        navigate('/dashboard', { replace: true });
-      }
-      else {
-        setLoginError(responce.message);
+      if (role === 'Employé') {
+        const responce = await logIn(email, password);
+        if (responce.code === 200) {
+          // the connexion is validated
+          setLoginError('');
+          navigate('/dashboard', { replace: true });
+        } else {
+          setLoginError(responce.message);
+        }
+      } else if (role === 'Enseignant') {
+        const responce = await logInEns(email, password);
+        if (responce.code === 200) {
+          // the connexion is validated
+          setLoginError('');
+          navigate('/dashboard', { replace: true });
+        } else {
+          setLoginError(responce.message);
+        }
       }
     }
-
   };
 
   return (
@@ -79,14 +91,16 @@ export default function LoginForm() {
         <Typography variant="body2" color="error">
           {loginError}
         </Typography>
-        <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
+        <LoadingButton
+          fullWidth
+          size="large"
+          type="submit"
+          variant="contained"
+          onClick={handleClick}
+        >
           Login
         </LoadingButton>
       </Stack>
-
-
-
-
     </>
   );
 }
