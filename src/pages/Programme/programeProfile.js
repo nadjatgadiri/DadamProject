@@ -72,7 +72,7 @@ const ProgrameProfile = () => {
   // for cours form
   const [nmbSession, setNMBSession] = useState(0);
   const [dureeCour, setDureeCour] = useState('01:00');
-
+  const [isDataFetched, setIsDataFetched] = useState(false);
   // activity form
   const [dureeActivity, setDureeActivity] = useState('01:00');
   const [emplacement, setEmplacement] = useState('');
@@ -241,7 +241,8 @@ const ProgrameProfile = () => {
 
     if (sessionsResponse.code === 200) {
       // For example, you can set the sessions in state
-      setSessions(sessionsResponse.events);
+    setSessions(sessionsResponse.events);
+
     } else {
       // Handle the case when there's an error in the API response for sessions
       toast.error(`Error! + ${sessionsResponse.message}`, {
@@ -315,7 +316,11 @@ const ProgrameProfile = () => {
     }
     setWeekOptions(options);
     fetchData();
-  }, []);
+    if (isDataFetched) {
+      generateSchedulePDF(weekInputValue, Sessions, type, title);
+      setIsDataFetched(false); // Reset isDataFetched after generating PDF
+    }
+  }, [isDataFetched]);
 
   function formatDate(inputDate) {
     const date = new Date(inputDate);
@@ -384,16 +389,13 @@ const ProgrameProfile = () => {
 
   const handleGenerateSchedule = async () => {
     await fetchData(); // Wait for fetchData() to complete
-    await fetchData(); // Wait for fetchData() to complete
-    // Use the week input value and sessions data to generate the schedule PDF
-    generateSchedulePDF(weekInputValue, Sessions, type, title);
-};
+    setIsDataFetched(true);
+  };
 
   const generateSchedulePDF = (weekInput, sessions, type, title) => {
     const isValidWeekInput = /^(\d{1,2}-\d{1,2} [a-zA-Z]+ - [a-zA-Z]+)$/.test(weekInput);
 
     if (!isValidWeekInput) {
-      console.error('Invalid weekInput format');
       return;
     }
 
@@ -413,6 +415,41 @@ const ProgrameProfile = () => {
       const sessionDate = new Date(session.start);
       return sessionDate >= startDate && sessionDate <= endDate;
     });
+    if (weekSessions.length === 0) {
+      // If there are no sessions in the selected week, display a message in the center of the page
+      const pdf = new JsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'a4',
+      });
+  
+      const pageWidth = pdf.internal.pageSize.width;
+      const pageHeight = pdf.internal.pageSize.height;
+  
+      // Background color for the page
+      pdf.setFillColor(240, 240, 240); // Light gray
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+  
+      // Text color and font size
+      pdf.setTextColor(100, 100, 100); // Dark gray
+      pdf.setFontSize(24);
+  
+      // Message in the center of the page
+      const message = 'Il n\'y a pas de séance cette semaine';
+      const messageWidth = pdf.getStringUnitWidth(message) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
+      const messageX = (pageWidth - messageWidth) / 2;
+      const messageY = pageHeight / 2;
+  
+      // Add the message to the PDF
+      pdf.text(message, messageX, messageY, { align: 'center' });
+  
+      // Save the PDF
+      const filename = `Emplois_du_temps_${weekInput.replace(' ', '_')}.pdf`;
+      pdf.save(filename);
+  
+      return;
+  }
+  
     // Group filtered sessions by their groups
     const groupedSessions = {};
     weekSessions.forEach((session) => {
