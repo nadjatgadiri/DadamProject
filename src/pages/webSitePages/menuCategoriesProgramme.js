@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
-import { List, IconButton, Drawer } from '@mui/material'; // Import necessary components from Material-UI
-import MenuIcon from '@mui/icons-material/Menu'; // Import the MenuIcon from Material-UI
+import { List, IconButton, Drawer } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import Item from "./itemsRow";
 import { getProgramsForCat, getPrograms, listCategoriesForSpecificOpenMainCategory, getCatPath } from '../../RequestManagement/webSiteManagement';
 import MenuProgrammes from './menuProgrammes'
@@ -13,9 +13,12 @@ export default function CategoryList(props) {
     const [categories, setCategories] = useState({});
     const [programs, setPrograms] = useState([]);
     const [categoryPath, setCategoryPath] = useState([]);
-    const [showMenu, setShowMenu] = useState(true); // State to manage the visibility of the menu
-    const [isOpen, setIsOpen] = useState(false); // State to manage the visibility of the menu
-    /** api */
+    const [showMenu, setShowMenu] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchInput, setSearchInput] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+
     const fetchData = async () => {
         const result = await listCategoriesForSpecificOpenMainCategory(catId);
         if (result.code === 200) {
@@ -24,40 +27,51 @@ export default function CategoryList(props) {
         const result2 = await getPrograms();
         if (result2.code === 200) {
             setPrograms(result2.programs);
-            console.log(result2.programs);
         }
     };
+
     const toggleMenu = () => {
-        setIsOpen(!isOpen); // Toggle the menu visibility
+        setIsOpen(!isOpen);
     };
+
     useEffect(() => {
         fetchData();
 
-        // Update showMenu state based on screen width
         const handleResize = () => {
-            setShowMenu(window.innerWidth > 1524); // Change the threshold according to your desired breakpoint
+            setShowMenu(window.innerWidth > 1524);
         };
 
-        handleResize(); // Call on initial render
-
-        window.addEventListener('resize', handleResize); // Listen for window resize events
-        return () => window.removeEventListener('resize', handleResize); // Clean up the event listener
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, [catId]);
 
-
     const handleGetData = async (idCat, title) => {
-        // get list of programes 
         const result = await getProgramsForCat(idCat);
         if (result.code === 200) {
             setPrograms(result.programs);
         }
-        // get path
         const result2 = await getCatPath(idCat);
-        if (result.code === 200) {
+        if (result2.code === 200) {
             setCategoryPath(result2.categoryPath);
         }
+    };
 
-    }
+    const handleSearchInput = (event) => {
+        setSearchInput(event.target.value);
+    };
+
+    const handleSearch = () => {
+        setIsSearching(true);
+        if (searchInput.trim() === '') {
+            setSearchResults([]);
+            setIsSearching(false); // Reset isSearching state
+        } else {
+            const results = programs.filter(program => program.title.toLowerCase().includes(searchInput.toLowerCase()));
+            setSearchResults(results);
+        }
+    };
+    
     return (
         <>
             <div className="site-mobile-menu">
@@ -81,113 +95,104 @@ export default function CategoryList(props) {
                                     <p className="caption mb-4 d-inline-block" data-aos="fade-up" data-aos-delay={100}>
                                         Plongez au cœur de notre école et découvrez notre large éventail de programmes éducatifs, conçus pour stimuler la croissance intellectuelle, le développement personnel et l'épanouissement de nos étudiants.
                                     </p>
+                                    <div className="explore-input" style={{ marginTop: "20px" }}>
+                                        <input
+                                            type="text"
+                                            placeholder="Explorez les programmes..."
+                                            value={searchInput}
+                                            onChange={handleSearchInput}
+                                            style={{ width: "300px", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", marginRight: "10px" }}
+                                        />
+                                        <button className="explore-btn" onClick={handleSearch} style={{ padding: "10px 20px", borderRadius: "5px", backgroundColor: "#f0ad4e", color: "#fff", border: "none", cursor: "pointer" }}>Explorer</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div> {/* /.row */}
                 </div> {/* /.container */}
             </div>
-            {/* <div className="untree_co-section"> */}
-            <div style={{ padding: "30px", }}>
-                <div className="row align-items-stretch " >
-
-
-                    {showMenu ? (
-                        <div className="col-sm-3 col-md-3 col-lg-3 mb-3" style={{ paddingLeft: "40px" }}>
-                            <List
-                                className="category2"
-                                component="nav"
-                                aria-labelledby="nested-list-subheader"
-                            // style={{ width: "400px" }}
-                            >
-                                {Object.values(categories).map((cat) => (
-                                    <Item key={cat.ID_ROWID} row={cat} handelUploudData={handleGetData} />
-                                ))}
-                            </List>
-                        </div>
-                    ) : (
-                        <Drawer
-                            anchor="left"
-                            open={isOpen}
-                            onClose={toggleMenu}
-                            PaperProps={{
-                                style: {
-                                    backgroundColor: '#da9938', // Set the desired background color
-
-                                },
-                            }}
-                        >
-                            <List
-                                className="category2"
-                                component="nav"
-                                aria-labelledby="nested-list-subheader"
-                            >
-                                {Object.values(categories).map((cat) => (
-                                    <Item key={cat.ID_ROWID} row={cat} handelUploudData={handleGetData} />
-                                ))}
-                            </List>
-                        </Drawer>
-
-                    )}
-                    <div className={`${showMenu ? "col-sm-8 col-md-8 col-lg-9 mb-9" : "col-sm-12 col-md-12 col-lg-12 mb-12"}`}>
-
-                        <div style={{ paddingLeft: "40px", fontSize: "20px" }}>
-                            <div className="inline-container" style={{ display: "flex", alignItems: "center" }}>
-                                {!showMenu && (
-                                    <IconButton onClick={toggleMenu}>
-                                        {/* Replace with your icon */}
-                                        <MenuIcon />
-                                    </IconButton>
-                                )}
-                                <div className="meta mb-3" style={{ fontSize: "20px", marginLeft: "5px", paddingTop: "10px" }}>
-                                    <p style={{ margin: 0 }}>
-                                        {categoryPath.length !== 0 &&
-                                            categoryPath.map((path, index) => (
-                                                <span key={index}>/{path.title}</span>
-                                            ))
-                                        }
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="row justify-content-center ">
-                                <div className="col-lg-5 text-center" data-aos="fade-up" data-aos-delay={0}>
-                                    <h2 className="line-bottom text-center mb-4">Liste Des Programmes</h2>
-                                </div>
-                            </div>
-
-                        </div>
-                        <MenuProgrammes programs={programs} />
-                    </div>
-                    {/* Add more content components here */}
-
-
+            {isSearching && searchResults.length === 0 && (
+                <div style={{ padding: "30px", textAlign: "center" }}>
+                    <h3>Aucun programme trouvé pour votre recherche.</h3>
                 </div>
-            </div>
+            )}
+            {searchResults.length === 0 && !isSearching && (
+                <div style={{ padding: "30px" }}>
+                    <div className="row align-items-stretch " >
+                        {showMenu ? (
+                            <div className="col-sm-3 col-md-3 col-lg-3 mb-3" style={{ paddingLeft: "40px" }}>
+                                <List
+                                    className="category2"
+                                    component="nav"
+                                    aria-labelledby="nested-list-subheader"
+                                >
+                                    {Object.values(categories).map((cat) => (
+                                        <Item key={cat.ID_ROWID} row={cat} handelUploudData={handleGetData} />
+                                    ))}
+                                </List>
+                            </div>
+                        ) : (
+                            <Drawer
+                                anchor="left"
+                                open={isOpen}
+                                onClose={toggleMenu}
+                                PaperProps={{
+                                    style: {
+                                        backgroundColor: '#da9938',
+                                    },
+                                }}
+                            >
+                                <List
+                                    className="category2"
+                                    component="nav"
+                                    aria-labelledby="nested-list-subheader"
+                                >
+                                    {Object.values(categories).map((cat) => (
+                                        <Item key={cat.ID_ROWID} row={cat} handelUploudData={handleGetData} />
+                                    ))}
+                                </List>
+                            </Drawer>
+                        )}
+                        <div className={`${showMenu ? "col-sm-8 col-md-8 col-lg-9 mb-9" : "col-sm-12 col-md-12 col-lg-12 mb-12"}`}>
+                            <div style={{ paddingLeft: "40px", fontSize: "20px" }}>
+                                <div className="inline-container" style={{ display: "flex", alignItems: "center" }}>
+                                    {!showMenu && (
+                                        <IconButton onClick={toggleMenu}>
+                                            <MenuIcon />
+                                        </IconButton>
+                                    )}
+                                    <div className="meta mb-3" style={{ fontSize: "20px", marginLeft: "5px", paddingTop: "10px" }}>
+                                        <p style={{ margin: 0 }}>
+                                            {categoryPath.length !== 0 &&
+                                                categoryPath.map((path, index) => (
+                                                    <span key={index}>/{path.title}</span>
+                                                ))
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="row justify-content-center ">
+                                    <div className="col-lg-5 text-center" data-aos="fade-up" data-aos-delay={0}>
+                                        <h2 className="line-bottom text-center mb-4">Liste Des Programmes</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <MenuProgrammes programs={searchInput.trim() === '' ? programs : searchResults} />
+                        </div>
+                    </div>
+                </div>
+            )}
+            {searchResults.length > 0 && (
+                <div style={{ padding: "30px" }}>
+                        <div className="row justify-content-center ">
+                                    <div className="col-lg-5 text-center" data-aos="fade-up" data-aos-delay={0}>
+                                        <h2 className="line-bottom text-center mb-4">Résultats de recherche</h2>
+                                    </div>
+                                </div>
+                    <MenuProgrammes programs={searchResults} />
+                </div>
+            )}
             <FooterSection />
-            {/* Toggle menu icon */}
-            {/* <div className="menu-toggle">
-                <IconButton onClick={toggleMenu}>
-                    <MenuIcon />
-                </IconButton>
-            </div> */}
-
-            {/* Category list */}
-            {/* <div className={`category-list ${showMenu ? 'show' : ''}`}>
-                <List
-                    className="category2"
-                    component="nav"
-                    aria-labelledby="nested-list-subheader"
-                >
-                    {Object.values(categories).map((cat) => (
-                        <Item key={cat.ID_ROWID} row={cat} />
-                    ))}
-                </List>
-            </div> */}
-
-            {/* Other content */}
-
         </>
-
     );
 }

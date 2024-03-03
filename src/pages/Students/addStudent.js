@@ -131,13 +131,13 @@ function AddStudent() {
     e.preventDefault();
     if (validatePhoneNumber(phoneNumber)) {
       const data = {
-        firstName: firstName,
-        lastName: lastName,
-        phoneNumber: phoneNumber,
-        dateOfBirth: dateOfBirth,
-        mail: mail,
-        image: image,
-        files: files,
+        firstName,
+       lastName,
+    phoneNumber,
+       dateOfBirth,
+       mail,
+        image,
+       files,
         levelID: selectedLevel,
         yearID: selectedYear === '' ? null : selectedYear,
       };
