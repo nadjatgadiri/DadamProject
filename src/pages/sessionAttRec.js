@@ -364,7 +364,7 @@ function SessionAttRec() {
                 }}
               >
                 <Typography variant="h6" paragraph>
-                  Une difficulté est survenue lors de la récupération des données de session{' '}
+                  Une difficulté est survenue lors de la récupération des données de séance{' '}
                 </Typography>
               </Paper>
             ) : (
@@ -389,7 +389,7 @@ function SessionAttRec() {
                     </Toolbar>
                   </Container>
                 </AppBar>
-                <table className="table mb-0 text-nowrap table-centered">
+                {/* <table className="table mb-0 text-nowrap table-centered">
                   <tbody>
                     <div>
                       <List
@@ -475,6 +475,127 @@ function SessionAttRec() {
                                     }
                                     label={checkbox.label}
                                   />
+                                </Grid>
+                              ))}
+                            </Grid>
+                          </FormGroup>
+                        </ListItem>
+
+                        <ListItem>
+                          <Button variant="contained" onClick={updateAttRecForSession}>
+                            Submit
+                          </Button>
+                        </ListItem>
+                      </List>
+                    </div>
+                  </tbody>
+                </table> */}
+                <table className="table mb-0 text-nowrap table-centered">
+                  <tbody>
+                    <div>
+                      <List
+                        sx={{
+                          width: '100%',
+                          bgcolor: 'background.paper',
+                        }}
+                      >
+                        <ListItem>
+                          <FormGroup>
+                            <ListItem>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={selectAllProfessors}
+                                    onChange={handleSelectAllProfessors}
+                                  />
+                                }
+                                label=""
+                              />
+                              <ListItemText
+                                style={{ paddingLeft: '16px' }}
+                                primary={<Typography variant="h5">List Des Professeurs</Typography>}
+                              />
+                            </ListItem>
+                            <Divider component="li" style={{ marginBottom: '10px' }} />
+                            <Grid container spacing={1} style={{ maxHeight: '200px' }}>
+                              {professorCheckboxes?.map((checkbox, index) => (
+                                <Grid
+                                  item
+                                  xs={12}
+                                  md={(professorCheckboxes.length < 4 && 12) || 6}
+                                  key={checkbox.id}
+                                >
+                                  <FormControlLabel
+                                    key={checkbox.id}
+                                    control={
+                                      <Checkbox
+                                        checked={checkbox.checked}
+                                        onChange={() => handleCheckboxChange(index, false)}
+                                      />
+                                    }
+                                    label={checkbox.label}
+                                  />
+                                  <Link
+                                    style={{ color: 'blue' }}
+                                    to={`/dashboard/teacherProfile/${checkbox.id}`}
+                                  >
+                                    <Iconify
+                                      icon={'akar-icons:link-out'}
+                                      sx={{ mr: 1 }}
+                                      style={{ marginLeft: '20px' }}
+                                    />
+                                  </Link>
+                                </Grid>
+                              ))}
+                            </Grid>
+                          </FormGroup>
+                        </ListItem>
+                        <ListItem>
+                          <FormGroup>
+                            <ListItem>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={selectAllStudents}
+                                    onChange={handleSelectAllStudents}
+                                  />
+                                }
+                                label=""
+                              />
+                              <ListItemText
+                                style={{ paddingLeft: '16px' }}
+                                primary={<Typography variant="h5">List Des Étudiants</Typography>}
+                              />
+                            </ListItem>
+                            <Divider component="li" style={{ marginBottom: '10px' }} />
+                            <Grid container spacing={1} style={{ maxHeight: '200px' }}>
+                              {studentCheckboxes?.map((checkbox, index) => (
+                                <Grid
+                                  item
+                                  xs={12}
+                                  md={(studentCheckboxes.length < 4 && 12) || 6}
+                                  key={checkbox.id}
+                                >
+                                  <FormControlLabel
+                                    key={checkbox.id}
+                                    control={
+                                      <Checkbox
+                                        checked={checkbox.checked}
+                                        onChange={() => handleCheckboxChange(index, true)}
+                                      />
+                                    }
+                                    label={checkbox.label}
+                                  />
+                                  <Link
+                                    style={{ color: 'blue' }}
+                                    to={`/dashboard/studentProfile/${checkbox.id}`}
+                                  >
+                                    <Iconify
+                                      icon={'akar-icons:link-out'}
+                                      sx={{ mr: 1 }}
+                                      style={{ marginLeft: '20px' }}
+                                    />
+                                  </Link>
                                 </Grid>
                               ))}
                             </Grid>
