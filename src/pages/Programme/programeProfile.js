@@ -30,7 +30,6 @@ import AppointmentsAjustements from './programeComponnent/AppointmentsAjustement
 import PaymentComponent from './programeComponnent/payedStudentComponnent';
 import { getProgGroups } from '../../RequestManagement/groupManagement';
 import {
-  addNewPayment,
   getPaymentsInfoForProgram,
 } from '../../RequestManagement/paymentManagement';
 import { getProgRegistrations } from '../../RequestManagement/registrationManagement';
@@ -83,7 +82,6 @@ const ProgrameProfile = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [paymentAmount, setPaymentAmount] = useState(0); // Payment amount state
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [totalPayments, setTotalPayments] = useState(0);
   const [last30DaysPayments, setLast30DaysPayments] = useState(0);
   const [weekInputValue, setWeekInputValue] = useState(
@@ -328,64 +326,9 @@ const ProgrameProfile = () => {
     return date.toLocaleDateString('fr-FR', options);
   }
 
-  // Function to handle opening the payment dialog
-  const handleOpenPaymentDialog = () => {
-    setPaymentDialogOpen(true);
-  };
 
-  // Function to handle closing the payment dialog
-  const handleClosePaymentDialog = () => {
-    setPaymentDialogOpen(false);
-    setSelectedStudents([]);
-    setPaymentAmount(prix);
-  };
 
-  // Function to add payments for selected students
-  const handleAddPayment = async () => {
-    // Prepare the payment data for each selected student
-    const paymentPromises = selectedStudents.map(async (student) => {
-      const paymentData = {
-        montant: paymentAmount,
-        IDstudent: [student.id], // Create an array with the current student
-        Idprogram: id,
-      };
-      return addNewPayment(paymentData);
-    });
 
-    try {
-      const responses = await Promise.all(paymentPromises);
-      // Process the responses
-      let success = true; // Assuming all payments are successful
-      responses.forEach((response) => {
-        if (response.code !== 200 && response.code !== 409) {
-          success = false; // At least one payment failed
-          toast.error(`Failed to add payment: ${response.message}`, {
-            position: toast.POSITION.TOP_RIGHT,
-          });
-        } else if (response.code === 409) {
-          success = false; // At least one payment failed
-          toast.warning(`Failed to add payment because : ${response.message}`, {
-            position: toast.POSITION.TOP_RIGHT,
-          });
-        }
-      });
-
-      if (success) {
-        toast.success('Payments added successfully', {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-
-        // Close the payment dialog
-        handleClosePaymentDialog();
-        window.location.reload();
-        setPaymentAmount(prix);
-      }
-    } catch (error) {
-      toast.error(`Error: ${error.message}`, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-    }
-  };
 
   const handleGenerateSchedule = async () => {
     await fetchData(); // Wait for fetchData() to complete
@@ -617,11 +560,7 @@ const ProgrameProfile = () => {
                     />
                   </Typography>
                 </div>
-                <div>
-                  <a href="#!" className="btn btn-white" onClick={handleOpenPaymentDialog}>
-                    Ajouter Une Facture
-                  </a>
-                </div>
+             
               </div>
             </div>
           </div>
@@ -1166,60 +1105,6 @@ const ProgrameProfile = () => {
         </div>
       </Container>
       {/* Payment Dialog */}
-      <Dialog
-        open={paymentDialogOpen}
-        onClose={handleClosePaymentDialog}
-        PaperProps={{ style: { width: '50%', maxHeight: '70vh' } }}
-      >
-        <DialogContent>
-          <DialogContentText>
-            Sélectionnez un ou des étudiants pour ajouter un paiement:
-          </DialogContentText>
-
-          <Autocomplete
-            multiple
-            disablePortal
-            id="combo-box-student"
-            options={students}
-            getOptionLabel={(option) => (option ? option.name : '')}
-            getOptionSelected={(option, value) => option.id === value.id}
-            value={selectedStudents}
-            onChange={(event, newValues) => {
-              setSelectedStudents(newValues);
-            }}
-            renderInput={(params) => (
-              <TextField {...params} label="Étudiants" variant="outlined" fullWidth />
-            )}
-            PaperComponent={({ children }) => <Paper square>{children}</Paper>}
-            ListboxProps={{ style: { maxHeight: '250px', overflow: 'auto' } }}
-            noOptionsText="Aucun étudiant trouvé"
-          />
-
-          <div style={{ marginBottom: '10px' }} />
-
-          <TextField
-            type="number"
-            label="Montant"
-            value={paymentAmount}
-            onChange={(e) => setPaymentAmount(e.target.value)}
-            id="outlined-number"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth
-            defaultValue={0.0}
-          />
-        </DialogContent>
-
-        <DialogActions>
-          <Button color="primary" variant="contained" onClick={handleAddPayment}>
-            Ajouter Paiement
-          </Button>
-          <Button onClick={handleClosePaymentDialog} color="secondary">
-            Annuler
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 };
