@@ -335,183 +335,188 @@ const ProgrameProfile = () => {
     setIsDataFetched(true);
   };
 
-  const generateSchedulePDF = (weekInput, sessions, type, title) => {
+ const generateSchedulePDF = (weekInput, sessions, type, title) => {
     const isValidWeekInput = /^(\d{1,2}-\d{1,2} [a-zA-Z]+ - [a-zA-Z]+)$/.test(weekInput);
 
     if (!isValidWeekInput) {
-      return;
+        return;
     }
 
     const [startDay, endDay, startMonth, endMonth] = weekInput
-      .match(/(\d{1,2})-(\d{1,2}) ([a-zA-Z]+) - ([a-zA-Z]+)/)
-      .slice(1);
+        .match(/(\d{1,2})-(\d{1,2}) ([a-zA-Z]+) - ([a-zA-Z]+)/)
+        .slice(1);
     const currentYear = new Date().getFullYear();
     const startDate = new Date(`${startMonth} ${startDay}, ${currentYear} 00:00:00 GMT+00:00`);
     const endDate = new Date(
-      `${endMonth} ${endDay}, ${
-        startMonth === 'Dec' ? currentYear + 1 : currentYear
-      } 23:59:59 GMT+00:00`
+        `${endMonth} ${endDay}, ${
+            startMonth === 'Dec' ? currentYear + 1 : currentYear
+        } 23:59:59 GMT+00:00`
     );
 
     // Filter sessions for the given week
     const weekSessions = sessions.filter((session) => {
-      const sessionDate = new Date(session.start);
-      return sessionDate >= startDate && sessionDate <= endDate;
+        const sessionDate = new Date(session.start);
+        return sessionDate >= startDate && sessionDate <= endDate;
     });
+
     if (weekSessions.length === 0) {
-      // If there are no sessions in the selected week, display a message in the center of the page
-      const pdf = new JsPDF({
-          orientation: 'landscape',
-          unit: 'mm',
-          format: 'a4',
-      });
-  
-      const pageWidth = pdf.internal.pageSize.width;
-      const pageHeight = pdf.internal.pageSize.height;
-  
-      // Background color for the page
-      pdf.setFillColor(240, 240, 240); // Light gray
-      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-  
-      // Text color and font size
-      pdf.setTextColor(100, 100, 100); // Dark gray
-      pdf.setFontSize(24);
-  
-      // Message in the center of the page
-      const message = 'Il n\'y a pas de séance cette semaine';
-      const messageWidth = pdf.getStringUnitWidth(message) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
-      const messageX = (pageWidth - messageWidth) / 2;
-      const messageY = pageHeight / 2;
-  
-      // Add the message to the PDF
-      pdf.text(message, messageX, messageY, { align: 'center' });
-  
-      // Save the PDF
-      const filename = `Emplois_du_temps_${weekInput.replace(' ', '_')}.pdf`;
-      pdf.save(filename);
-  
-      return;
-  }
-  
+        // If there are no sessions in the selected week, display a message in the center of the page
+        const pdf = new JsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4',
+        });
+
+        const pageWidth = pdf.internal.pageSize.width;
+        const pageHeight = pdf.internal.pageSize.height;
+
+        // Background color for the page
+        pdf.setFillColor(240, 240, 240); // Light gray
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+        // Text color and font size
+        pdf.setTextColor(100, 100, 100); // Dark gray
+        pdf.setFontSize(16); // Increased font size slightly
+
+        // Message in the center of the page
+        const message = 'Il n\'y a pas de séance cette semaine';
+        const messageWidth = pdf.getStringUnitWidth(message) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
+        const messageX = (pageWidth - messageWidth) / 2;
+        const messageY = pageHeight / 2;
+
+        // Add the message to the PDF
+        pdf.text(message, messageX, messageY, { align: 'center' });
+
+        // Save the PDF
+        const filename = `Emplois_du_temps_${weekInput.replace(' ', '_')}.pdf`;
+        pdf.save(filename);
+
+        return;
+    }
+
     // Group filtered sessions by their groups
     const groupedSessions = {};
     weekSessions.forEach((session) => {
-      const groupName = session.groupename || 'Sans Groupe';
-      if (!groupedSessions[groupName]) {
-        groupedSessions[groupName] = [];
-      }
-      groupedSessions[groupName].push(session);
+        const groupName = session.groupename || 'Sans Groupe';
+        if (!groupedSessions[groupName]) {
+            groupedSessions[groupName] = [];
+        }
+        groupedSessions[groupName].push(session);
     });
 
     const pdf = new JsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4',
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
     });
 
     // Generate pages for each group
     Object.entries(groupedSessions).forEach(([groupName, groupSessions], index) => {
-      if (index !== 0) {
-        pdf.addPage();
-      }
+        if (index !== 0) {
+            pdf.addPage();
+        }
 
-      pdf.setFont('Helvetica', 'normal');
-      pdf.setTextColor(index === 0 ? '#3498db' : '#3498db');
-      pdf.setFontSize(index === 0 ? 32 : 28);
-      pdf.setFont('Helvetica', 'bold');
-      pdf.text(
-        `Emplois du temps de ${type} du ${title} \n groupe ${groupName} `,
-        pdf.internal.pageSize.width / 2,
-        20,
-        { align: 'center' }
-      );
-      const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-      pdf.setFontSize(index === 0 ? 24 : 20);
+        pdf.setFont('Helvetica', 'normal');
+        pdf.setTextColor('#3498db');
+        pdf.setFontSize(index === 0 ? 22 : 18); // Adjusted font size
+        pdf.setFont('Helvetica', 'bold');
+        pdf.text(
+            `Emplois du temps de ${type} du ${title} \n groupe ${groupName} `,
+            pdf.internal.pageSize.width / 2,
+            20,
+            { align: 'center' }
+        );
+        const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
-      pdf.setFillColor(220, 220, 220);
-      const tableHeaders = [['Heures', ...days]];
-      // For header section
-      pdf.autoTable({
-        head: tableHeaders,
-        startY: 40,
-        margin: { top: 40 },
-        theme: 'grid',
-        styles: {
-          fontSize: 10, // Increase header font size
-          cellPadding: 10, // Increase cell padding
-          overflow: 'linebreak',
-          valign: 'middle',
-          cellWidth: 40, // Set absolute cell width
-        },
-        headStyles: {
-          fillColor: '#3498db',
-          textColor: '#ffffff',
-          halign: 'center',
-        },
-        columnStyles: {
-          0: { halign: 'center' },
-        },
-      });
-
-      for (let hour = 8; hour <= 20; hour += 2) {
-        const rowData = [`${hour}:00 - ${hour + 2}:00`];
-
-        days.forEach((day) => {
-          const sessionAtHour = groupSessions.find((session) => {
-            const sessionStartDate = new Date(session.start);
-            const sessionEndDate = new Date(session.end);
-            const sessionDay = sessionStartDate
-              .toLocaleDateString('fr-FR', { weekday: 'long' })
-              .replace(/^\w/, (c) => c.toUpperCase());
-              const sessionStartTime = sessionStartDate.getHours(); // Get session start hour
-              const sessionEndTime = sessionEndDate.getHours(); // Get session end hour
-              
-              // Check if the session overlaps with the hour range
-              return sessionStartTime>= 8 && (sessionStartTime < hour + 2) && (sessionEndTime > hour) && sessionEndTime<=20 && sessionDay === day;
-              
-          });
-          if (sessionAtHour) {
-            console.log(sessionAtHour);
-            const salleName = sessionAtHour.title.split(' - ')[1] || 'No Salle';
-
-            // Parse the string dates into Date objects
-            const startTime = new Date(sessionAtHour.start);
-            const endTime = new Date(sessionAtHour.end);
-
-            // Check if parsing was successful
-            const timing = `${startTime.toLocaleTimeString('fr-FR', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })} - ${endTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-            rowData.push(`${salleName}\n${timing}`);
-          } else {
-            rowData.push('');
-          }
-        });
-
-        // For body section
+        pdf.setFillColor(220, 220, 220);
+        const tableHeaders = [['Heures', ...days]];
+        // For header section
         pdf.autoTable({
-          body: [rowData],
-          startY: pdf.autoTable.previous.finalY,
-          margin: { top: 10 },
-          theme: 'grid',
-          styles: {
-            fontSize: 10, // Increase body font size
-            cellPadding: 6,
-            valign: 'middle',
-            cellWidth: 40, // Set absolute cell width
-            overflow: 'linebreak', // Set overflow to 'linebreak' to handle long text
-          },
-          columnStyles: {
-            0: { halign: 'center' },
-          },
+            head: tableHeaders,
+            startY: 40,
+            margin: { top: 40 },
+            theme: 'grid',
+            styles: {
+                fontSize: 10, // Adjusted header font size
+                cellPadding: 6, // Adjusted cell padding
+                overflow: 'linebreak',
+                valign: 'middle',
+                cellWidth: 35, // Adjusted cell width
+            },
+            headStyles: {
+                fillColor: '#3498db',
+                textColor: '#ffffff',
+                halign: 'center',
+            },
+            columnStyles: {
+                0: { halign: 'center' },
+            },
         });
-      }
+
+        for (let hour = 8; hour <= 20; hour += 2) {
+            const rowData = [`${hour}:00 - ${hour + 2}:00`];
+
+            days.forEach((day) => {
+                const sessionAtHour = groupSessions.find((session) => {
+                    const sessionStartDate = new Date(session.start);
+                    const sessionEndDate = new Date(session.end);
+                    const sessionDay = sessionStartDate
+                        .toLocaleDateString('fr-FR', { weekday: 'long' })
+                        .replace(/^\w/, (c) => c.toUpperCase());
+                    const sessionStartTime = sessionStartDate.getHours(); // Get session start hour
+                    const sessionEndTime = sessionEndDate.getHours(); // Get session end hour
+
+                    // Check if the session overlaps with the hour range
+                    return (
+                        sessionStartTime >= 8 &&
+                        sessionStartTime < hour + 2 &&
+                        sessionEndTime > hour &&
+                        sessionEndTime <= 20 &&
+                        sessionDay === day
+                    );
+                });
+                if (sessionAtHour) {
+                    const salleName = sessionAtHour.title.split(' - ')[1] || 'No Salle';
+
+                    // Parse the string dates into Date objects
+                    const startTime = new Date(sessionAtHour.start);
+                    const endTime = new Date(sessionAtHour.end);
+
+                    // Check if parsing was successful
+                    const timing = `${startTime.toLocaleTimeString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    })} - ${endTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+                    rowData.push(`${salleName}\n${timing}`);
+                } else {
+                    rowData.push('');
+                }
+            });
+
+            // For body section
+            pdf.autoTable({
+                body: [rowData],
+                startY: pdf.autoTable.previous.finalY,
+                margin: { top: 10 },
+                theme: 'grid',
+                styles: {
+                    fontSize: 10, // Adjusted body font size
+                    cellPadding: 4, // Adjusted cell padding
+                    valign: 'middle',
+                    cellWidth: 35, // Adjusted cell width
+                    overflow: 'linebreak', // Set overflow to 'linebreak' to handle long text
+                },
+                columnStyles: {
+                    0: { halign: 'center' },
+                },
+            });
+        }
     });
 
     const filename = `Emplois_du_temps_${weekInput.replace(' ', '_')}.pdf`;
     pdf.save(filename);
-  };
+};
+
 
   return (
     <>
