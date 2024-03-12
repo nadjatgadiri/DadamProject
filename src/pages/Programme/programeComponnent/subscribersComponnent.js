@@ -464,7 +464,7 @@ const SubscribersComponnent = (props) => {
             '', // Coche placeholder
           ]);
       
-          const columns = ['Nom & Prénom', 'Date de Naissance', ' '];
+          const columns = ['Nom & Prénom', 'Date de Naissance', ' ',' ',' ',' ',' ',' ',' '];
       
           pdf.autoTable({
             head: [columns],

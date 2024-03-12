@@ -23,6 +23,8 @@ import {
   FormControlLabel,
   FormGroup,
   Checkbox,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -303,6 +305,41 @@ const MyCalendar = (props) => {
                             </DemoContainer>
                           </LocalizationProvider>
                         </Grid>
+                        <Grid item xs={12} sx={{ alignItems: 'center', paddingTop: '10px' }}>
+  <InputLabel htmlFor="typeSession">Type Session</InputLabel>
+  <Select
+    id="typeSession"
+    value={updatedData.typeSession || ''}
+    onChange={(e) => {
+      setUpdatedData({
+        ...updatedData,
+        typeSession: e.target.value,
+      });
+    }}
+    fullWidth
+  >
+    <MenuItem value="normal">Normal</MenuItem>
+    <MenuItem value="private">Privet</MenuItem>
+  </Select>
+</Grid>
+
+{updatedData.typeSession === 'private' && (
+  <Grid item xs={12} sx={{ alignItems: 'center', paddingTop: '10px' }}>
+    <TextField
+      id="defaultPrice"
+      label="Default Price"
+      type="number"
+      value={updatedData.defaultPrice || ''}
+      onChange={(e) => {
+        setUpdatedData({
+          ...updatedData,
+          defaultPrice: e.target.value,
+        });
+      }}
+      fullWidth
+    />
+  </Grid>
+)}
                         <Grid item sx={{ alignItems: 'center', paddingTop: '10px' }}>
                           <FormGroup>
                             <FormControlLabel
@@ -320,6 +357,8 @@ const MyCalendar = (props) => {
                               label="Planifier des sessions dans les salles"
                             />
                           </FormGroup>
+
+
                         </Grid>
                         <Grid item xs={12} sx={{ alignItems: 'center', paddingTop: '10px' }}>
                           <Typography variant="body2" color="error">
