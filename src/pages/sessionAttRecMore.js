@@ -45,6 +45,10 @@ import {
   updateSessionAttendanceRecording,
   getSessionAttendanceRecording,
 } from '../RequestManagement/sessionAttRecManagement';
+import {
+  updatePrivateSessionAttendanceRecording,
+  getPrivateSessionAttendanceRecording,
+} from '../RequestManagement/privateSessionManagement';
 
 const TABLE_HEAD = [
   { id: 'programme', label: 'Programme', alignRight: false },
@@ -113,34 +117,56 @@ export default function SessionAttRecPage() {
 
   const handleClick = async (event) => {
     setSelectedRow(event);
+    if (event.type === 'normal') {
+      const result = await getSessionAttendanceRecording(event.id);
+      if (result.code === 200) {
+        // Assuming you already have the data object
 
-    const result = await getSessionAttendanceRecording(event.id);
-    if (result.code === 200) {
-      // Assuming you already have the data object
+        // For student checkboxes
+        const studentCheckboxesData = result.studentList.map((student) => ({
+          id: student.ID_ROWID,
+          label: `${student.personProfile2.firstName} ${student.personProfile2.lastName}`,
+          checked: result.studentAttResList.some((record) => record.studentID === student.ID_ROWID),
+        }));
 
-      // For student checkboxes
-      const studentCheckboxesData = result.studentList.map((student) => ({
-        id: student.ID_ROWID,
-        label: `${student.personProfile2.firstName} ${student.personProfile2.lastName}`,
-        checked: result.studentAttResList.some((record) => record.studentID === student.ID_ROWID),
-      }));
+        // For professor checkboxes
+        const professorCheckboxesData = result.teacherList.map((teacher) => ({
+          id: teacher.ID_ROWID,
+          label: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`,
+          checked: result.teacherAttResList.some((record) => record.teacherID === teacher.ID_ROWID),
+        }));
 
-      // For professor checkboxes
-      const professorCheckboxesData = result.teacherList.map((teacher) => ({
-        id: teacher.ID_ROWID,
-        label: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`,
-        checked: result.teacherAttResList.some((record) => record.teacherID === teacher.ID_ROWID),
-      }));
-
-      // Now you can set these data into your state variables
-      // Assuming you have state variables studentCheckboxes and professorCheckboxes and their corresponding setters
-      setStudentCheckboxes(studentCheckboxesData);
-      setProfessorCheckboxes(professorCheckboxesData);
-      setIsError(false);
-      const card = document.getElementById('sessionDetailsCard');
-      card.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      setIsError(true);
+        // Now you can set these data into your state variables
+        // Assuming you have state variables studentCheckboxes and professorCheckboxes and their corresponding setters
+        setStudentCheckboxes(studentCheckboxesData);
+        setProfessorCheckboxes(professorCheckboxesData);
+        setIsError(false);
+      } else {
+        setIsError(true);
+      }
+    } else if (event.type === 'private') {
+      const result = await getPrivateSessionAttendanceRecording(event.id);
+      if (result.code === 200) {
+        // For student checkboxes
+        const studentCheckboxesData = result.studentList.map((student) => ({
+          id: student.ID_ROWID,
+          label: `${student.personProfile2.firstName} ${student.personProfile2.lastName}`,
+          checked: student.studentsInPrivateSession?.isAttended,
+        }));
+        // For professor checkboxes
+        const professorCheckboxesData = result.teacherList.map((teacher) => ({
+          id: teacher.ID_ROWID,
+          label: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`,
+          checked: teacher.teachersInPrivateSession?.isAttended,
+        }));
+        // Now you can set these data into your state variables
+        // Assuming you have state variables studentCheckboxes and professorCheckboxes and their corresponding setters
+        setStudentCheckboxes(studentCheckboxesData);
+        setProfessorCheckboxes(professorCheckboxesData);
+        setIsError(false);
+      } else {
+        setIsError(true);
+      }
     }
   };
   const handleSelectAllStudents = () => {
@@ -175,19 +201,33 @@ export default function SessionAttRecPage() {
   const updateAttRecForSession = async () => {
     const studentAttRec = studentCheckboxes.filter((student) => student.checked);
     const teacherAttRes = professorCheckboxes.filter((teacher) => teacher.checked);
-
-    const data = {
-      studentList: studentAttRec,
-      teacherList: teacherAttRes,
-      idProg: selectedRow.prog?.id,
-      id: selectedRow.id,
-    };
-    const result = await updateSessionAttendanceRecording(selectedRow.id, data);
-    if (result.code === 200) {
-      toast.success('La séance est bien enregistrée.', {
-        position: toast.POSITION.TOP_RIGHT,
-      }); // hanii zadta a nadjiiib
-      await updatePage();
+    if (selectedRow.type === 'normal') {
+      const data = {
+        studentList: studentAttRec,
+        teacherList: teacherAttRes,
+        idProg: selectedRow.prog?.id,
+        id: selectedRow.id,
+      };
+      const result = await updateSessionAttendanceRecording(selectedRow.id, data);
+      if (result.code === 200) {
+        toast.success('La séance est bien enregistrée.', {
+          position: toast.POSITION.TOP_RIGHT,
+        }); // hanii zadta a nadjiiib
+        await updatePage();
+      }
+    } else if (selectedRow.type === 'private') {
+      const data = {
+        studentList: studentAttRec,
+        teacherList: teacherAttRes,
+        id: selectedRow.id,
+      };
+      const result = await updatePrivateSessionAttendanceRecording(selectedRow.id, data);
+      if (result.code === 200) {
+        toast.success('La séance est bien enregistrée.', {
+          position: toast.POSITION.TOP_RIGHT,
+        }); // hanii zadta a nadjiiib
+        await updatePage();
+      }
     }
   };
   const updatePage = async () => {
@@ -199,6 +239,7 @@ export default function SessionAttRecPage() {
   useEffect(() => {
     const fetchData = async () => {
       const result = await getAllSessionsInLastDays();
+      console.log(result);
       if (result.code === 200) {
         setData(result.events);
       }
@@ -274,8 +315,18 @@ export default function SessionAttRecPage() {
                       {filteredData
                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                         .map((row) => {
-                          const { id, title, isAchieved, group, prog, salle, start, end, date } =
-                            row;
+                          const {
+                            id,
+                            title,
+                            isAchieved,
+                            group,
+                            prog,
+                            salle,
+                            start,
+                            end,
+                            date,
+                            type,
+                          } = row;
 
                           return (
                             <TableRow
@@ -294,12 +345,12 @@ export default function SessionAttRecPage() {
                             >
                               <TableCell>
                                 <Typography variant="subtitle2" noWrap>
-                                  {prog.name}
+                                  {type === 'normal' ? prog.name : 'Séance Privé'}
                                 </Typography>
                               </TableCell>
                               <TableCell>
                                 <Typography variant="subtitle2" noWrap>
-                                  {group.name}
+                                  {type === 'normal' ? group.name : '  '}
                                 </Typography>
                               </TableCell>
                               <TableCell>
@@ -389,20 +440,26 @@ export default function SessionAttRecPage() {
                 <AppBar position="static" sx={{ backgroundColor: 'white', color: 'black' }}>
                   <Container maxWidth="xl" style={{ backgroundColor: '#f6f8fa' }}>
                     <Toolbar>
-                      <Link
-                        style={{ color: 'black' }}
-                        to={`/dashboard/ProgrameProfile/${selectedRow?.prog.id}`}
-                      >
+                      {selectedRow.type === 'normal' ? (
+                        <Link
+                          style={{ color: 'black' }}
+                          to={`/dashboard/ProgrameProfile/${selectedRow?.prog.id}`}
+                        >
+                          <Typography variant="h5" sx={{ flexGrow: 1 }}>
+                            Programme
+                            {selectedRow?.prog.name}- Groupe {selectedRow?.group.name}
+                            <Iconify
+                              icon={'akar-icons:link-out'}
+                              sx={{ mr: 1 }}
+                              style={{ marginLeft: '20px' }}
+                            />
+                          </Typography>
+                        </Link>
+                      ) : (
                         <Typography variant="h5" sx={{ flexGrow: 1 }}>
-                          Programme
-                          {selectedRow?.prog.name}- Groupe {selectedRow?.group.name}
-                          <Iconify
-                            icon={'akar-icons:link-out'}
-                            sx={{ mr: 1 }}
-                            style={{ marginLeft: '20px' }}
-                          />
+                          Séance privé
                         </Typography>
-                      </Link>
+                      )}
                     </Toolbar>
                   </Container>
                 </AppBar>

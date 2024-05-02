@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 import { Helmet } from 'react-helmet-async';
 import Cookies from 'js-cookie';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
 // @mui
 import { Buffer } from 'buffer';
 import {
@@ -16,7 +16,25 @@ import {
   ListItemAvatar,
   ListItemText,
   Divider,
+  Button,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  InputLabel,
+  TextField,
+  FormControlLabel,
+  FormGroup,
+  Checkbox,
+  Autocomplete,
+  Paper,
 } from '@mui/material';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
+import dayjs from 'dayjs';
 import SessionAttRec from './sessionAttRec';
 // sections
 import { AppWidgetSummary } from '../sections/@dashboard/app';
@@ -26,6 +44,9 @@ import { getGroups } from '../RequestManagement/groupManagement';
 import { getAllSessions } from '../RequestManagement/sessionsManagement';
 import { getUser } from '../RequestManagement/userManagement';
 import { getGeneralSchoolData } from '../RequestManagement/schoolManagement'; // Update the import paths
+import { getAllStudents } from '../RequestManagement/studentManagement';
+import { getAllTeachers } from '../RequestManagement/teacherManagement';
+import { addPrivateSessions } from '../RequestManagement/privateSessionManagement';
 import useResponsive from '../hooks/useResponsive';
 import './Programme/theme.css';
 
@@ -43,6 +64,35 @@ export default function DashboardAppPage() {
   const [schoolData, setSchoolData] = useState('');
   const [groups, setGroups] = useState([]);
   const [events, setEvents] = useState([]);
+  const [data, setData] = useState({
+    date: new Date().toISOString().split('T')[0],
+    startAt: '08:00',
+    endAt: '09:30',
+    isSessionInClass: false,
+    defaultPrice: '0',
+    comments: '',
+  });
+  const [openDialog, setOpenDialog] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [error, setError] = useState('');
+  const storedSelectedStudents = localStorage.getItem('selectedStudents');
+  const [selectedStudents, setSelectedStudents] = useState(() => {
+    return storedSelectedStudents ? JSON.parse(storedSelectedStudents) : [];
+  });
+  const storedSelectedTeachers = localStorage.getItem('selectedTeachers');
+  const [selectedTeachers, setSelectedTeachers] = useState(() => {
+    return storedSelectedTeachers ? JSON.parse(storedSelectedTeachers) : [];
+  });
+  function formatDate(inputDate) {
+    const date = new Date(inputDate);
+    const options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+    return date.toLocaleDateString('fr-FR', options);
+  }
   /** api */
   const fetchData = async () => {
     const result = await getStatistiqueDataForDashbaord1();
@@ -96,6 +146,56 @@ export default function DashboardAppPage() {
   useEffect(() => {
     fetchData();
   }, []); // Empty dependency array means this effect runs once when component mounts
+  useEffect(() => {
+    if (openDialog) {
+      const fetchStudents = async () => {
+        try {
+          const response = await getAllStudents();
+          if (response.code === 200) {
+            const processedStudents = response.students.map((student) => ({
+              id: student.ID_ROWID,
+              name: `${student.personProfile2.firstName} ${student.personProfile2.lastName}`,
+              dateOfBirth: student.personProfile2.dateOfBirth,
+              // ... other fields as needed
+            }));
+            setStudents(processedStudents);
+          } else {
+            toast.error(`Failed to fetch students. ${response.message}`, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+          }
+        } catch (error) {
+          toast.error(`Error: ${error.message}`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+      };
+      const fetchTeachers = async () => {
+        try {
+          const response = await getAllTeachers();
+          if (response.code === 200) {
+            const processedTeachers = response.teachers.map((teacher) => ({
+              id: teacher.ID_ROWID,
+              name: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`,
+              dateOfBirth: teacher.personProfile2.dateOfBirth,
+              // ... other fields as needed
+            }));
+            setTeachers(processedTeachers);
+          } else {
+            toast.error(`Failed to fetch Teachers. ${response.message}`, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+          }
+        } catch (error) {
+          toast.error(`Error: ${error.message}`, {
+            position: toast.POSITION.TOP_RIGHT,
+          });
+        }
+      };
+      fetchStudents();
+      fetchTeachers();
+    }
+  }, [openDialog]);
   const stringToColor = (name) => {
     const hashCode = name
       .toString()
@@ -115,6 +215,66 @@ export default function DashboardAppPage() {
       colors[option.id] = stringToColor(`${option.name}${option.id}`);
     });
     return colors;
+  };
+
+  const handleAddEvent = async () => {
+    setError('');
+    // Validate form fields
+    if (!data.date || !data.startAt || !data.endAt) {
+      setError('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    // Create new event object
+    const newEvent = {
+      date: data.date,
+      startAt: data.startAt,
+      endAt: data.endAt,
+      defaultPrice: data.defaultPrice,
+      comments: data.comments,
+      isSessionInClass: data.isSessionInClass,
+      students: selectedStudents.map((student) => student.id),
+      teachers: selectedTeachers.map((teacher) => teacher.id),
+    };
+    console.log(newEvent);
+    try {
+      const response = await addPrivateSessions(newEvent);
+      if (response.code === 200) {
+        toast.success(`Private Session has been add successfully.`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      } else {
+        toast.error(`Failed to fetch students. ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+    } catch (error) {
+      toast.error(`Error: ${error.message}`, {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+    }
+  };
+  const fetchTeachers = async () => {
+    try {
+      const response = await getAllTeachers();
+      if (response.code === 200) {
+        const processedTeachers = response.teachers.map((teacher) => ({
+          id: teacher.ID_ROWID,
+          name: `${teacher.personProfile2.firstName} ${teacher.personProfile2.lastName}`,
+          dateOfBirth: teacher.personProfile2.dateOfBirth,
+          // ... other fields as needed
+        }));
+        setTeachers(processedTeachers);
+      } else {
+        toast.error(`Failed to fetch Teachers. ${response.message}`, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+    } catch (error) {
+      toast.error(`Error: ${error.message}`, {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+    }
   };
   return (
     <>
@@ -260,134 +420,217 @@ export default function DashboardAppPage() {
           {/* <DashboardSessionComponent /> */}
 
           <Grid item xs={12} md={12} lg={12}>
-            <Card style={{ height: isDesktop ? '650px' : '750px' }}>
+            <Card style={{ height: '750px' }}>
               <div style={{ textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
                 <MyCalendar colorMap={groups} events={events} fetchEvents={fetchData} />
+              </div>
+              <div style={{ margin: '20px' }}>
+                <Grid item xs={12}>
+                  <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+                    <Button
+                      variant="contained"
+                      onClick={() => setOpenDialog(true)}
+                      style={{ backgroundColor: 'blue', color: 'white' }}
+                    >
+                      Ajouter Une Séance Privé
+                    </Button>
+                  </Box>
+                </Grid>
               </div>
             </Card>
           </Grid>
 
-          {/* <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentVisits
-              title="Current Visits"
-              chartData={[
-                { label: 'America', value: 4344 },
-                { label: 'Asia', value: 5435 },
-                { label: 'Europe', value: 1443 },
-                { label: 'Africa', value: 4443 },
-              ]}
-              chartColors={[
-                theme.palette.primary.main,
-                theme.palette.info.main,
-                theme.palette.warning.main,
-                theme.palette.error.main,
-              ]}
-            />
-          </Grid>
+          {/* Dialog to add new event for private session */}
+          <Dialog
+            open={openDialog}
+            onClose={() => {
+              setOpenDialog(false);
+            }}
+          >
+            <>
+              <DialogTitle>
+                <div>Ajouter une séance privé</div>
+              </DialogTitle>
+              <DialogContent>
+                <DialogContent>
+                  <form
+                  // onSubmit={ }
+                  >
+                    <Grid container spacing={2} justifyContent="center" alignItems="center">
+                      <Grid xs={12} item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <Autocomplete
+                          multiple
+                          disablePortal
+                          id="combo-box-student"
+                          options={students}
+                          getOptionLabel={(option) =>
+                            option ? `${option.name}\n(${formatDate(option.dateOfBirth)})` : ''
+                          }
+                          getOptionSelected={(option, value) => option.id === value.id}
+                          value={selectedStudents}
+                          onChange={(event, newValues) => {
+                            console.log('Autocomplete onChange - New Values:', newValues);
+                            setSelectedStudents(newValues);
+                            console.log(students);
+                          }}
+                          renderInput={(params) => (
+                            <TextField {...params} label="Étudiants" variant="outlined" fullWidth />
+                          )}
+                          PaperComponent={({ children }) => <Paper square>{children}</Paper>}
+                          ListboxProps={{ style: { maxHeight: '250px', overflow: 'auto' } }}
+                          noOptionsText="Aucun étudiant trouvé"
+                        />
+                      </Grid>
+                      <Grid xs={12} item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <Autocomplete
+                          multiple
+                          disablePortal
+                          id="combo-box-teachers"
+                          options={teachers}
+                          getOptionLabel={(option) =>
+                            option ? `${option.name}\n(${formatDate(option.dateOfBirth)})` : ''
+                          }
+                          getOptionSelected={(option, value) => option.id === value.id}
+                          value={selectedTeachers}
+                          onChange={(event, newValues) => {
+                            console.log('Autocomplete onChange - New Values:', newValues);
+                            setSelectedTeachers(newValues);
+                            console.log(selectedTeachers);
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Enseignants"
+                              variant="outlined"
+                              fullWidth
+                            />
+                          )}
+                          PaperComponent={({ children }) => <Paper square>{children}</Paper>}
+                          ListboxProps={{ style: { maxHeight: '250px', overflow: 'auto' } }}
+                          noOptionsText="Aucun étudiant trouvé"
+                        />
+                      </Grid>
+                      <Grid xs={6} item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <InputLabel htmlFor="role">Prix De Séance </InputLabel>
+                        <TextField
+                          id="defaultPrice"
+                          type="number"
+                          value={data.defaultPrice || ''}
+                          onChange={(e) => {
+                            setData({
+                              ...data,
+                              defaultPrice: e.target.value,
+                            });
+                          }}
+                          fullWidth
+                        />
+                      </Grid>
+                      <Grid xs={6} item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <InputLabel htmlFor="role">Le Jour</InputLabel>
+                        <TextField
+                          type="date"
+                          value={data?.date}
+                          onChange={(e) => {
+                            setData({
+                              ...data,
+                              date: e.target.value,
+                            });
+                          }}
+                          fullWidth
+                          required
+                        />
+                      </Grid>
+                      <Grid xs={6} item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <InputLabel htmlFor="role">Débuté à </InputLabel>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DemoContainer components={['MobileTimePicker']}>
+                            <MobileTimePicker
+                              value={dayjs(`2023-01-01T${data.startAt}:00`)}
+                              onChange={(newTime) => {
+                                setData({
+                                  ...data,
+                                  startAt: newTime.format('HH:mm'),
+                                });
+                              }}
+                              slotProps={{ textField: { fullWidth: true } }}
+                            />
+                          </DemoContainer>
+                        </LocalizationProvider>
+                      </Grid>
+                      <Grid xs={6} item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <InputLabel htmlFor="role">Terminé à </InputLabel>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DemoContainer components={['MobileTimePicker']}>
+                            <MobileTimePicker
+                              value={dayjs(`2023-01-01T${data.endAt}:00`)}
+                              onChange={(newTime) => {
+                                setData({
+                                  ...data,
+                                  endAt: newTime.format('HH:mm'),
+                                });
+                              }}
+                              slotProps={{ textField: { fullWidth: true } }}
+                            />
+                          </DemoContainer>
+                        </LocalizationProvider>
+                      </Grid>
 
-          <Grid item xs={12} md={6} lg={8}>
-            <AppConversionRates
-              title="Conversion Rates"
-              subheader="(+43%) than last year"
-              chartData={[
-                { label: 'Italy', value: 400 },
-                { label: 'Japan', value: 430 },
-                { label: 'China', value: 448 },
-                { label: 'Canada', value: 470 },
-                { label: 'France', value: 540 },
-                { label: 'Germany', value: 580 },
-                { label: 'South Korea', value: 690 },
-                { label: 'Netherlands', value: 1100 },
-                { label: 'United States', value: 1200 },
-                { label: 'United Kingdom', value: 1380 },
-              ]}
-            />
-          </Grid>
+                      <Grid xs={12} item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <TextField
+                          name="comments"
+                          label="Description"
+                          value={data?.comments}
+                          onChange={(e) => {
+                            setData({
+                              ...data,
+                              comments: e.target.value,
+                            });
+                          }}
+                          minRows={2}
+                          maxRows={10}
+                          multiline
+                          fullWidth
+                        />
+                      </Grid>
+                      <Grid item sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <FormGroup>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={data.isSessionInClass}
+                                onChange={() => {
+                                  setData({
+                                    ...data,
+                                    isSessionInClass: !data.isSessionInClass,
+                                  });
+                                }}
+                              />
+                            }
+                            label="Planifier des sessions dans les salles"
+                          />
+                        </FormGroup>
+                      </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentSubject
-              title="Current Subject"
-              chartLabels={['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math']}
-              chartData={[
-                { name: 'Series 1', data: [80, 50, 30, 40, 100, 20] },
-                { name: 'Series 2', data: [20, 30, 40, 80, 20, 80] },
-                { name: 'Series 3', data: [44, 76, 78, 13, 43, 10] },
-              ]}
-              chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
-            />
-          </Grid> */}
+                      <Grid item xs={12} sx={{ alignItems: 'center', paddingTop: '10px' }}>
+                        <Typography variant="body2" color="error">
+                          {error}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </form>
+                </DialogContent>
+              </DialogContent>
+              <DialogActions>
+                <>
+                  <Button onClick={handleAddEvent} color="error">
+                    Ajouter
+                  </Button>
 
-          {/* <Grid item xs={12} md={6} lg={8}>
-            <AppNewsUpdate
-              title="News Update"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: faker.name.jobTitle(),
-                description: faker.name.jobTitle(),
-                image: `/assets/images/covers/cover_${index + 1}.jpg`,
-                postedAt: faker.date.recent(),
-              }))}
-            />
-          </Grid> */}
-
-          {/* <Grid item xs={12} md={6} lg={4}>
-            <AppOrderTimeline
-              title="Order Timeline"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: [
-                  '1983, orders, $4220',
-                  '12 Invoices have been paid',
-                  'Order #37745 from September',
-                  'New order placed #XF-2356',
-                  'New order placed #XF-2346',
-                ][index],
-                type: `order${index + 1}`,
-                time: faker.date.past(),
-              }))}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppTrafficBySite
-              title="Traffic by Site"
-              list={[
-                {
-                  name: 'FaceBook',
-                  value: 323234,
-                  icon: <Iconify icon={'eva:facebook-fill'} color="#1877F2" width={32} />,
-                },
-                {
-                  name: 'Google',
-                  value: 341212,
-                  icon: <Iconify icon={'eva:google-fill'} color="#DF3E30" width={32} />,
-                },
-                {
-                  name: 'Linkedin',
-                  value: 411213,
-                  icon: <Iconify icon={'eva:linkedin-fill'} color="#006097" width={32} />,
-                },
-                {
-                  name: 'Twitter',
-                  value: 443232,
-                  icon: <Iconify icon={'eva:twitter-fill'} color="#1C9CEA" width={32} />,
-                },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={8}>
-            <AppTasks
-              title="Tasks"
-              list={[
-                { id: '1', label: 'Create FireStone Logo' },
-                { id: '2', label: 'Add SCSS and JS files if required' },
-                { id: '3', label: 'Stakeholder Meeting' },
-                { id: '4', label: 'Scoping & Estimations' },
-                { id: '5', label: 'Sprint Showcase' },
-              ]}
-            />
-          </Grid> */}
+                  <Button onClick={() => setOpenDialog(false)}>Fermer</Button>
+                </>
+              </DialogActions>
+            </>
+          </Dialog>
         </Grid>
       </Container>
     </>

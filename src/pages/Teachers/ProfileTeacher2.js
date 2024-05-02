@@ -233,16 +233,18 @@ const TeacherProfileForDashTeach = () => {
                           <TableCell noWrap>
                             <Typography variant="subtitle1">
                               {row.title}
-                              <Link
-                                style={{ color: 'blue' }}
-                                to={`/dashboard/ProgrameProfile/${row.prog.id}`}
-                              >
-                                <Iconify
-                                  icon={'akar-icons:link-out'}
-                                  sx={{ mr: 1 }}
-                                  style={{ marginLeft: '20px' }}
-                                />
-                              </Link>
+                              {row.type === 'normal' && (
+                                <Link
+                                  style={{ color: 'blue' }}
+                                  to={`/dashboard/ProgrameProfile/${row.prog.id}`}
+                                >
+                                  <Iconify
+                                    icon={'akar-icons:link-out'}
+                                    sx={{ mr: 1 }}
+                                    style={{ marginLeft: '20px' }}
+                                  />
+                                </Link>
+                              )}
                             </Typography>
                           </TableCell>
                           <TableCell>

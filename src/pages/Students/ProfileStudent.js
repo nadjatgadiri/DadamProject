@@ -1,5 +1,5 @@
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from 'react-toastify';
 import { Helmet } from 'react-helmet-async';
 import { useState, useEffect, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
@@ -32,7 +32,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import '../Programme/theme.css';
 import { Buffer } from 'buffer';
-import { jsPDF as JsPDF } from "jspdf";
+import { jsPDF as JsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { getGroups } from '../../RequestManagement/groupManagement';
 import { getAllSessionsForStudent } from '../../RequestManagement/sessionsManagement';
@@ -43,7 +43,7 @@ import {
   getUnpaidBills,
   payStudentBillsMultiMode,
 } from '../../RequestManagement/billsManagement';
-import {getGeneralSchoolData} from '../../RequestManagement/schoolManagement'
+import { getGeneralSchoolData } from '../../RequestManagement/schoolManagement';
 
 import MyCalendar from '../Programme/calendar/calendar';
 import useResponsive from '../../hooks/useResponsive';
@@ -191,9 +191,9 @@ const StudentProfile = () => {
       }
       // get student bills
       const resultStudentBills = await getStudentBills(id);
+      console.log(resultStudentBills);
       if (resultStudentBills.code === 200) {
         setBills(resultStudentBills.bills);
-        console.log(resultStudentBills.bills);
       }
       // get student unpaid bills
       const resultStudentUnpaidBills = await getUnpaidBills(id);
@@ -201,10 +201,8 @@ const StudentProfile = () => {
         handleSumTotal(resultStudentUnpaidBills.unpaidBills);
         setUnpaidBills(resultStudentUnpaidBills.unpaidBills);
       }
-  
     };
 
-   
     fetchData();
   }, []); // Empty dependency array means this effect runs once when component mounts
   const stringToColor = (name) => {
@@ -237,7 +235,6 @@ const StudentProfile = () => {
     setOpen(false);
   };
 
- 
   // checkBox handels
 
   const handleSelectSession = (progID, sessionIndex) => {
@@ -282,272 +279,299 @@ const StudentProfile = () => {
   // calculate montant general
   const handleSumMontant = () => {
     const updatedUnpaidBills = { ...unpaidBills };
+    let total = 0;
 
-    Object.keys(updatedUnpaidBills).forEach((programId) => {
-      const program = updatedUnpaidBills[programId];
+    Object.keys(updatedUnpaidBills).forEach((billId) => {
+      const bill = updatedUnpaidBills[billId];
       let montant = 0;
-      let total = 0;
-      if (program.type === 'Total' && program.isChecked) {
-        montant = program.prix;
-      } else if (program.type !== 'Total') {
-        // Filter events where isChecked is true
-        const checkedEvents = program.events.filter((event) => event.isChecked);
-        // Calculate montant based on prix * number of checked events
-        montant = program.prix * checkedEvents.length;
+      if (bill.eventT === 'normal') {
+        if (bill.type === 'Total' && bill.isChecked) {
+          montant = bill.prix;
+        } else if (bill.type !== 'Total') {
+          // Filter events where isChecked is true
+          const checkedEvents = bill.events.filter((event) => event.isChecked);
+          // Calculate montant based on prix * number of checked events
+          montant = bill.prix * checkedEvents.length;
+        }
+      } else if (bill.eventT === 'private' && bill.isChecked) {
+        montant = bill.prix;
       }
-      // Update the montant for the program
-      program.montant = montant;
-      program.quantite = program.events.filter((event) => event.isChecked).length;
+      // Update the montant for the bill
+      bill.montant = montant;
+      bill.quantite = bill.events.filter((event) => event.isChecked).length;
       total += montant;
-      setTotal(total);
     });
-
+    setTotal(total);
     setUnpaidBills(updatedUnpaidBills);
   };
   const handleSumTotal = (data) => {
     const updatedUnpaidBills = { ...data };
-
-    Object.keys(updatedUnpaidBills).forEach((programId) => {
-      const program = updatedUnpaidBills[programId];
+    let total = 0;
+    Object.keys(updatedUnpaidBills).forEach((billId) => {
+      const bill = updatedUnpaidBills[billId];
+      console.log(bill);
       let montant = 0;
-      let total = 0;
-      if (program.type === 'Total' && program.isChecked) {
-        montant = program.prix;
-      } else if (program.type !== 'Total') {
-        // Filter events where isChecked is true
-        const checkedEvents = program.events.filter((event) => event.isChecked);
-        // Calculate montant based on prix * number of checked events
-        montant = program.prix * checkedEvents.length;
+
+      if (bill.eventT === 'normal') {
+        if (bill.type === 'Total' && bill.isChecked) {
+          montant = bill.prix;
+        } else if (bill.type !== 'Total') {
+          // Filter events where isChecked is true
+          const checkedEvents = bill.events.filter((event) => event.isChecked);
+          // Calculate montant based on prix * number of checked events
+          montant = bill.prix * checkedEvents.length;
+        }
+      } else if (bill.eventT === 'private' && bill.isChecked) {
+        montant = bill.prix;
       }
       total += montant;
-      setTotal(total);
     });
+    console.log(total);
+    setTotal(total);
   };
-  const Telechargerpdf =  async (data) => {
-     // Fetch school data
+  const Telechargerpdf = async (data) => {
+    // Fetch school data
     let Schooldata;
     try {
-        const response = await getGeneralSchoolData();
-        if (response.code === 200) {
-            Schooldata = response;
-        } else {
-            throw new Error('Failed to fetch school data');
-        }
+      const response = await getGeneralSchoolData();
+      if (response.code === 200) {
+        Schooldata = response;
+      } else {
+        throw new Error('Failed to fetch school data');
+      }
     } catch (error) {
-        console.error('Error fetching school data:', error);
-        // Show toast with error message
-        toast.error('Failed to fetch school data. Please try again later.');
-        return; // Exit the function early if there's an error
+      console.error('Error fetching school data:', error);
+      // Show toast with error message
+      toast.error('Failed to fetch school data. Please try again later.');
+      return; // Exit the function early if there's an error
     }
     console.log(data);
     const pdf = new JsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
     });
 
-// Create a promise to wait for logo image loading
-const logoPromise = new Promise((resolve, reject) => {
-  const logo = new Image();
-  const defaultLogoPath = "../../assets/img/logo_dadam.png";
-  logo.src = defaultLogoPath;
-  logo.onload = function () {
-      resolve(logo);
+    // Create a promise to wait for logo image loading
+    const logoPromise = new Promise((resolve, reject) => {
+      const logo = new Image();
+      const defaultLogoPath = '../../assets/img/logo_dadam.png';
+      logo.src = defaultLogoPath;
+      logo.onload = function () {
+        resolve(logo);
+      };
+      logo.onerror = function (error) {
+        console.error('Error loading logo:', error);
+        reject(error);
+      };
+    });
+    let logoBottom;
+    try {
+      // Wait for logo image to load
+      const logo = await logoPromise;
+      // Adjust logo size
+      const logoWidth = 50; // New width for the logo
+      const logoHeight = (logo.height / logo.width) * logoWidth; // Maintain aspect ratio
+      // Calculate x-coordinate to center logo horizontally
+      const logoX = (pdf.internal.pageSize.width - logoWidth) / 2;
+      // Add logo to the PDF
+      pdf.addImage(logo, 'PNG', logoX, 10, logoWidth, logoHeight); // Adjust coordinates and dimensions as needed
+
+      // Add customer information below the logo
+      pdf.setTextColor('#000000'); // Black color for customer information
+      pdf.setFontSize(12);
+      pdf.setFont('Helvetica', 'italy'); // Set font style to normal
+
+      const [firstName, lastName] = userData.name.split(' '); // Splitting the full name
+      logoBottom = 10 + logoHeight + 5; // Bottom position of the logo with a small margin
+      pdf.text(`Nom: ${firstName}`, 10, logoBottom + 5); // Adjust y-coordinate to move below the logo
+      pdf.text(`Prénom: ${lastName}`, 10, logoBottom + 15); // Adjust y-coordinate to move below the logo
+      pdf.text(`Niveau d'étude: ${userData.niveau}`, 10, logoBottom + 25); // Adjust y-coordinate to move below the logo
+
+      // Title
+      const title = 'Facture';
+      pdf.setFont('Helvetica', 'bold');
+      pdf.setFontSize(20);
+      pdf.setTextColor('#E5B80B'); // Golden color for title
+      pdf.text(title, pdf.internal.pageSize.width / 2, 75, { align: 'center' }); // Adjust y-coordinate as needed
+    } catch (error) {
+      console.error('Error adding logo to PDF:', error);
+      // Show toast with error message
+      toast.error('Error adding logo to PDF. Please try again later.');
+      return; // Exit the function early if there's an error
+    }
+
+    // Table Headers
+    const headers = ['Programme', 'Session', 'Prix de session', 'Montant total'];
+    const tableData = [];
+
+    // Initialize an object to store payment data by program ID
+    const programData = {};
+
+    // Iterate through payment session modes and organize by program ID
+    data.paymentSessionModes.forEach((sessionMode) => {
+      const programID = sessionMode?.student?.groupes[0]?.program?.ID_ROWID;
+      if (programID) {
+        if (!programData[programID]) {
+          programData[programID] = {
+            program: sessionMode.student.groupes[0].program,
+            paymentSessionModes: [],
+            paymentTotalModes: [],
+          };
+        }
+        programData[programID].paymentSessionModes.push(sessionMode);
+      }
+    });
+
+    // Iterate through payment total modes and organize by program ID
+    data.paymentTotalModes.forEach((totalMode) => {
+      const programID = totalMode?.program?.ID_ROWID;
+      if (programID) {
+        if (!programData[programID]) {
+          programData[programID] = {
+            program: totalMode.program,
+            totalAmount: totalMode.program.prix,
+            paymentSessionModes: [],
+            paymentTotalModes: [],
+          };
+        }
+        programData[programID].paymentTotalModes.push(totalMode);
+      }
+    });
+    data.student?.privateSessions?.forEach((Session) => {
+      // if (Session.studentsInPrivateSession.billD === data.ID_ROWID) {
+      // const programID = totalMode?.program?.ID_ROWID;
+      // if (programID) {
+      //   if (!programData[programID]) {
+      //     programData[programID] = {
+      //       program: totalMode.program,
+      //       totalAmount: totalMode.program.prix,
+      //       paymentSessionModes: [],
+      //       paymentTotalModes: [],
+      //     };
+      //   }
+      //   programData[programID].paymentTotalModes.push(totalMode);
+      // }
+      // }
+    });
+
+    // Iterate through programData object
+    Object.values(programData).forEach((program) => {
+      const {
+        program: { title },
+        paymentSessionModes,
+        paymentTotalModes,
+      } = program;
+      const session = paymentSessionModes.length || 'Tout';
+      let prixDuSession = 0; // Initialize prixDuSession
+
+      // Calculate prixDuSession differently for session payment and total payment
+      if (paymentSessionModes.length > 0) {
+        prixDuSession = paymentSessionModes[0].amount;
+      } else if (paymentTotalModes.length > 0) {
+        prixDuSession = '/'; // Placeholder for total payment
+      }
+
+      let totalAmount = 0; // Initialize totalAmount
+
+      // Calculate totalAmount differently for session payment and total payment
+      if (paymentSessionModes.length > 0) {
+        totalAmount = session * prixDuSession; // For session payment
+      } else if (paymentTotalModes.length > 0) {
+        totalAmount = paymentTotalModes.reduce((acc, curr) => acc + curr.program.prix, 0) || 0; // For total payment
+      }
+
+      tableData.push([title, session, prixDuSession, totalAmount]);
+    });
+
+    // Calculate total sum of total amounts
+    const totalSum = tableData.reduce((acc, row) => acc + row[3], 0);
+
+    // Merge cells for the last row
+    const totalRow = [
+      { content: `Total: ${totalSum} DA`, colSpan: 4, styles: { halign: 'center' } },
+    ];
+
+    // Generating the table
+    pdf.autoTable({
+      head: [headers],
+      body: [...tableData, totalRow],
+      startY: logoBottom + 45, // Adjust as needed
+      margin: { top: 65 },
+      theme: 'grid',
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        overflow: 'linebreak',
+      },
+      headStyles: {
+        fillColor: '#FFD700', // Golden color for table header background
+        textColor: '#000000', // Black color for table header text
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold' }, // Bold font for the first column
+        3: { fontStyle: 'bold' }, // Bold font for the last column
+      },
+    });
+    pdf.setTextColor('#000000'); // Black color for signature
+    pdf.setFontSize(12);
+    const tableBottom = pdf.previousAutoTable.finalY + 3; // Bottom position of the table with a small space
+    pdf.text('Signature', 30, tableBottom + 15); // Adjust coordinates to move below the table
+
+    // Add extraction date text below the table
+    const extractionDate = `Extrait le ${data.createdAt.split('T')[0]}`;
+    pdf.setFontSize(8); // Decrease font size for extraction date
+    pdf.text(extractionDate, 10, pdf.internal.pageSize.height - 30);
+
+    // Footer separator
+    pdf.setLineWidth(0.8);
+    pdf.line(
+      10,
+      pdf.internal.pageSize.height - 20,
+      pdf.internal.pageSize.width - 10,
+      pdf.internal.pageSize.height - 20
+    );
+    pdf.setFontSize(9); // Decrease font size for extraction date
+
+    // Footer values
+    const footerLabels = ['Phone', 'Email', 'Facebook', 'Address'];
+    const footerValues = [
+      Schooldata.data.contacts.phone,
+      Schooldata.data.contacts.mail,
+      Schooldata.data.contacts.facebook,
+      Schooldata.data.address,
+    ];
+
+    const startX = 15; // X coordinate for labels
+    const startY = pdf.internal.pageSize.height - 12; // Y coordinate for footer, below the separator line
+    let currentX = startX; // Initial X coordinate for labels
+
+    // Add labels and values to the footer
+    const firstLineLabels = footerLabels.slice(0, 2); // First line labels
+    const firstLineValues = footerValues.slice(0, 2); // First line values
+    firstLineLabels.forEach((label, index) => {
+      const labelValue = `${label}: ${firstLineValues[index]}`; // Combine label and value
+      pdf.text(labelValue, currentX, startY); // Add label and value
+      currentX += 100; // Add space between label and value
+    });
+
+    // Reset X coordinate for second line
+    currentX = startX;
+
+    // Second line labels and values
+    const secondLineLabels = footerLabels.slice(2); // Second line labels
+    const secondLineValues = footerValues.slice(2); // Second line values
+    const secondLineY = startY + 7; // Y coordinate for second line
+    secondLineLabels.forEach((label, index) => {
+      const labelValue = `${label}: ${secondLineValues[index]}`; // Combine label and value
+      pdf.text(labelValue, currentX, secondLineY); // Add label and value
+      currentX += 100; // Add space between label and value
+    });
+
+    // Save the PDF
+    pdf.save('facture.pdf');
   };
-  logo.onerror = function (error) {
-      console.error('Error loading logo:', error);
-      reject(error);
-  };
-});
-let logoBottom;
-try {
-  // Wait for logo image to load
-  const logo = await logoPromise;
-  // Adjust logo size
-  const logoWidth = 50; // New width for the logo
-  const logoHeight = (logo.height / logo.width) * logoWidth; // Maintain aspect ratio
-  // Calculate x-coordinate to center logo horizontally
-  const logoX = (pdf.internal.pageSize.width - logoWidth) / 2;
-  // Add logo to the PDF
-  pdf.addImage(logo, 'PNG', logoX, 10, logoWidth, logoHeight); // Adjust coordinates and dimensions as needed
-
-  // Add customer information below the logo
-  pdf.setTextColor('#000000'); // Black color for customer information
-  pdf.setFontSize(12);
-  pdf.setFont('Helvetica', 'italy'); // Set font style to normal
-
-  const [firstName, lastName] = userData.name.split(' '); // Splitting the full name
-  logoBottom = 10 + logoHeight + 5; // Bottom position of the logo with a small margin
-  pdf.text(`Nom: ${firstName}`, 10, logoBottom + 5); // Adjust y-coordinate to move below the logo
-  pdf.text(`Prénom: ${lastName}`, 10, logoBottom + 15); // Adjust y-coordinate to move below the logo
-  pdf.text(`Niveau d'étude: ${userData.niveau}`, 10, logoBottom + 25); // Adjust y-coordinate to move below the logo
-
-  // Title
-  const title = 'Facture';
-  pdf.setFont('Helvetica', 'bold');
-  pdf.setFontSize(20);
-  pdf.setTextColor('#E5B80B'); // Golden color for title
-  pdf.text(title, pdf.internal.pageSize.width / 2, 75, { align: 'center' }); // Adjust y-coordinate as needed
-} catch (error) {
-  console.error('Error adding logo to PDF:', error);
-  // Show toast with error message
-  toast.error('Error adding logo to PDF. Please try again later.');
-  return; // Exit the function early if there's an error
-}
-
-     
-
-        // Table Headers
-        const headers = ["Programme", "Session", "Prix de session", "Montant total"];
-        const tableData = [];
-
-        // Initialize an object to store payment data by program ID
-        const programData = {};
-
-        // Iterate through payment session modes and organize by program ID
-        data.paymentSessionModes.forEach(sessionMode => {
-            const programID = sessionMode?.student?.groupes[0]?.program?.ID_ROWID;
-            if (programID) {
-                if (!programData[programID]) {
-                    programData[programID] = {
-                        program: sessionMode.student.groupes[0].program,
-                        paymentSessionModes: [],
-                        paymentTotalModes: []
-                    };
-                }
-                programData[programID].paymentSessionModes.push(sessionMode);
-            }
-        });
-
-        // Iterate through payment total modes and organize by program ID
-        data.paymentTotalModes.forEach(totalMode => {
-            const programID = totalMode?.program?.ID_ROWID;
-            if (programID) {
-                if (!programData[programID]) {
-                    programData[programID] = {
-                        program: totalMode.program,
-                        totalAmount: totalMode.program.prix,
-                        paymentSessionModes: [],
-                        paymentTotalModes: []
-                    };
-                }
-                programData[programID].paymentTotalModes.push(totalMode);
-            }
-        });
-
-        // Iterate through programData object
-        Object.values(programData).forEach(program => {
-            const { program: { title }, paymentSessionModes, paymentTotalModes } = program;
-            const session = paymentSessionModes.length || "Tout";
-            let prixDuSession = 0; // Initialize prixDuSession
-
-            // Calculate prixDuSession differently for session payment and total payment
-            if (paymentSessionModes.length > 0) {
-                prixDuSession = paymentSessionModes[0].amount;
-            } else if (paymentTotalModes.length > 0) {
-                prixDuSession = "/"; // Placeholder for total payment
-            }
-
-            let totalAmount = 0; // Initialize totalAmount
-
-            // Calculate totalAmount differently for session payment and total payment
-            if (paymentSessionModes.length > 0) {
-                totalAmount = session * prixDuSession; // For session payment
-            } else if (paymentTotalModes.length > 0) {
-                totalAmount = paymentTotalModes.reduce((acc, curr) => acc + curr.program.prix, 0) || 0; // For total payment
-            }
-
-            tableData.push([title, session, prixDuSession, totalAmount]);
-        });
-
-        // Calculate total sum of total amounts
-        const totalSum = tableData.reduce((acc, row) => acc + row[3], 0);
-
-        // Merge cells for the last row
-        const totalRow = [{content: `Total: ${totalSum} DA`, colSpan: 4, styles: {halign: 'center'}}];
-
-        // Generating the table
-        pdf.autoTable({
-            head: [headers],
-            body: [...tableData, totalRow],
-            startY: logoBottom + 45, // Adjust as needed
-            margin: { top: 65 },
-            theme: 'grid',
-            styles: {
-                fontSize: 10,
-                cellPadding: 2,
-                overflow: 'linebreak',
-            },
-            headStyles: {
-                fillColor: '#FFD700', // Golden color for table header background
-                textColor: '#000000', // Black color for table header text
-                fontStyle: 'bold'
-            },
-            columnStyles: {
-                0: { fontStyle: 'bold' }, // Bold font for the first column
-                3: { fontStyle: 'bold' } // Bold font for the last column
-            },
-        });
-        pdf.setTextColor('#000000'); // Black color for signature
-        pdf.setFontSize(12);
-        const tableBottom = pdf.previousAutoTable.finalY + 3; // Bottom position of the table with a small space
-        pdf.text('Signature', 30, tableBottom + 15); // Adjust coordinates to move below the table
-
-// Add extraction date text below the table
-const extractionDate = `Extrait le ${data.createdAt.split('T')[0]}`;
-pdf.setFontSize(8); // Decrease font size for extraction date
-pdf.text(extractionDate, 10, pdf.internal.pageSize.height - 30);
-
-// Footer separator
-pdf.setLineWidth(0.8);
-pdf.line(10, pdf.internal.pageSize.height - 20, pdf.internal.pageSize.width - 10, pdf.internal.pageSize.height - 20);
-pdf.setFontSize(9); // Decrease font size for extraction date
-
-// Footer values
-const footerLabels = ['Phone', 'Email', 'Facebook', 'Address'];
-const footerValues = [
-    Schooldata.data.contacts.phone,
-    Schooldata.data.contacts.mail,
-    Schooldata.data.contacts.facebook,
-    Schooldata.data.address
-];
-
-const startX = 15; // X coordinate for labels
-const startY = pdf.internal.pageSize.height - 12; // Y coordinate for footer, below the separator line
-let currentX = startX; // Initial X coordinate for labels
-
-// Add labels and values to the footer
-const firstLineLabels = footerLabels.slice(0, 2); // First line labels
-const firstLineValues = footerValues.slice(0, 2); // First line values
-firstLineLabels.forEach((label, index) => {
-    const labelValue = `${label}: ${firstLineValues[index]}`; // Combine label and value
-    pdf.text(labelValue, currentX, startY); // Add label and value
-    currentX += 100; // Add space between label and value
-});
-
-// Reset X coordinate for second line
-currentX = startX;
-
-// Second line labels and values
-const secondLineLabels = footerLabels.slice(2); // Second line labels
-const secondLineValues = footerValues.slice(2); // Second line values
-const secondLineY = startY + 7; // Y coordinate for second line
-secondLineLabels.forEach((label, index) => {
-    const labelValue = `${label}: ${secondLineValues[index]}`; // Combine label and value
-    pdf.text(labelValue, currentX, secondLineY); // Add label and value
-    currentX += 100; // Add space between label and value
-});
-
-
-        // Save the PDF
-        pdf.save('facture.pdf');
-    
-};
-
-
-
-
-
 
   return (
     <>
@@ -556,7 +580,7 @@ secondLineLabels.forEach((label, index) => {
       </Helmet>
 
       <Container className="app-content-area">
-      <ToastContainer />
+        <ToastContainer />
 
         <div className="col-xl-12 col-lg-12 col-md-12 col-12">
           {/* <!-- Bg --> */}
@@ -700,9 +724,10 @@ secondLineLabels.forEach((label, index) => {
                             students
                             sessions payed + programme
                             date 
-                            */ }
-                            <Button variant="contained" onClick=
-                            {() => Telechargerpdf(row)}>Télecharger</Button>
+                            */}
+                            <Button variant="contained" onClick={() => Telechargerpdf(row)}>
+                              Télecharger
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -737,16 +762,18 @@ secondLineLabels.forEach((label, index) => {
                           <TableCell noWrap>
                             <Typography variant="subtitle1">
                               {row.title}
-                              <Link
-                                style={{ color: 'blue' }}
-                                to={`/dashboard/ProgrameProfile/${row.prog.id}`}
-                              >
-                                <Iconify
-                                  icon={'akar-icons:link-out'}
-                                  sx={{ mr: 1 }}
-                                  style={{ marginLeft: '20px' }}
-                                />
-                              </Link>
+                              {row.type === 'normal' && (
+                                <Link
+                                  style={{ color: 'blue' }}
+                                  to={`/dashboard/ProgrameProfile/${row.prog.id}`}
+                                >
+                                  <Iconify
+                                    icon={'akar-icons:link-out'}
+                                    sx={{ mr: 1 }}
+                                    style={{ marginLeft: '20px' }}
+                                  />
+                                </Link>
+                              )}
                             </Typography>
                           </TableCell>
 
@@ -888,6 +915,7 @@ secondLineLabels.forEach((label, index) => {
               <TableBody>
                 {Object.keys(unpaidBills).map((key) => {
                   const data = unpaidBills[key];
+                  // return true;
                   return <Row data={data} />;
                 })}
               </TableBody>
@@ -905,7 +933,7 @@ secondLineLabels.forEach((label, index) => {
   );
   function Row(props) {
     const { data } = props;
-    const [open, setOpen] = useState(data.type !== 'Total');
+    const [open, setOpen] = useState(data.eventT === 'normal' && data.type !== 'Total');
     return (
       <Fragment key={data.id}>
         <TableRow>
@@ -923,7 +951,9 @@ secondLineLabels.forEach((label, index) => {
             </FormGroup>
           </TableCell>
           <TableCell>{data.prix} DA</TableCell>
-          <TableCell>{data.type !== 'Total' ? data.quantite : 'Total'}</TableCell>
+          <TableCell>
+            {data.eventT === 'normal' && data.type !== 'Total' ? data.quantite : 'Total'}
+          </TableCell>
           <TableCell>{data.montant} DA</TableCell>
           <TableCell>
             {data.type !== 'Total' && (
