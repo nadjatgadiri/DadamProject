@@ -92,6 +92,7 @@ const StudentProfile = () => {
   /** api */
 
   const fetchSessionData = async () => {
+
     const result3 = await getAllSessionsForStudent(id);
     if (result3.code === 200) {
       setEvents(result3.events);
@@ -103,7 +104,6 @@ const StudentProfile = () => {
       paimentRecord: unpaidBills,
       total,
     };
-    console.log(data);
     const result = await payStudentBillsMultiMode(data);
 
     if (result.code === 200) {
@@ -117,8 +117,13 @@ const StudentProfile = () => {
       if (resultStudentBills.code === 200) {
         setBills(resultStudentBills.bills);
       }
+
+
+
       // get student unpaid bills
       const resultStudentUnpaidBills = await getUnpaidBills(id);
+
+
       if (resultStudentUnpaidBills.code === 200) {
         await handleSumTotal(resultStudentUnpaidBills.unpaidBills);
         setUnpaidBills(resultStudentUnpaidBills.unpaidBills);
@@ -197,6 +202,9 @@ const StudentProfile = () => {
       }
       // get student unpaid bills
       const resultStudentUnpaidBills = await getUnpaidBills(id);
+
+      console.log(resultStudentUnpaidBills);
+
       if (resultStudentUnpaidBills.code === 200) {
         handleSumTotal(resultStudentUnpaidBills.unpaidBills);
         setUnpaidBills(resultStudentUnpaidBills.unpaidBills);
@@ -330,6 +338,7 @@ const StudentProfile = () => {
     setTotal(total);
   };
   const Telechargerpdf = async (data) => {
+    console.log(data);
     // Fetch school data
     let Schooldata;
     try {
@@ -438,23 +447,7 @@ const StudentProfile = () => {
         programData[programID].paymentTotalModes.push(totalMode);
       }
     });
-    data.student?.privateSessions?.forEach((Session) => {
-      // if (Session.studentsInPrivateSession.billD === data.ID_ROWID) {
-      // const programID = totalMode?.program?.ID_ROWID;
-      // if (programID) {
-      //   if (!programData[programID]) {
-      //     programData[programID] = {
-      //       program: totalMode.program,
-      //       totalAmount: totalMode.program.prix,
-      //       paymentSessionModes: [],
-      //       paymentTotalModes: [],
-      //     };
-      //   }
-      //   programData[programID].paymentTotalModes.push(totalMode);
-      // }
-      // }
-    });
-
+  
     // Iterate through programData object
     Object.values(programData).forEach((program) => {
       const {
@@ -483,6 +476,15 @@ const StudentProfile = () => {
 
       tableData.push([title, session, prixDuSession, totalAmount]);
     });
+    // Iterate through private sessions and add them to tableData
+data.student.privateSessions.forEach((privateSession) => {
+  const session = `1  le ${privateSession.date}`; // Private session counts as 1 session
+  const prixDuSession = privateSession.prix;
+  const totalAmount = privateSession.prix; // Total amount for private session
+  console.log(privateSession.teachers);
+  const privateSessionTitle = `Privé avec ${privateSession.teachers[0].personProfile2.firstName} ${privateSession.teachers[0].personProfile2.lastName}`; // Generating title for private session
+  tableData.push([privateSessionTitle, session, prixDuSession, totalAmount]);
+});
 
     // Calculate total sum of total amounts
     const totalSum = tableData.reduce((acc, row) => acc + row[3], 0);
@@ -915,6 +917,7 @@ const StudentProfile = () => {
               <TableBody>
                 {Object.keys(unpaidBills).map((key) => {
                   const data = unpaidBills[key];
+                  
                   // return true;
                   return <Row data={data} />;
                 })}
