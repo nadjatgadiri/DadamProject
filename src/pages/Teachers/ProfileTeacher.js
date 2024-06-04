@@ -135,10 +135,9 @@ const TeacherProfile = () => {
     }
     // get teacher salaire
     const resultTeacherSalaires = await getTeacherSalaires(id);
-    console.log(resultTeacherSalaires);
-    // if (resultTeacherSalaires.code === 200) {
-    //   setBills(resultTeacherSalaires.salaire);
-    // }
+    if (resultTeacherSalaires.code === 200) {
+      setSalaires(resultTeacherSalaires.salaire);
+    }
     // get teacher unpaid salaire
     const resultTeacherUnpaidSalaire = await getUnpaidSailare(id);
     if (resultTeacherUnpaidSalaire.code === 200) {
@@ -185,12 +184,13 @@ const TeacherProfile = () => {
         return event;
       });
       let q = 0;
-      data.quantite = data.events.map((event) => {
+      data.events.map((event) => {
         if (event.isChecked) {
           q += event.NumberOfAttendees;
         }
         return q;
       });
+      data.quantite = q;
       data.totalAmount = data.amountByStudent * q;
       // Check if all events are checked or not
       data.isChecked = data.events.every((event) => event.isChecked);
@@ -222,12 +222,13 @@ const TeacherProfile = () => {
       });
       data.isChecked = !data.isChecked;
       let q = 0;
-      data.quantite = data.events.map((event) => {
+      data.events.map((event) => {
         if (event.isChecked) {
           q += event.NumberOfAttendees;
         }
-        return q;
+        return 0;
       });
+      data.quantite = q;
       data.totalAmount = data.amountByStudent * q;
       // Update the specific entry in updatedUnpaidSalaire
       updatedUnpaidSalaire[id] = data;
@@ -235,7 +236,7 @@ const TeacherProfile = () => {
       handleSumMontant();
     }
   };
-  const payTeacherSalaire = async () => {
+  const paySalaire = async () => {
     const data = {
       teacherID: id,
       paimentRecord: unpaidSalaire,
@@ -247,14 +248,13 @@ const TeacherProfile = () => {
     if (result.code === 200) {
       // get teacher salaire
       const resultTeacherSalaires = await getTeacherSalaires(id);
-      console.log(resultTeacherSalaires);
-      // if (resultTeacherSalaires.code === 200) {
-      //   setBills(resultTeacherSalaires.salaire);
-      // }
+      if (resultTeacherSalaires.code === 200) {
+        setSalaires(resultTeacherSalaires.salaire);
+      }
       // get teacher unpaid salaire
       const resultTeacherUnpaidSalaire = await getUnpaidSailare(id);
       if (resultTeacherUnpaidSalaire.code === 200) {
-        //   await handleSumTotal(resultTeacherUnpaidSalaire.unpaidSalaire);
+        setTotal(0);
         await setUnpaidSalaire(resultTeacherUnpaidSalaire.unpaidSalaire);
         await handleSumMontant();
       }
@@ -308,9 +308,63 @@ const TeacherProfile = () => {
             </div>
           </div>
         </div>
+        {/* Statistiques */}
+        <div className="col-xl-12 col-lg-12 col-md-12 col-12 mb-5">
+          <div className="card">
+            <div className="card-header">
+              <Typography className="mb-0" variant="h6">
+                Statistiques des Séances
+              </Typography>
+            </div>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-md-3 mb-3">
+                  <div className="card d-flex justify-content-center align-items-center">
+                    <div className="card-body text-center">
+                      <Typography variant="subtitle1">Nombre de Séances associées</Typography>
+                      <Typography variant="h5" style={{ color: '#17a2b8', lineHeight: '3rem' }}>
+                        {events.length}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <div className="card d-flex justify-content-center align-items-center">
+                    <div className="card-body text-center">
+                      <Typography variant="subtitle1">Nombre de Séances Présentées</Typography>
+                      <Typography variant="h5" style={{ color: '#28a745', lineHeight: '3rem' }}>
+                        {sessionsParticipated.length}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <div className="card d-flex justify-content-center align-items-center">
+                    <div className="card-body text-center">
+                      <Typography variant="subtitle1">Nombre de Séances Payées</Typography>
+                      <Typography variant="h5" style={{ color: '#28a745', lineHeight: '3rem' }}>
+                        {sessionsParticipated.filter((session) => session.isPaid).length}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <div className="card d-flex justify-content-center align-items-center">
+                    <div className="card-body text-center">
+                      <Typography variant="subtitle1">Nombre de Séances Non Payées</Typography>
+                      <Typography variant="h5" style={{ color: '#dc3545', lineHeight: '3rem' }}>
+                        {sessionsParticipated.filter((session) => !session.isPaid).length}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="row">
           <div className="col-xl-5 col-lg-12 col-md-12 col-12 mb-5">
-            <div className="card">
+            <div className="card" style={{ height: '345px' }}>
               <div className="card-header">
                 <Typography className="mb-0" variant="h6">
                   À propos de moi
@@ -399,60 +453,49 @@ const TeacherProfile = () => {
             </div>
           </div>
 
-          {/* Statistiques */}
-          <div className="col-xl-12 col-lg-12 col-md-12 col-12 mb-5">
-            <div className="card">
-              <div className="card-header">
+          {/* list des bills */}
+          <div className="col-xl-5 col-lg-12 col-md-12 col-12 mb-5">
+            {/* <!-- card --> */}
+            <div className="card" style={{ height: '500px' }}>
+              {/* <!-- card body --> */}
+              <div
+                className="card-header"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}
+              >
                 <Typography className="mb-0" variant="h6">
-                  Statistiques des Séances
+                  Salaires
                 </Typography>
               </div>
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-md-3 mb-3">
-                    <div className="card d-flex justify-content-center align-items-center">
-                      <div className="card-body text-center">
-                        <Typography variant="subtitle1">Nombre de Séances associées</Typography>
-                        <Typography variant="h5" style={{ color: '#17a2b8', lineHeight: '3rem' }}>
-                          {events.length}
-                        </Typography>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <div className="card d-flex justify-content-center align-items-center">
-                      <div className="card-body text-center">
-                        <Typography variant="subtitle1">Nombre de Séances Présentées</Typography>
-                        <Typography variant="h5" style={{ color: '#28a745', lineHeight: '3rem' }}>
-                          {sessionsParticipated.length}
-                        </Typography>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <div className="card d-flex justify-content-center align-items-center">
-                      <div className="card-body text-center">
-                        <Typography variant="subtitle1">Nombre de Séances Payées</Typography>
-                        <Typography variant="h5" style={{ color: '#28a745', lineHeight: '3rem' }}>
-                          {sessionsParticipated.filter((session) => session.isPaid).length}
-                        </Typography>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <div className="card d-flex justify-content-center align-items-center">
-                      <div className="card-body text-center">
-                        <Typography variant="subtitle1">Nombre de Séances Non Payées</Typography>
-                        <Typography variant="h5" style={{ color: '#dc3545', lineHeight: '3rem' }}>
-                          {sessionsParticipated.filter((session) => !session.isPaid).length}
-                        </Typography>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
+              {/* <!-- row --> */}
+              <TableContainer component={Paper} style={{ padding: '10px' }}>
+                {salaires?.length !== 0 ? (
+                  <Table aria-label="simple table">
+                    <TableBody>
+                      {salaires?.map((row, index) => (
+                        <TableRow key={index}>
+                          <TableCell noWrap>
+                            <Typography variant="subtitle1">{row.totalAmount} DA</Typography>
+                          </TableCell>
+
+                          <TableCell>
+                            <Typography variant="subtitle2" noWrap>
+                              {formatDate2(row.date)}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Typography style={{ padding: '20px' }} variant="h6" paragraph>
+                    Aucune Salaire n'a été affectée.
+                  </Typography>
+                )}
+              </TableContainer>
             </div>
           </div>
+          {/* end list des bills */}
           {/* Paiment de Salaire Form */}
           <div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
             <div className="card" style={{ height: '500px' }}>
@@ -474,7 +517,7 @@ const TeacherProfile = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Button onClick={payTeacherSalaire} autoFocus>
+                        <Button onClick={() => paySalaire()} autoFocus>
                           Affectée
                         </Button>
                       </TableCell>
@@ -502,6 +545,7 @@ const TeacherProfile = () => {
               </TableContainer>
             </div>
           </div>
+
           <div className="card-body">
             {/* Render your calendar component here */}
             <MyCalendar colorMap={groups} events={events} />
@@ -536,12 +580,12 @@ const TeacherProfile = () => {
               value={data.amountByStudent}
               onChange={async (e) => {
                 const updatedUnpaidSalaire = { ...unpaidSalaire };
-                if (updatedUnpaidSalaire[id]) {
-                  const data = { ...updatedUnpaidSalaire[id] }; // Make a copy of data
-                  data.amountByStudent = e.target.value;
-                  data.totalAmount = data.amountByStudent * data.quantite;
+                if (updatedUnpaidSalaire[data.id]) {
+                  const data2 = { ...updatedUnpaidSalaire[data.id] }; // Make a copy of data
+                  data2.amountByStudent = e.target.value;
+                  data2.totalAmount = data2.amountByStudent * data2.quantite;
                   // Update the specific entry in updatedUnpaidSalaire
-                  updatedUnpaidSalaire[id] = data;
+                  updatedUnpaidSalaire[data.id] = data2;
                   let total = 0;
                   Object.keys(updatedUnpaidSalaire).forEach((id) => {
                     const bill = updatedUnpaidSalaire[id];
