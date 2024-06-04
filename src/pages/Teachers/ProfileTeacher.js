@@ -7,6 +7,7 @@ import {
   Typography,
   Container,
   Collapse,
+  MenuItem,
   Box,
   Paper,
   Table,
@@ -52,7 +53,6 @@ const TeacherProfile = () => {
   const [unpaidSalaire, setUnpaidSalaire] = useState({});
   const [sessionsParticipated, setSessionsParticipated] = useState([]);
   const { id } = useParams();
-  console.log(id);
   const [userData, setUserData] = useState('');
   // const [files, setFiles] = useState([' ']); // Commented out files related state
   const [data, setData] = useState([
@@ -61,6 +61,11 @@ const TeacherProfile = () => {
     { label: 'Date of Birth', value: '' },
     { label: 'Matier', value: '' }, // Added label for subject
   ]);
+  const [filter, setFilter] = useState('all');
+
+  const handleFilterChange = (event) => {
+    setFilter(event.target.value);
+  };
   function formatDate(inputDate) {
     const date = new Date(inputDate);
     const options = {
@@ -308,6 +313,7 @@ const TeacherProfile = () => {
             </div>
           </div>
         </div>
+
         {/* Statistiques */}
         <div className="col-xl-12 col-lg-12 col-md-12 col-12 mb-5">
           <div className="card">
@@ -362,6 +368,7 @@ const TeacherProfile = () => {
             </div>
           </div>
         </div>
+
         <div className="row">
           <div className="col-xl-5 col-lg-12 col-md-12 col-12 mb-5">
             <div className="card" style={{ height: '345px' }}>
@@ -386,13 +393,27 @@ const TeacherProfile = () => {
               </TableContainer>
             </div>
           </div>
+
           {/* List des séances */}
           <div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
             <div className="card" style={{ height: '345px' }}>
-              <div className="card-header">
+              <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography className="mb-0" variant="h6">
                   Enregistrements des Participations
                 </Typography>
+                <TextField
+                  select
+                  label="Filtrer par"
+                  value={filter}
+                  onChange={handleFilterChange}
+                  variant="outlined"
+                  size="small"
+                  style={{ minWidth: 200 }}
+                >
+                  <MenuItem value="all">Tous</MenuItem>
+                  <MenuItem value="paid">Déjà Payé</MenuItem>
+                  <MenuItem value="unpaid">Non Payé</MenuItem>
+                </TextField>
               </div>
               <TableContainer component={Paper} style={{ padding: '10px' }}>
                 {sessionsParticipated.length !== 0 ? (
@@ -496,6 +517,7 @@ const TeacherProfile = () => {
             </div>
           </div>
           {/* end list des bills */}
+
           {/* Paiment de Salaire Form */}
           <div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
             <div className="card" style={{ height: '500px' }}>
@@ -537,7 +559,6 @@ const TeacherProfile = () => {
                   <TableBody>
                     {Object.keys(unpaidSalaire).map((key) => {
                       const data = unpaidSalaire[key];
-                      // return true;
                       return <Row data={data} />;
                     })}
                   </TableBody>
@@ -554,6 +575,7 @@ const TeacherProfile = () => {
       </Container>
     </>
   );
+
   function Row(props) {
     const { data } = props;
     const [open, setOpen] = useState(data.eventT === 'normal' && data.type !== 'Total');
@@ -595,12 +617,8 @@ const TeacherProfile = () => {
                   setUnpaidSalaire(updatedUnpaidSalaire);
                 }
               }}
-              // InputLabelProps={{
-              //   shrink: true,
-              // }}
               fullWidth
             />
-            {/* {data.amountByStudent} DA */}
           </TableCell>
           <TableCell>{data.quantite}</TableCell>
           <TableCell>{data.totalAmount} DA</TableCell>

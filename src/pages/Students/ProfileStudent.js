@@ -8,6 +8,8 @@ import {
   Typography,
   Container,
   Paper,
+  TextField,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -68,6 +70,18 @@ const StudentProfile = () => {
     { label: 'Date of Birth', value: '' },
     // Add more data as needed
   ]);
+  const [filter, setFilter] = useState('all'); // 'all', 'paid', 'unpaid'
+
+  const handleFilterChange = (event) => {
+    setFilter(event.target.value);
+  };
+
+  const filteredSessions = sessions.filter(session => {
+    if (filter === 'all') return true;
+    if (filter === 'paid') return session.isPaid;
+    if (filter === 'unpaid') return !session.isPaid;
+    return true;
+  });
   function formatDate(inputDate) {
     const date = new Date(inputDate);
     const options = {
@@ -575,48 +589,42 @@ data.student.privateSessions.forEach((privateSession) => {
     pdf.save('facture.pdf');
   };
 
+  
   return (
     <>
       <Helmet>
-        <title> Utilisateurs</title>
+        <title>Utilisateurs</title>
       </Helmet>
 
       <Container className="app-content-area">
         <ToastContainer />
 
         <div className="col-xl-12 col-lg-12 col-md-12 col-12">
-          {/* <!-- Bg --> */}
-          <div
-            className="pt-20 rounded-top"
-            style={{
-              background: `url('../../../assets/images/covers/cover_9.jpg')`,
-              backgroundSize: 'cover',
-              backgroundRepeat: 'no-repeat', // Adding 'no-repeat' to prevent repetition
-            }}
-          />
+          <div className="pt-20 rounded-top" style={{
+            background: 'url(\'../../../assets/images/covers/cover_9.jpg\')',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+          }} />
           <div className="card rounded-bottom rounded-0 smooth-shadow-sm mb-5">
             <div className="d-flex align-items-center justify-content-between pt-4 pb-6 px-4">
-              <div className="d-flex align-items-center ">
-                {/* <!-- avatar --> */}
-                <div className="avatar-xxl  me-2 position-relative d-flex justify-content-end align-items-end mt-n10">
+              <div className="d-flex align-items-center">
+                <div className="avatar-xxl me-2 position-relative d-flex justify-content-end align-items-end mt-n10">
                   <img
                     src={userData.image}
-                    className="avatar-xxl rounded-circle border border-2 "
+                    className="avatar-xxl rounded-circle border border-2"
                     alt=""
                   />
                 </div>
-                {/* <!-- text --> */}
 
                 <div className="row">
                   <div className="col-lg-12 col-md-12 col-12">
                     <div className="d-flex justify-content-between align-items-center mb-5">
                       <div className="mb-2 mb-lg-0">
-                        <Typography className="mb-0 " variant="h3">
+                        <Typography className="mb-0" variant="h3">
                           {userData.name}
                         </Typography>
                         <p className="mb-0 d-block">{userData.code}</p>
                       </div>
-                      {/* Button aligned to the bottom-right */}
                     </div>
                   </div>
                 </div>
@@ -627,21 +635,18 @@ data.student.privateSessions.forEach((privateSession) => {
                 </Link>
               </div>
             </div>
-            {/* <!-- nav --> */}
           </div>
         </div>
+
         <div className="row">
-          {/* info general */}
+          {/* Info General */}
           <div className="col-xl-5 col-lg-12 col-md-12 col-12 mb-5">
-            {/* <!-- card --> */}
             <div className="card">
-              {/* <!-- card body --> */}
               <div className="card-header">
-                <Typography className="mb-0 " variant="h6">
+                <Typography className="mb-0" variant="h6">
                   À propos de moi
                 </Typography>
               </div>
-              {/* <!-- row --> */}
               <TableContainer component={Paper} style={{ padding: '10px' }}>
                 <Table aria-label="simple table">
                   <TableBody>
@@ -658,18 +663,15 @@ data.student.privateSessions.forEach((privateSession) => {
               </TableContainer>
             </div>
           </div>
-          {/* end info general */}
-          {/* list des documment */}
+
+          {/* List des Documents */}
           <div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
-            {/* <!-- card --> */}
             <div className="card" style={{ height: '345px' }}>
-              {/* <!-- card body --> */}
               <div className="card-header">
-                <Typography className="mb-0 " variant="h6">
+                <Typography className="mb-0" variant="h6">
                   Document
                 </Typography>
               </div>
-              {/* <!-- row --> */}
               <TableContainer component={Paper} style={{ padding: '10px' }}>
                 <Table aria-label="simple table">
                   <TableBody>
@@ -685,26 +687,18 @@ data.student.privateSessions.forEach((privateSession) => {
               </TableContainer>
             </div>
           </div>
-          {/* end list des documment */}
-          {/* list des bills */}
+
+          {/* List des Factures */}
           <div className="col-xl-5 col-lg-12 col-md-12 col-12 mb-5">
-            {/* <!-- card --> */}
             <div className="card" style={{ height: '345px' }}>
-              {/* <!-- card body --> */}
-              <div
-                className="card-header"
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}
-              >
+              <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <Typography className="mb-0" variant="h6">
                   Factures
                 </Typography>
-
                 <Button variant="outlined" onClick={handleClickOpen}>
                   Ajouter une facture
                 </Button>
               </div>
-
-              {/* <!-- row --> */}
               <TableContainer component={Paper} style={{ padding: '10px' }}>
                 {bills.length !== 0 ? (
                   <Table aria-label="simple table">
@@ -714,19 +708,12 @@ data.student.privateSessions.forEach((privateSession) => {
                           <TableCell noWrap>
                             <Typography variant="subtitle1">{row.totalAmount} DA</Typography>
                           </TableCell>
-
                           <TableCell>
                             <Typography variant="subtitle2" noWrap>
                               {formatDate2(row.createdAt)}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            {/* telecharger facture  */}
-                            {/*  infoes  i need for it  
-                            students
-                            sessions payed + programme
-                            date 
-                            */}
                             <Button variant="contained" onClick={() => Telechargerpdf(row)}>
                               Télecharger
                             </Button>
@@ -743,88 +730,95 @@ data.student.privateSessions.forEach((privateSession) => {
               </TableContainer>
             </div>
           </div>
-          {/* end list des bills */}
-          {/* list des séance */}
-          <div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
-            {/* <!-- card --> */}
-            <div className="card" style={{ height: '345px' }}>
-              {/* <!-- card body --> */}
-              <div className="card-header">
-                <Typography className="mb-0 " variant="h6">
-                  Enregistrements des Participation
-                </Typography>
-              </div>
-              {/* <!-- row --> */}
-              <TableContainer component={Paper} style={{ padding: '10px' }}>
-                {sessions.length !== 0 ? (
-                  <Table aria-label="simple table">
-                    <TableBody>
-                      {sessions?.map((row, index) => (
-                        <TableRow key={index}>
-                          <TableCell noWrap>
-                            <Typography variant="subtitle1">
-                              {row.title}
-                              {row.type === 'normal' && (
-                                <Link
-                                  style={{ color: 'blue' }}
-                                  to={`/dashboard/ProgrameProfile/${row.prog.id}`}
-                                >
-                                  <Iconify
-                                    icon={'akar-icons:link-out'}
-                                    sx={{ mr: 1 }}
-                                    style={{ marginLeft: '20px' }}
-                                  />
-                                </Link>
-                              )}
-                            </Typography>
-                          </TableCell>
 
-                          <TableCell>
-                            <Typography variant="subtitle2" noWrap>
-                              {row?.start?.slice(0, 5)} - {row?.end?.slice(0, 5)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="subtitle2" noWrap>
-                              {formatDate2(row.date)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={!row.isPaid ? 'non payé' : 'déjà payé'}
-                              size="medium"
-                              color={!row.isPaid ? 'error' : 'success'}
-                              style={{
-                                color: 'white',
-                                fontSize: '14px',
-                                fontFamily: 'Arial',
-                                fontWeight: 'bold',
-                              }}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <Typography style={{ padding: '20px' }} variant="h6" paragraph>
-                    Aucune Séance n'a été enregistrée.
+         {/* Enregistrements des Participation with Filter */}
+<div className="col-xl-7 col-lg-12 col-md-12 col-12 mb-5">
+  <div className="card" style={{ height: '345px' }}>
+    <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Typography className="mb-0" variant="h6">
+        Enregistrements des Participation
+      </Typography>
+      <TextField
+        select
+        label="Filtrer par"
+        value={filter}
+        onChange={handleFilterChange}
+        variant="outlined"
+        size="small"
+        style={{ minWidth: 200 }}
+      >
+        <MenuItem value="all">Tous</MenuItem>
+        <MenuItem value="paid">Déjà Payé</MenuItem>
+        <MenuItem value="unpaid">Non Payé</MenuItem>
+      </TextField>
+    </div>
+    <TableContainer component={Paper} style={{ padding: '10px' }}>
+      {filteredSessions.length !== 0 ? (
+        <Table aria-label="simple table">
+          <TableBody>
+            {filteredSessions.map((row, index) => (
+              <TableRow key={index}>
+                <TableCell noWrap>
+                  <Typography variant="subtitle1">
+                    {row.title}
+                    {row.type === 'normal' && (
+                      <Link
+                        style={{ color: 'blue' }}
+                        to={`/dashboard/ProgrameProfile/${row.prog.id}`}
+                      >
+                        <Iconify
+                          icon={'akar-icons:link-out'}
+                          sx={{ mr: 1 }}
+                          style={{ marginLeft: '20px' }}
+                        />
+                      </Link>
+                    )}
                   </Typography>
-                )}
-              </TableContainer>
-            </div>
-          </div>
-          {/* end list des séance */}
-          {/* list de vos activiter */}
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" noWrap>
+                    {row?.start?.slice(0, 5)} - {row?.end?.slice(0, 5)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" noWrap>
+                    {formatDate2(row.date)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={!row.isPaid ? 'non payé' : 'déjà payé'}
+                    size="medium"
+                    color={!row.isPaid ? 'error' : 'success'}
+                    style={{
+                      color: 'white',
+                      fontSize: '14px',
+                      fontFamily: 'Arial',
+                      fontWeight: 'bold',
+                    }}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <Typography style={{ padding: '20px' }} variant="h6" paragraph>
+          Aucune Séance n'a été enregistrée.
+        </Typography>
+      )}
+    </TableContainer>
+  </div>
+</div>
+
+          {/* Historique */}
           <div className="col-xl-12 col-lg-12 col-md-12 col-12 mb-5">
-            {/* <!-- card --> */}
             <div className="card" style={{ height: '345px' }}>
               <div className="card-header">
-                <Typography className="mb-0 " variant="h6">
+                <Typography className="mb-0" variant="h6">
                   Historique
                 </Typography>
               </div>
-              {/* <!-- card body --> */}
               <TableContainer component={Paper} style={{ padding: '10px' }}>
                 <Table aria-label="simple table">
                   <TableBody>
@@ -862,78 +856,77 @@ data.student.privateSessions.forEach((privateSession) => {
               </TableContainer>
             </div>
           </div>
-          {/* end de vos activiter */}
         </div>
-        {/* calandrier */}
+
+        {/* Calendar */}
         <div className="row">
           <div className="col-xl-12 col-lg-12 col-md-12 col-12 mb-12">
-            {/* <!-- card --> */}
             <div className="card" style={{ height: isDesktop ? '650px' : '750px' }}>
               <MyCalendar colorMap={groups} events={events} fetchEvents={fetchSessionData} />
             </div>
           </div>
         </div>
-        {/* end */}
-      </Container>
 
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        scroll="paper"
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        fullWidth
-        maxWidth="lg"
-      >
-        <DialogTitle id="alert-dialog-title" style={{ textAlign: 'left' }}>
-          Facture <Box sx={{ flexGrow: 1 }} />
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            <Table>
-              <TableBody>
-                <TableRow style={{ position: 'sticky', top: 0, backgroundColor: '#eaeef2' }}>
-                  <TableCell>
-                    <Typography variant="h6">Total</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="h6" color="primary">
-                      {total} DA
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-            <Table maxWidth="300px">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ width: '40%' }}>Programme</TableCell>
-                  <TableCell sx={{ width: '15%' }}>Prix</TableCell>
-                  <TableCell sx={{ width: '15%' }}>Quantité</TableCell>
-                  <TableCell sx={{ width: '30%' }}>Montant Total</TableCell>
-                  <TableCell align="right" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {Object.keys(unpaidBills).map((key) => {
-                  const data = unpaidBills[key];
-                  
-                  // return true;
-                  return <Row data={data} />;
-                })}
-              </TableBody>
-            </Table>
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={payStudentBills} autoFocus>
-            Affectée
-          </Button>
-          <Button onClick={handleClose}>Annuler</Button>
-        </DialogActions>
-      </Dialog>
+        {/* Dialog for Bills */}
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          scroll="paper"
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          fullWidth
+          maxWidth="lg"
+        >
+          <DialogTitle id="alert-dialog-title" style={{ textAlign: 'left' }}>
+            Facture <Box sx={{ flexGrow: 1 }} />
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              <Table>
+                <TableBody>
+                  <TableRow style={{ position: 'sticky', top: 0, backgroundColor: '#eaeef2' }}>
+                    <TableCell>
+                      <Typography variant="h6">Total</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="h6" color="primary">
+                        {total} DA
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+              <Table maxWidth="300px">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ width: '40%' }}>Programme</TableCell>
+                    <TableCell sx={{ width: '15%' }}>Prix</TableCell>
+                    <TableCell sx={{ width: '15%' }}>Quantité</TableCell>
+                    <TableCell sx={{ width: '30%' }}>Montant Total</TableCell>
+                    <TableCell align="right" />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {Object.keys(unpaidBills).map((key) => {
+                    const data = unpaidBills[key];
+
+                    return <Row data={data} />;
+                  })}
+                </TableBody>
+              </Table>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={payStudentBills} autoFocus>
+              Affectée
+            </Button>
+            <Button onClick={handleClose}>Annuler</Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
     </>
   );
+
   function Row(props) {
     const { data } = props;
     const [open, setOpen] = useState(data.eventT === 'normal' && data.type !== 'Total');
@@ -1003,5 +996,4 @@ data.student.privateSessions.forEach((privateSession) => {
     );
   }
 };
-
 export default StudentProfile;
